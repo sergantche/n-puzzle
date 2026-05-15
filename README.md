@@ -42,7 +42,7 @@ which is a permutation of $\{1,\ldots,NM-1\}$.
 For a sequence $L=(L_{1},\ldots,L_{NM-1})$, define the **inversion count**
 
 $$
-I(L) := \#\bigl\{(k,\ell): 1\le k<\ell\le NM-1 \text{ and } L_{k}>L_{\ell}\bigr\}.
+I(L) := \left\lvert \bigl\{(k,\ell): 1\le k<\ell\le NM-1 \text{ and } L_{k}>L_{\ell}\bigr\} \right\rvert.
 $$
 
 ### Blank row counted from the bottom
