@@ -1,0 +1,11 @@
+name = "n-puzzle"
+version = "0.1.0"
+defaultTargets = ["NPuzzle"]
+
+[[lean_lib]]
+name = "NPuzzle"
+
+# https://github.com/leanprover-community/mathlib4#using-mathlib-in-your-project
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"

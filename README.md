@@ -42,7 +42,7 @@ which is a permutation of $\{1,\ldots,NM-1\}$.
 For a sequence $L=(L_{1},\ldots,L_{NM-1})$, define the **inversion count**
 
 $$
-I(L) := \left\lvert \bigl\{(k,\ell): 1\le k<\ell\le NM-1 \text{ and } L_{k}>L_{\ell}\bigr\} \right\rvert.
+I(L) := |\{(k,\ell): 1\le k<\ell\le NM-1 \text{ and } L_{k}>L_{\ell}\}|.
 $$
 
 ### Blank row counted from the bottom
@@ -69,3 +69,11 @@ Then $C$ is solvable **if and only if** the following parity condition holds:
 - If $M$ is **even**: $I(L)\equiv r_B \pmod 2$.
 
 This statement is the main mathematical result we intend to prove formally in Lean.
+
+## Lean layout
+
+- **`lakefile.toml`** — Lake project; depends on [Mathlib](https://github.com/leanprover-community/mathlib4).
+- **`NPuzzle.lean`** — root of the `NPuzzle` library (import further modules here as they appear).
+- **`NPuzzle/Basic.lean`** — starting place for definitions and proofs (fixed sizes first, then generalization).
+
+Build the library: `lake build`.
