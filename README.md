@@ -42,7 +42,7 @@ which is a permutation of $\{1,\ldots,NM-1\}$.
 For a sequence $L=(L_{1},\ldots,L_{NM-1})$, define the **inversion count**
 
 $$
-I(L) := \left|\left\{(k,\ell): 1\le k<\ell\le NM-1 \ \text{and}\ L_{k}>L_{\ell}\right\}\right|.
+I(L) := \#\bigl\{(k,\ell): 1\le k<\ell\le NM-1 \text{ and } L_{k}>L_{\ell}\bigr\}.
 $$
 
 ### Blank row counted from the bottom
@@ -65,13 +65,7 @@ Assume $NM\ge 2$. Let $C$ be any configuration, let $L$ be its row-major tile li
 
 Then $C$ is solvable **if and only if** the following parity condition holds:
 
-- If $M$ is **odd**:
-  $$
-  I(L)\equiv 0 \pmod 2.
-  $$
-- If $M$ is **even**:
-  $$
-  I(L)\equiv r_B \pmod 2.
-  $$
+- If $M$ is **odd**: $I(L)\equiv 0 \pmod 2$.
+- If $M$ is **even**: $I(L)\equiv r_B \pmod 2$.
 
 This statement is the main mathematical result we intend to prove formally in Lean.
