@@ -2,15 +2,19 @@
 
 ## Task Definition
 
-<img src="assets/puzzle%20shuffled.png" alt="Shuffled 15-puzzle (example state)" width="251">
-
 Consider a rectangular board with **N** rows and **M** columns, so there are **NM** cells. The cells contain **NM − 1** pairwise distinct numbered tiles labeled **1, …, NM − 1** and **exactly one empty cell** (the “blank”).
+
+<img src="assets/puzzle%20shuffled.png" alt="Arbitrary 3×3 sliding-puzzle configuration (example)" width="251">
+
+_Figure 1._ An arbitrary **3×3** configuration.
 
 A **legal move** exchanges the blank with one of its **edge-adjacent** neighbors (up, down, left, or right). Equivalently, a tile adjacent to the blank slides into the blank, and the blank moves to that tile’s former cell.
 
 Fix the **goal configuration**: reading the board **row by row from top to bottom**, and **within each row from left to right**, the tiles appear in increasing order **1, 2, …, NM − 1**, and the **blank is in the bottom-right corner** (row **N**, column **M**).
 
-<img src="assets/puzzle%20solved.png" alt="Goal configuration on a 4×4 board (tiles 1–15 in order, blank bottom-right)" width="251">
+<img src="assets/puzzle%20solved.png" alt="Goal configuration on a 3×3 board (tiles 1–8 in order, blank bottom-right)" width="251">
+
+_Figure 2._ The **goal configuration** on **3×3**: tiles **1…8** in row-major order, blank bottom-right.
 
 Starting from an arbitrary configuration that uses the same tiles and one blank, we ask whether it is possible to reach the goal configuration using only legal moves.
 
