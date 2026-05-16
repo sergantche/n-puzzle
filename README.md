@@ -2,11 +2,15 @@
 
 ## Task Definition
 
+<img src="assets/puzzle%20shuffled.png" alt="Shuffled 15-puzzle (example state)" width="251">
+
 Consider a rectangular board with **N** rows and **M** columns, so there are **NM** cells. The cells contain **NM − 1** pairwise distinct numbered tiles labeled **1, …, NM − 1** and **exactly one empty cell** (the “blank”).
 
 A **legal move** exchanges the blank with one of its **edge-adjacent** neighbors (up, down, left, or right). Equivalently, a tile adjacent to the blank slides into the blank, and the blank moves to that tile’s former cell.
 
 Fix the **goal configuration**: reading the board **row by row from top to bottom**, and **within each row from left to right**, the tiles appear in increasing order **1, 2, …, NM − 1**, and the **blank is in the bottom-right corner** (row **N**, column **M**).
+
+<img src="assets/puzzle%20solved.png" alt="Goal configuration on a 4×4 board (tiles 1–15 in order, blank bottom-right)" width="251">
 
 Starting from an arbitrary configuration that uses the same tiles and one blank, we ask whether it is possible to reach the goal configuration using only legal moves.
 
@@ -61,12 +65,12 @@ A configuration $C$ is **solvable** if there exists a finite sequence of legal m
 
 ### Target theorem (solvability criterion)
 
-Assume $NM\ge 2$. Let $C$ be any configuration, let $L$ be its row-major tile list (skipping the blank), and let $i_b$ denote the blank’s row counted from the top. Write $M$ for the number of columns, and let $r_B$ be the blank’s row counted from the bottom, $r_B = N - i_b + 1$.
+Assume $NM\ge 2$. Let $C$ be any configuration, let $L$ be its row-major tile list (skipping the blank), and let $r_B := N - i_b + 1$ for its blank as in the preceding subsection — relative to the goal configuration $G$ described above.
 
-Then $C$ is solvable **if and only if** the following parity condition holds:
+Then $C$ is solvable **if and only if**:
 
 - If $M$ is **odd**: $I(L)\equiv 0 \pmod 2$.
-- If $M$ is **even**: $I(L)\equiv r_B \pmod 2$.
+- If $M$ is **even**: $I(L)+r_B\equiv 1 \pmod 2$.
 
 This statement is the main mathematical result we intend to prove formally in Lean.
 
@@ -74,6 +78,7 @@ This statement is the main mathematical result we intend to prove formally in Le
 
 - **`lakefile.toml`** — Lake project; depends on [Mathlib](https://github.com/leanprover-community/mathlib4).
 - **`NPuzzle.lean`** — root of the `NPuzzle` library (import further modules here as they appear).
-- **`NPuzzle/Basic.lean`** — starting place for definitions and proofs (fixed sizes first, then generalization).
+- **`NPuzzle/Basic.lean`** — placeholder / future shared lemmas.
+- **`NPuzzle/FourFour.lean`** — 4×4 definitions (`Config`, `goal`, `parityClass`, etc.) and the target theorem (`solvability_four_four`).
 
 Build the library: `lake build`.
