@@ -245,6 +245,23 @@ matches `r_B = N - i_b + 1` with `N = 4`.
 def blankRowFromBottom (b : Cell) : ℕ :=
   4 - (row b).val
 
+@[simp] lemma blankRowFromBottom_val (c : Cell) : blankRowFromBottom c = 4 - c.val / 4 := by
+  simp [blankRowFromBottom, row]
+
+lemma adjacent_vertical_only {a b : Cell} (h : adjacent a b) (hc : sameCol a b) :
+    a.val + 4 = b.val ∨ b.val + 4 = a.val := by
+  rcases h with (⟨hr, _⟩ | ⟨_, hcor⟩)
+  · have hrow : a.val / 4 = b.val / 4 := hr
+    have hcol : a.val % 4 = b.val % 4 := hc
+    have hstep : a.val + 1 = b.val ∨ b.val + 1 = a.val := by
+      omega
+    omega
+  · exact hcor
+
+/-- Index of `c` in the row-major cell list that skips `skip`. -/
+def rankExcept (skip c : Cell) : ℕ :=
+  (cellsRowMajorExcept skip).findIdx (· = c)
+
 /-!
 ### Parity class `(I(L) + r_B) mod 2`
 
