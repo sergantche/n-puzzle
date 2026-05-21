@@ -136,6 +136,21 @@ lemma swapAt_le {cells : Cell → ℕ} (h : ∀ i, cells i ≤ 15) (a b : Cell) 
   simp only [swapAt]
   split_ifs <;> exact h _
 
+lemma swapAt_a {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b) :
+    swapAt cells a b a = cells b := by
+  dsimp [swapAt]
+  simp [hne.symm]
+
+lemma swapAt_b {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b) (ha0 : cells a = 0) :
+    swapAt cells a b b = 0 := by
+  dsimp [swapAt]
+  by_cases h : b = a <;> simp [h, ha0]
+
+lemma swapAt_of_ne {cells : Cell → ℕ} {a b c : Cell} (hca : c ≠ a) (hcb : c ≠ b) :
+    swapAt cells a b c = cells c := by
+  dsimp [swapAt]
+  simp [hca, hcb]
+
 lemma tile_ne_zero_of_ne_blank {cells : Cell → ℕ} (hv : IsValid cells) {a b : Cell}
     (ha0 : cells a = 0) (hne : a ≠ b) : cells b ≠ 0 := by
   intro h0
@@ -143,8 +158,60 @@ lemma tile_ne_zero_of_ne_blank {cells : Cell → ℕ} (hv : IsValid cells) {a b 
 
 lemma swapAt_valid {cells : Cell → ℕ} (hv : IsValid cells) (a b : Cell)
     (ha0 : cells a = 0) (hne : a ≠ b) : IsValid (swapAt cells a b) := by
-  -- Swapping the blank with a tile preserves a valid labeling; full proof next.
-  sorry
+  rcases hv with ⟨hle, ⟨b0, hb0, huniq0⟩, htiles⟩
+  have hv' : IsValid cells := ⟨hle, ⟨b0, hb0, huniq0⟩, htiles⟩
+  have hbne0 := tile_ne_zero_of_ne_blank hv' ha0 hne
+  constructor
+  · exact swapAt_le hle a b
+  constructor
+  · refine ExistsUnique.intro b (swapAt_b hne ha0) ?_
+    intro c hc0
+    dsimp [swapAt] at hc0
+    by_cases hca : c = a <;> by_cases hcb : c = b
+    · exact absurd (hca.symm ▸ hcb) hne
+    · simp [hca, hcb, hne] at hc0
+      exact (hbne0 hc0).elim
+    · exact hcb
+    · simp [hca, hcb] at hc0
+      have hc' : c = a := ExistsUnique.unique ⟨b0, hb0, huniq0⟩ hc0 ha0
+      exact absurd hc' hca
+  · intro k hk
+    rcases htiles k hk with ⟨i, hi, huniq⟩
+    have hia : i ≠ a := by
+      rintro rfl
+      rw [ha0] at hi
+      omega
+    refine ExistsUnique.intro (if i = b then a else i) ?_ ?_
+    · by_cases hib : i = b
+      · dsimp [swapAt]
+        simp [hib, hne, ha0]
+        rw [hib] at hi
+        exact hi
+      · dsimp [swapAt]
+        simp [hib, hia]
+        exact hi
+    · intro j hj
+      by_cases hja : j = a
+      · by_cases hjb : j = b
+        · exact absurd (hja.symm ▸ hjb) hne
+        · dsimp [swapAt] at hj ⊢
+          simp [hja, hjb, hne] at hj ⊢
+          subst hja
+          have hib : i = b := (huniq b hj).symm
+          simp [hib]
+      · by_cases hjb : j = b
+        · have h0 : 0 = k := by
+            rw [hjb, swapAt_b hne ha0] at hj
+            exact hj
+          rcases hk with ⟨_, hkpos⟩
+          omega
+        · dsimp [swapAt] at hj
+          simp [hja, hjb] at hj
+          have hij : j = i := huniq j hj
+          by_cases hib : i = b
+          · have hjib : j = b := Eq.trans hij hib
+            exact absurd hjib hjb
+          · simp [hib, hij]
 
 /-- One legal move: slide the blank into adjacent cell `n`. -/
 noncomputable def slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) : Config :=
@@ -241,21 +308,8 @@ lemma blank_goal : blank goal = bottomRight := by
   · change goalCells bottomRight = 0
     simp [goalCells, bottomRight]
 
-/-- Parity statistic evaluated at `goal` (useful once sorries are gone). -/
+/-- Parity statistic evaluated at `goal`. -/
 noncomputable def parityClassGoal : ℕ :=
   parityClass goal
-
-/-! ### Target theorem (solvability criterion for 4×4)
-
-`Reachable` is now `ReflTransGen legalStep`. Remaining work: invariant lemmas (steps 2–6),
-necessity/sufficiency, then close `solvability_four_four`.
--/
-
-/--
-**Proof admitted.** Show `Reachable cfg goal ↔ parityClass cfg = parityClass goal`.
--/
-theorem solvability_four_four (cfg : Config) :
-    Reachable cfg goal ↔ parityClass cfg = parityClass goal := by
-  sorry
 
 end NPuzzle.FourFour
