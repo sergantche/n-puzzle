@@ -9,6 +9,7 @@ The main proof is still open (`solvability_four_four`).
 
 import Mathlib.Data.List.FinRange
 import Mathlib.Logic.ExistsUnique
+import Mathlib.Logic.Relation
 import Mathlib.Tactic
 import Mathlib.Tactic.FinCases
 
@@ -66,6 +67,12 @@ lemma adjacent.symm {a b : Cell} (h : adjacent a b) : adjacent b a := by
   · exact Or.inl ⟨by simpa [sameRow, eq_comm] using hr, Or.symm hror⟩
   · exact Or.inr ⟨by simpa [sameCol, eq_comm] using hc, Or.symm hcor⟩
 
+lemma adjacent.ne {a b : Cell} (h : adjacent a b) : a ≠ b := by
+  rintro rfl
+  rcases h with (⟨_, hror⟩ | ⟨_, hcor⟩)
+  · rcases hror with h | h <;> omega
+  · rcases hcor with h | h <;> omega
+
 /-! ### Configurations
 
 Labels: `0` = blank, `1…15` = tiles (README uses `1…NM-1`).
@@ -114,6 +121,44 @@ noncomputable def blank (cfg : Config) : Cell :=
 lemma blank_zero (cfg : Config) : cfg.cells (blank cfg) = 0 :=
   Classical.choose_spec (ExistsUnique.exists cfg.valid.2.1)
 
+/-- Bottom-right cell (goal blank). -/
+def bottomRight : Cell := ⟨15, by omega⟩
+
+/-- Swap labels at cells `a` and `b`. -/
+def swapAt (cells : Cell → ℕ) (a b : Cell) : Cell → ℕ :=
+  fun c =>
+    if c = a then cells b
+    else if c = b then cells a
+    else cells c
+
+lemma swapAt_le {cells : Cell → ℕ} (h : ∀ i, cells i ≤ 15) (a b : Cell) (i : Cell) :
+    swapAt cells a b i ≤ 15 := by
+  simp only [swapAt]
+  split_ifs <;> exact h _
+
+lemma tile_ne_zero_of_ne_blank {cells : Cell → ℕ} (hv : IsValid cells) {a b : Cell}
+    (ha0 : cells a = 0) (hne : a ≠ b) : cells b ≠ 0 := by
+  intro h0
+  exact hne (ExistsUnique.unique hv.2.1 h0 ha0).symm
+
+lemma swapAt_valid {cells : Cell → ℕ} (hv : IsValid cells) (a b : Cell)
+    (ha0 : cells a = 0) (hne : a ≠ b) : IsValid (swapAt cells a b) := by
+  -- Swapping the blank with a tile preserves a valid labeling; full proof next.
+  sorry
+
+/-- One legal move: slide the blank into adjacent cell `n`. -/
+noncomputable def slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) : Config :=
+  { cells := swapAt cfg.cells (blank cfg) n
+    valid := swapAt_valid cfg.valid (blank cfg) n (blank_zero cfg) (adjacent.ne h) }
+
+/-- `cfg'` is one legal move away from `cfg`. -/
+def legalStep (cfg cfg' : Config) : Prop :=
+  ∃ n : Cell, ∃ h : adjacent (blank cfg) n, cfg' = slide cfg n h
+
+/-- Reachability via legal moves. -/
+def Reachable : Config → Config → Prop :=
+  Relation.ReflTransGen legalStep
+
 /-- README tile list `L` for `cfg`. -/
 noncomputable def tileList (cfg : Config) : List ℕ :=
   (cellsRowMajorExcept (blank cfg)).map cfg.cells
@@ -142,20 +187,46 @@ Matches the README target theorem for **even** width `M`: compare to goal (`≡ 
 noncomputable def parityClass (cfg : Config) : ℕ :=
   (invStat cfg + blankRowFromBottom (blank cfg)) % 2
 
-/-! ### Goal as a `Config`
+/-! ### Goal as a `Config` -/
 
-Proofs `goal_ex_unique_*` and `blank_goal` still use `sorry`.
--/
+lemma goalCells_eq_zero (b : Cell) : goalCells b = 0 ↔ b = bottomRight := by
+  fin_cases b <;> simp [goalCells, bottomRight] <;> omega
 
-lemma goalCells_le (i : Cell) : goalCells i ≤ 15 := by
-  dsimp [goalCells]; split_ifs <;> omega
+lemma goalCells_eq_k {k : ℕ} (hk : 1 ≤ k ∧ k ≤ 15) (i : Cell) :
+    goalCells i = k ↔ i = ⟨(k - 1), by omega⟩ := by
+  constructor
+  · intro h
+    have hlt : i.val < 15 := by
+      dsimp [goalCells] at h
+      split_ifs at h <;> omega
+    have hval : i.val = k - 1 := by
+      dsimp [goalCells] at h
+      split_ifs at h <;> omega
+    ext
+    exact hval
+  · rintro rfl
+    have hlt : (k - 1) < 15 := by omega
+    dsimp [goalCells]
+    simp [hlt]
+    omega
 
 lemma goal_ex_unique_blank : ∃! b : Cell, goalCells b = 0 := by
-  sorry
+  refine ⟨bottomRight, by simp [goalCells, bottomRight], ?_⟩
+  intro b hb
+  exact (goalCells_eq_zero b).mp hb
 
 lemma goal_ex_unique_labels {k : ℕ} (hk : 1 ≤ k ∧ k ≤ 15) :
     ∃! i : Cell, goalCells i = k := by
-  sorry
+  refine ⟨⟨k - 1, by omega⟩, ?_, ?_⟩
+  · have hlt : (k - 1) < 15 := by omega
+    dsimp [goalCells]
+    simp [hlt]
+    omega
+  · intro i hi
+    exact (goalCells_eq_k hk i).mp hi
+
+lemma goalCells_le (i : Cell) : goalCells i ≤ 15 := by
+  dsimp [goalCells]; split_ifs <;> omega
 
 /-- Package `goalCells` + proofs into `Config`. -/
 def goal : Config :=
@@ -164,26 +235,24 @@ def goal : Config :=
       goal_ex_unique_blank,
       fun _ hk => goal_ex_unique_labels hk⟩⟩
 
-lemma blank_goal : blank goal = ⟨15, by omega⟩ := by
-  sorry
+lemma blank_goal : blank goal = bottomRight := by
+  apply ExistsUnique.unique goal.valid.2.1
+  · exact blank_zero goal
+  · change goalCells bottomRight = 0
+    simp [goalCells, bottomRight]
 
 /-- Parity statistic evaluated at `goal` (useful once sorries are gone). -/
 noncomputable def parityClassGoal : ℕ :=
   parityClass goal
 
-/-! ### Target theorem (stub reachability)
+/-! ### Target theorem (solvability criterion for 4×4)
 
-Replace `Reachable` with `ReflTransGen legalStep` (or similar), then prove equivalence
-with `parityClass`.
+`Reachable` is now `ReflTransGen legalStep`. Remaining work: invariant lemmas (steps 2–6),
+necessity/sufficiency, then close `solvability_four_four`.
 -/
 
-/-- Reachability in the configuration graph — **stub** until moves are formalized. -/
-def Reachable (_cfg _to : Config) : Prop := True
-
 /--
-**Proof admitted.** Replace `Reachable` with a real step relation; then prove
-
-`Reachable cfg goal ↔ parityClass cfg = parityClass goal`.
+**Proof admitted.** Show `Reachable cfg goal ↔ parityClass cfg = parityClass goal`.
 -/
 theorem solvability_four_four (cfg : Config) :
     Reachable cfg goal ↔ parityClass cfg = parityClass goal := by
