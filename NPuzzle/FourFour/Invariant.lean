@@ -4,13 +4,6 @@ set_option maxHeartbeats 800000
 
 namespace NPuzzle.FourFour
 
-lemma blank_slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) :
-    blank (slide cfg n h) = n := by
-  apply ExistsUnique.unique (swapAt_valid cfg.valid (blank cfg) n (blank_zero cfg) (adjacent.ne h)).2.1
-    (blank_zero (slide cfg n h))
-  dsimp [slide]
-  exact swapAt_b (adjacent.ne h) (blank_zero cfg)
-
 lemma adjacent_component {a b : Cell} (h : adjacent a b) :
     sameRow a b ∨ sameCol a b := by
   rcases h with (⟨hr, _⟩ | ⟨hc, _⟩)

@@ -218,6 +218,13 @@ noncomputable def slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) :
   { cells := swapAt cfg.cells (blank cfg) n
     valid := swapAt_valid cfg.valid (blank cfg) n (blank_zero cfg) (adjacent.ne h) }
 
+lemma blank_slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) :
+    blank (slide cfg n h) = n := by
+  apply ExistsUnique.unique (swapAt_valid cfg.valid (blank cfg) n (blank_zero cfg) (adjacent.ne h)).2.1
+    (blank_zero (slide cfg n h))
+  dsimp [slide]
+  exact swapAt_b (adjacent.ne h) (blank_zero cfg)
+
 /-- `cfg'` is one legal move away from `cfg`. -/
 def legalStep (cfg cfg' : Config) : Prop :=
   ∃ n : Cell, ∃ h : adjacent (blank cfg) n, cfg' = slide cfg n h
@@ -261,6 +268,10 @@ lemma adjacent_vertical_only {a b : Cell} (h : adjacent a b) (hc : sameCol a b) 
 /-- Index of `c` in the row-major cell list that skips `skip`. -/
 def rankExcept (skip c : Cell) : ℕ :=
   (cellsRowMajorExcept skip).findIdx (· = c)
+
+lemma cellsRowMajorExcept_length (skip : Cell) :
+    (cellsRowMajorExcept skip).length = 15 := by
+  fin_cases skip <;> simp [cellsRowMajorExcept, List.finRange, List.filter, List.length]
 
 /-!
 ### Parity class `(I(L) + r_B) mod 2`
