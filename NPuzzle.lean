@@ -2,5 +2,6 @@
 import NPuzzle.Basic
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
+import NPuzzle.FourFour.Inversion
 import NPuzzle.FourFour.TileListVertical
 import NPuzzle.FourFour.Sufficiency

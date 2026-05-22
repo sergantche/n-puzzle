@@ -1,4 +1,5 @@
 import NPuzzle.FourFour
+import NPuzzle.FourFour.Inversion
 
 set_option maxHeartbeats 800000
 
@@ -33,8 +34,9 @@ lemma tileList_swap_horizontal (cells : Cell → ℕ) (b n : Cell)
 lemma tileList_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
     (hr : sameRow (blank cfg) n) :
     tileList (slide cfg n h) = tileList cfg := by
-  unfold tileList slide
+  unfold tileList
   rw [blank_slide cfg n h]
+  dsimp [slide]
   exact tileList_swap_horizontal cfg.cells (blank cfg) n h hr
 
 lemma invStat_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
@@ -54,12 +56,6 @@ lemma parityClass_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blan
   unfold parityClass
   rw [blank_slide cfg n h, invStat_slide_horizontal cfg n h hr,
     blankRow_slide_horizontal cfg n h hr]
-
-/-- Vertical slide flips `I(L) mod 2` (step 3; width `M = 4`). Still open. -/
-lemma invStat_slide_vertical_mod (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
-    (hc : sameCol (blank cfg) n) :
-    invStat (slide cfg n h) % 2 = (invStat cfg + 1) % 2 := by
-  sorry
 
 lemma blankRow_adjacent_vertical {a b : Cell} (h : adjacent a b) (hc : sameCol a b) :
     blankRowFromBottom b % 2 = (blankRowFromBottom a + 1) % 2 := by

@@ -1,5 +1,10 @@
 import Mathlib.Data.List.InsertIdx
+import Mathlib.Data.List.Perm.Basic
+import Mathlib.Data.Nat.Dist
 import NPuzzle.FourFour
+import NPuzzle.FourFour.TileListVertical
+
+set_option maxHeartbeats 800000
 
 namespace NPuzzle.FourFour
 
@@ -10,61 +15,413 @@ open List
 /-!
 Moving one list entry flips `inversionCount mod 2` iff the index shift is odd.
 
-Proof idea (the lecture proof): decompose `eraseIdx` + `insertIdx` into `|p - q|` adjacent
+Proof idea (the lecture proof): decompose `eraseIdx` + `insertIdx` into `Nat.dist p q` adjacent
 swaps; each adjacent transposition toggles parity when values are distinct (`Nodup`).
 -/
 
-/-- Adjacent swap at indices `i`, `i+1` toggles inversion parity when the values differ. -/
+def headInv (x : ℕ) (xs : List ℕ) : ℕ :=
+  xs.foldl (fun acc y => acc + if x > y then 1 else 0) 0
+
+lemma headInv_add (x : ℕ) (xs : List ℕ) (a : ℕ) :
+    xs.foldl (fun acc y => acc + if x > y then 1 else 0) a = a + headInv x xs := by
+  induction xs generalizing a with
+  | nil => simp [headInv]
+  | cons y xs ih =>
+    dsimp [headInv, List.foldl_cons]
+    rw [ih (a + if x > y then 1 else 0)]
+    simp only [zero_add]
+    rw [ih (if x > y then 1 else 0)]
+    ring
+
+lemma headInv_cons (x y : ℕ) (xs : List ℕ) :
+    headInv x (y :: xs) = (if x > y then 1 else 0) + headInv x xs := by
+  change List.foldl (fun acc z => acc + if x > z then 1 else 0) 0 (y :: xs) = _
+  rw [List.foldl_cons, zero_add, headInv_add]
+
+lemma inversionCount_def_cons (x : ℕ) (xs : List ℕ) :
+    inversionCount (x :: xs) = headInv x xs + inversionCount xs := rfl
+
+lemma inversionCount_two (x y : ℕ) (xs : List ℕ) :
+    inversionCount (x :: y :: xs) =
+      (if x > y then 1 else 0) + headInv x xs + headInv y xs + inversionCount xs := by
+  rw [inversionCount_def_cons, headInv_cons, inversionCount_def_cons]
+  simp only [add_assoc, add_left_comm, add_comm]
+
+lemma inversionCount_swap_zero (x y : ℕ) (xs : List ℕ) (hne : x ≠ y) :
+    inversionCount (y :: x :: xs) % 2 = (inversionCount (x :: y :: xs) + 1) % 2 := by
+  rw [inversionCount_two, inversionCount_two]
+  have hgt : x > y ∨ y > x := Nat.lt_or_gt_of_ne hne.symm
+  rcases hgt with hgt | hgt
+  · simp [if_pos hgt, if_neg (Nat.not_lt.mpr (Nat.le_of_lt hgt))]; omega
+  · simp [if_neg (Nat.not_lt.mpr (Nat.le_of_lt hgt)), if_pos hgt]; omega
+
+lemma set_swap_succ (a : ℕ) (xs : List ℕ) (k : ℕ) (b c : ℕ) (hk : k + 2 < (a :: xs).length) :
+    ((a :: xs).set (k + 1) b).set (k + 2) c = a :: ((xs.set k b).set (k + 1) c) := by
+  induction k generalizing xs with
+  | zero =>
+    cases xs with
+    | nil => simp at hk
+    | cons x xs => simp [List.set]
+  | succ k ih =>
+    cases xs with
+    | nil => simp at hk
+    | cons x xs => simp [List.set, ih]
+
+lemma headInv_swap (a : ℕ) (xs : List ℕ) (k : ℕ) (hk : k + 1 < xs.length)
+    (_hne : xs[k] ≠ xs[k + 1]) :
+    headInv a (xs.set k xs[k + 1] |>.set (k + 1) xs[k]) = headInv a xs := by
+  induction xs generalizing a k with
+  | nil => simp at hk
+  | cons x xs ih =>
+    cases k with
+    | zero =>
+      cases xs with
+      | nil => simp at hk
+      | cons y zs =>
+        simp only [List.getElem_cons_zero, List.getElem_cons_succ, List.set] at hk ⊢
+        simp only [headInv_cons]
+        ring
+    | succ k =>
+      have hk' : k + 1 < xs.length := by simp [List.length_cons] at hk; omega
+      have hne' : xs[k] ≠ xs[k + 1] := by simpa [List.getElem_cons_succ] using _hne
+      simp only [List.getElem_cons_succ, List.set, headInv_cons, ih a k hk' hne']
+
 lemma inversionCount_swapAdjacent (L : List ℕ) (i : ℕ) (hi : i + 1 < L.length)
     (hne : L[i] ≠ L[i + 1]) :
     inversionCount (L.set i L[i + 1] |>.set (i + 1) L[i]) % 2 = (inversionCount L + 1) % 2 := by
-  sorry
+  induction L generalizing i with
+  | nil => simp at hi
+  | cons x xs ih =>
+    cases i with
+    | zero =>
+      cases xs with
+      | nil => simp at hi
+      | cons y zs =>
+        simp only [List.getElem_cons_zero, List.getElem_cons_succ, List.set]
+        exact inversionCount_swap_zero x y zs hne
+    | succ k =>
+      have hi' : k + 1 < xs.length := by simp [List.length_cons] at hi; omega
+      have hk : k + 2 < (x :: xs).length := by simp [List.length_cons] at hi; omega
+      have hswap :
+          ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set (k + 1 + 1) (x :: xs)[k + 1] =
+            x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
+        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+      rw [hswap, inversionCount_def_cons,
+        headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
+        inversionCount_def_cons]
+      have h := ih k hi' (by simpa [List.getElem_cons_succ] using hne)
+      omega
 
-/-- One-element move (`erase` at `p`, `insert` at `q`) changes `I(L) mod 2` by `(p - q) mod 2`. -/
-lemma inversionCount_erase_insert_mod (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q ≤ L.length)
+lemma nodup_getElem_adjacent_ne {L : List ℕ} (hnd : L.Nodup) {p : ℕ} (hp : p + 1 < L.length) :
+    L[p] ≠ L[p + 1] := by
+  intro heq
+  have := hnd.getElem_inj_iff.mp heq
+  omega
+
+lemma length_eraseIdx_insertIdx (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q < L.length) :
+    ((L.eraseIdx p).insertIdx q (L[p]'hp)).length = L.length := by
+  have hle : q ≤ (L.eraseIdx p).length := by rw [List.length_eraseIdx, if_pos hp]; omega
+  rw [List.length_insertIdx_of_le_length hle, List.length_eraseIdx, if_pos hp]
+  omega
+
+/-- One step toward larger index. -/
+def bubbleRight (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) : List ℕ :=
+  (L.set p (L[p + 1]'hp) |>.set (p + 1) (L[p]'(Nat.lt_of_le_of_lt (Nat.le_succ p) hp)))
+
+def bubbleLeft (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (_hp1 : p - 1 < L.length) (_hp : p < L.length) : List ℕ :=
+  bubbleRight L (p - 1) (by omega)
+
+lemma swapAdjacent_eq_erase_insert (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) :
+    (L.eraseIdx p).insertIdx (p + 1) (L[p]'(Nat.lt_of_succ_lt hp)) =
+      bubbleRight L p hp := by
+  induction p generalizing L with
+  | zero =>
+    cases L with
+    | nil => simp at hp
+    | cons x xs =>
+      cases xs with
+      | nil => simp at hp
+      | cons y zs => simp [bubbleRight, List.eraseIdx, List.insertIdx, List.set]
+  | succ p ih =>
+    cases L with
+    | nil => simp at hp
+    | cons a xs =>
+      have hp' : p + 1 < xs.length := by simp [List.length_cons] at hp; omega
+      have hget : (a :: xs)[p + 1] = xs[p] := by simp [List.getElem_cons_succ]
+      simp only [List.eraseIdx, List.set, List.getElem_cons_succ, hget, bubbleRight]
+      rw [List.insertIdx_succ_cons, ih xs hp']
+      simp [bubbleRight]
+
+lemma eraseIdx_insertIdx_adjacent_perm (L : List ℕ) (p : ℕ) (hp : p < L.length) (hp' : p + 1 < L.length) :
+    ((L.eraseIdx p).insertIdx (p + 1) (L[p]'hp)) ~ L := by
+  induction p generalizing L with
+  | zero =>
+    cases L with
+    | nil => simp at hp
+    | cons x xs =>
+      cases xs with
+      | nil => simp at hp'
+      | cons y zs =>
+        simp [List.eraseIdx, List.insertIdx]
+        exact Perm.swap x y zs
+  | succ p ih =>
+    cases L with
+    | nil => simp at hp
+    | cons a xs =>
+      have hpxs : p < xs.length := by simp [List.length_cons] at hp; omega
+      have hp'xs : p + 1 < xs.length := by simp [List.length_cons] at hp'; omega
+      simp only [List.eraseIdx, List.getElem_cons_succ]
+      rw [List.insertIdx_succ_cons]
+      exact Perm.cons a (ih xs hpxs hp'xs)
+
+lemma bubbleLeft_eq (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
+    bubbleLeft L p hp0 hp1 hp = (L.eraseIdx p).insertIdx (p - 1) (L[p]'hp) := by
+  induction L generalizing p with
+  | nil => simp at hp
+  | cons a xs ih =>
+    cases p with
+    | zero => omega
+    | succ p =>
+      cases p with
+      | zero =>
+        cases xs with
+        | nil => simp at hp
+        | cons b zs => simp [bubbleLeft, bubbleRight, List.eraseIdx, List.insertIdx, List.set]
+      | succ p =>
+        have hp' : p + 1 < xs.length := by simp [List.length_cons] at hp; omega
+        have hp0' : 0 < p + 1 := by omega
+        have hp1' : p < xs.length := by simp [List.length_cons] at hp1 hp; omega
+        simp only [bubbleLeft, bubbleRight, List.eraseIdx, List.getElem_cons_succ, Nat.succ_sub_one]
+        rw [List.insertIdx_succ_cons]
+        exact congrArg _ (ih (p + 1) hp0' hp1' hp')
+
+lemma bubbleLeft_eraseIdx (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (_hp1 : p - 1 < L.length) (hp : p < L.length) :
+    (bubbleLeft L p hp0 _hp1 hp).eraseIdx (p - 1) = L.eraseIdx p := by
+  rw [bubbleLeft_eq, List.eraseIdx_insertIdx_self]
+
+lemma bubbleRight_get (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hp' : p < L.length) :
+    (bubbleRight L p hp)[p + 1]'(by simp [bubbleRight, List.length_set]; exact hp) = L[p]'hp' := by
+  simp only [bubbleRight, List.getElem_set]
+  split_ifs <;> omega
+
+lemma bubbleRight_get_left (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
+    (bubbleRight L (p - 1) (by omega))[p - 1]'(by simp [bubbleRight, List.length_set]; exact hp1) = L[p]'hp := by
+  simp only [bubbleRight, List.getElem_set, show p - 1 + 1 = p from by omega, if_neg (by omega : ¬p = p - 1)]
+  split_ifs <;> rfl
+
+lemma bubbleLeft_get (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
+    (bubbleLeft L p hp0 hp1 hp)[p - 1]'(by simp [bubbleLeft, bubbleRight, List.length_set]; exact hp1) =
+      L[p]'hp := by
+  simp only [bubbleLeft, bubbleRight_get_left L p hp0 hp1 hp]
+
+lemma bubbleRight_eraseIdx (L : List ℕ) (p : ℕ) (_hp : p < L.length) (hp2 : p + 1 < L.length) :
+    (bubbleRight L p hp2).eraseIdx (p + 1) = L.eraseIdx p := by
+  rw [← swapAdjacent_eq_erase_insert, List.eraseIdx_insertIdx_self]
+
+lemma bubbleRight_erase_insert (L : List ℕ) (p q : ℕ) (hp : p < L.length) (_hp1 : p + 1 < q)
+    (_hq : q < L.length) (hp2 : p + 1 < L.length) :
+    (L.eraseIdx p).insertIdx q (L[p]'hp) =
+      ((bubbleRight L p hp2).eraseIdx (p + 1)).insertIdx q (L[p]'hp) := by
+  rw [← bubbleRight_eraseIdx L p hp hp2]
+
+lemma bubbleLeft_erase_insert (L : List ℕ) (p q : ℕ) (hp : p < L.length) (_hqp : q < p)
+    (_hq : q < L.length) (hp0 : 0 < p) (hp1 : p - 1 < L.length) :
+    (L.eraseIdx p).insertIdx q (L[p]'hp) =
+      ((bubbleLeft L p hp0 hp1 hp).eraseIdx (p - 1)).insertIdx q (L[p]'hp) := by
+  rw [← bubbleLeft_eraseIdx L p hp0 hp1 hp]
+
+lemma inversionCount_bubbleRight_mod (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hnd : L.Nodup) :
+    inversionCount (bubbleRight L p hp) % 2 = (inversionCount L + 1) % 2 := by
+  dsimp [bubbleRight]
+  exact inversionCount_swapAdjacent L p hp (nodup_getElem_adjacent_ne hnd hp)
+
+lemma bubbleRight_perm (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) :
+    bubbleRight L p hp ~ L := by
+  rw [← swapAdjacent_eq_erase_insert]
+  exact eraseIdx_insertIdx_adjacent_perm L p (Nat.lt_of_succ_lt hp) hp
+
+lemma bubbleRight_nodup (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hnd : L.Nodup) :
+    (bubbleRight L p hp).Nodup :=
+  Nodup.perm hnd (bubbleRight_perm L p hp).symm
+
+lemma bubbleLeft_nodup (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length)
+    (hnd : L.Nodup) :
+    (bubbleLeft L p hp0 hp1 hp).Nodup :=
+  bubbleRight_nodup L (p - 1) (by omega) hnd
+
+lemma inversionCount_bubbleLeft_mod (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length)
+    (hp : p < L.length) (hnd : L.Nodup) :
+    inversionCount (bubbleLeft L p hp0 hp1 hp) % 2 = (inversionCount L + 1) % 2 :=
+  inversionCount_bubbleRight_mod L (p - 1) (by omega) hnd
+
+lemma dist_succ_of_lt {p q : ℕ} (hpq : p < q) :
+    Nat.dist p q = Nat.dist (p + 1) q + 1 := by
+  rw [Nat.dist_eq_sub_of_le (Nat.le_of_lt hpq),
+    Nat.dist_eq_sub_of_le (Nat.succ_le_of_lt hpq)]
+  omega
+
+lemma dist_succ_of_gt {p q : ℕ} (hpq : q < p) :
+    Nat.dist p q = Nat.dist (p - 1) q + 1 := by
+  have hqle : q ≤ p - 1 := by omega
+  rw [Nat.dist_eq_sub_of_le_right (Nat.le_of_lt hpq), Nat.dist_eq_sub_of_le_right hqle]
+  omega
+
+lemma inversionCount_erase_insert_mod (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q < L.length)
     (hne : p ≠ q) (hnd : L.Nodup) :
-    inversionCount (L.eraseIdx p |>.insertIdx q (L[p]'(by omega))) % 2 =
-      (inversionCount L + (p - q)) % 2 := by
-  sorry
+    inversionCount (L.eraseIdx p |>.insertIdx q (L[p]'hp)) % 2 =
+      (inversionCount L + Nat.dist p q) % 2 := by
+  induction hdist : Nat.dist p q generalizing L p q with
+  | zero =>
+    exact absurd (Nat.eq_of_dist_eq_zero hdist) hne
+  | succ d ih =>
+    rcases Nat.lt_or_gt_of_ne hne with hpq | hqp
+    · have hp1 : p + 1 < L.length := by omega
+      by_cases hadj : p + 1 = q
+      · subst q
+        have hd0 : d = 0 := by
+          have h1 : Nat.dist p (p + 1) = 1 := by
+            rw [Nat.dist_eq_sub_of_le (Nat.le_of_lt (Nat.lt_succ_self p))]
+            omega
+          rw [h1] at hdist
+          omega
+        subst d
+        have hval :
+            (L.eraseIdx p).insertIdx (p + 1) (L[p]'hp) =
+              (L.eraseIdx p).insertIdx (p + 1) (L[p]'(Nat.lt_of_succ_lt hp1)) := rfl
+        rw [hval, swapAdjacent_eq_erase_insert L p hp1]
+        exact inversionCount_bubbleRight_mod L p hp1 hnd
+      · have hp2 : p + 1 < q := by omega
+        have hd : Nat.dist (p + 1) q = d := by
+          rw [dist_succ_of_lt hpq] at hdist
+          exact Nat.succ.inj hdist
+        have hne' : p + 1 ≠ q := by omega
+        have hnd' := bubbleRight_nodup L p hp1 hnd
+        rw [bubbleRight_erase_insert L p q hp hp2 hq hp1]
+        have hih := ih (bubbleRight L p hp1) (p + 1) q
+          (by simp [bubbleRight, List.length_set]; exact hp1)
+          (by simp [bubbleRight, List.length_set]; omega)
+          hne' hnd' hd
+        have hget := bubbleRight_get L p hp1 hp
+        apply Eq.trans ((congrArg (fun L' => inversionCount L' % 2) (by
+          apply congrArg (fun x => ((bubbleRight L p hp1).eraseIdx (p + 1)).insertIdx q x)
+          exact hget.symm)).trans hih)
+        have hbr := inversionCount_bubbleRight_mod L p hp1 hnd
+        omega
+    · have hp0 : 0 < p := Nat.lt_of_le_of_lt (Nat.zero_le q) hqp
+      have hp1 : p - 1 < L.length := by omega
+      by_cases hadj : p - 1 = q
+      · subst q
+        have hd0 : d = 0 := by
+          have h1 : Nat.dist p (p - 1) = 1 := by
+            rw [Nat.dist_eq_sub_of_le_right (by omega)]
+            omega
+          rw [h1] at hdist
+          omega
+        subst d
+        rw [← bubbleLeft_eq L p hp0 hp1 hp]
+        exact inversionCount_bubbleLeft_mod L p hp0 hp1 hp hnd
+      · have hd : Nat.dist (p - 1) q = d := by
+          rw [dist_succ_of_gt hqp] at hdist
+          exact Nat.succ.inj hdist
+        have hne' : p - 1 ≠ q := by omega
+        have hnd' := bubbleLeft_nodup L p hp0 hp1 hp hnd
+        rw [bubbleLeft_erase_insert L p q hp hqp hq hp0 hp1]
+        have hih := ih (bubbleLeft L p hp0 hp1 hp) (p - 1) q
+          (by simp [bubbleLeft, bubbleRight, List.length_set]; exact hp1)
+          (by simp [bubbleLeft, bubbleRight, List.length_set]; omega)
+          hne' hnd' hd
+        have hget := bubbleLeft_get L p hp0 hp1 hp
+        apply Eq.trans ((congrArg (fun L' => inversionCount L' % 2) (by
+          apply congrArg (fun x => ((bubbleLeft L p hp0 hp1 hp).eraseIdx (p - 1)).insertIdx q x)
+          exact hget.symm)).trans hih)
+        have hbl := inversionCount_bubbleLeft_mod L p hp0 hp1 hp hnd
+        omega
 
-/-- Corollary for an odd index shift (vertical slide on 4×4 has `|p - q| ≡ 1`). -/
-lemma inversionCount_erase_insert_odd (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q ≤ L.length)
-    (hne : p ≠ q) (hnd : L.Nodup) (hodd : (p - q) % 2 = 1) :
-    inversionCount (L.eraseIdx p |>.insertIdx q (L[p]'(by omega))) % 2 = (inversionCount L + 1) % 2 := by
-  rw [inversionCount_erase_insert_mod L p q hp hq hne hnd, Nat.add_mod, hodd, one_mod]
+lemma inversionCount_erase_insert_odd (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q < L.length)
+    (hne : p ≠ q) (hnd : L.Nodup) (hodd : Nat.dist p q % 2 = 1) :
+    inversionCount (L.eraseIdx p |>.insertIdx q (L[p]'hp)) % 2 = (inversionCount L + 1) % 2 := by
+  rw [inversionCount_erase_insert_mod L p q hp hq hne hnd, Nat.add_mod, hodd]
+  omega
 
 end Inversion
 
+lemma cellsRowMajorExcept_ne (b c : Cell) (hc : c ∈ cellsRowMajorExcept b) : c ≠ b := by
+  intro rfl
+  simp [cellsRowMajorExcept, List.mem_filter, List.mem_finRange] at hc
+
+lemma cellsRowMajorExcept_nodup (b : Cell) : (cellsRowMajorExcept b).Nodup := by
+  fin_cases b <;> simp [cellsRowMajorExcept, List.finRange, List.filter, List.Nodup]
+
+lemma cfg_cells_injective_of_ne_blank (cfg : Config) {i j : Cell}
+    (hi : i ≠ blank cfg) (hj : j ≠ blank cfg) (hij : cfg.cells i = cfg.cells j) : i = j := by
+  by_contra hne
+  rcases cfg.valid with ⟨_, huniq0, htiles⟩
+  by_cases h0i : cfg.cells i = 0
+  · exact hi (ExistsUnique.unique huniq0 h0i (blank_zero cfg))
+  · have hk : 1 ≤ cfg.cells i ∧ cfg.cells i ≤ 15 := by
+      constructor <;> [omega; exact cfg.valid.1 i]
+    rcases htiles (cfg.cells i) hk with ⟨wi, _, huniq⟩
+    have hji : j = i := (huniq j hij.symm).trans (huniq i rfl).symm
+    exact hne hji.symm
+
+lemma rankExcept_lt {skip c : Cell} (hc : c ≠ skip) :
+    rankExcept skip c < (cellsRowMajorExcept skip).length := by
+  rw [cellsRowMajorExcept_length]
+  fin_cases skip <;> fin_cases c <;>
+    simp [rankExcept, cellsRowMajorExcept, List.finRange, List.filter,
+      List.findIdx, List.findIdx.go] at hc ⊢ <;>
+    first | contradiction | decide
+
+lemma rankExcept_getElem {skip c : Cell} (hc : c ≠ skip) :
+    (cellsRowMajorExcept skip)[rankExcept skip c]'(rankExcept_lt hc) = c := by
+  fin_cases skip <;> fin_cases c <;>
+    simp [rankExcept, cellsRowMajorExcept, List.finRange, List.filter,
+      List.findIdx, List.findIdx.go] at hc ⊢ <;>
+    first | contradiction | rfl
+
+lemma tileList_get_rankExcept (cfg : Config) (c : Cell) (hc : c ≠ blank cfg) :
+    (tileList cfg)[rankExcept (blank cfg) c]'(by
+      unfold tileList; rw [List.length_map]; exact rankExcept_lt hc) = cfg.cells c := by
+  simp [tileList, List.getElem_map, rankExcept_getElem hc]
+
 lemma tileList_nodup (cfg : Config) : (tileList cfg).Nodup := by
-  sorry
+  rw [tileList]
+  refine List.Nodup.map_on ?_ (cellsRowMajorExcept_nodup _)
+  intro a ha b hb hab
+  exact cfg_cells_injective_of_ne_blank cfg
+    (cellsRowMajorExcept_ne _ _ ha) (cellsRowMajorExcept_ne _ _ hb) hab
 
 lemma invStat_slide_vertical_mod (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
     (hc : sameCol (blank cfg) n) :
     invStat (slide cfg n h) % 2 = (invStat cfg + 1) % 2 := by
   unfold invStat
   rw [tileList_slide_vertical cfg n h hc]
-  set L := tileList cfg with hL
-  set b := blank cfg with hb
-  set p := rankExcept b n with hp
-  set q := rankExcept n b with hq
-  have hne : p ≠ q := by
+  simp only
+  have hnd := tileList_nodup cfg
+  have hne : rankExcept (blank cfg) n ≠ rankExcept n (blank cfg) := by
     intro heq
-    have := rankExcept_vertical_mod b n h hc
+    have := rankExcept_vertical_mod (blank cfg) n h hc
     rw [heq] at this
     omega
-  have hodd : (p - q) % 2 = 1 := by
-    have := rankExcept_vertical_mod b n h hc
-    omega
-  have hnd : L.Nodup := tileList_nodup cfg
-  have hne' : b ≠ n := adjacent.ne h
-  have hidx := rankExcept_vertical_lt b n h hc
-  have hp' : p < L.length := by
-    rw [hL, hb, hp, tileList, cellsRowMajorExcept_length]
-    exact hidx.1
-  have hq' : q ≤ L.length := by
-    rw [hL, hb, hq, tileList, cellsRowMajorExcept_length]
-    exact Nat.le_of_lt hidx.2
-  simpa [hL] using
-    Inversion.inversionCount_erase_insert_odd L p q hp' hq' hne hnd hodd
+  have hodd : Nat.dist (rankExcept (blank cfg) n) (rankExcept n (blank cfg)) % 2 = 1 := by
+    have hsum := rankExcept_vertical_mod (blank cfg) n h hc
+    set p := rankExcept (blank cfg) n
+    set q := rankExcept n (blank cfg)
+    rcases Nat.le_total p q with hle | hle
+    · rw [Nat.dist_eq_sub_of_le hle]
+      omega
+    · rw [Nat.dist_eq_sub_of_le_right hle]
+      omega
+  have hlt := rankExcept_vertical_lt (blank cfg) n h hc
+  have hp : rankExcept (blank cfg) n < (tileList cfg).length := by
+    simp [tileList, cellsRowMajorExcept_length]; exact hlt.1
+  have hq : rankExcept n (blank cfg) < (tileList cfg).length := by
+    simp [tileList, cellsRowMajorExcept_length]; exact hlt.2
+  have hget :
+      (tileList cfg)[rankExcept (blank cfg) n]'hp = cfg.cells n :=
+    tileList_get_rankExcept cfg n (adjacent.ne h.symm)
+  convert Inversion.inversionCount_erase_insert_odd (tileList cfg)
+    (rankExcept (blank cfg) n) (rankExcept n (blank cfg)) hp hq hne hnd hodd using 1
+  rw [hget]
 
 end NPuzzle.FourFour
