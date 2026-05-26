@@ -81,8 +81,25 @@ This statement is the main mathematical result we intend to prove formally in Le
 ## Lean layout
 
 - **`lakefile.toml`** — Lake project; depends on [Mathlib](https://github.com/leanprover-community/mathlib4).
-- **`NPuzzle.lean`** — root of the `NPuzzle` library (import further modules here as they appear).
-- **`NPuzzle/Basic.lean`** — placeholder / future shared lemmas.
-- **`NPuzzle/FourFour.lean`** — 4×4 definitions (`Config`, `goal`, `parityClass`, etc.) and the target theorem (`solvability_four_four`).
+- **`NPuzzle.lean`** — root of the `NPuzzle` library.
+- **`NPuzzle/FourFour/`** — 4×4 formalization (see [PLAN.md](PLAN.md) for the proof checklist).
+- **`NPuzzle/FourFour/Sufficiency.lean`** — target theorem `solvability_four_four`.
 
 Build the library: `lake build`.
+
+### 4×4 status (`NPuzzle.FourFour`)
+
+For even width **M = 4**, the README criterion is  
+`(I(L) + r_B) ≡ 1 (mod 2)` ⟺ reachability of the standard goal.
+
+| Part | Status |
+|------|--------|
+| Definitions (`Config`, `tileList`, `invStat`, `parityClass`, `Reachable`) | Done |
+| Necessity: reachable ⇒ correct parity | Done |
+| Blank geometry (blank can be moved anywhere) | Done |
+| `tileList` + blank position determine the board | Done |
+| `invStat = 0` with blank bottom-right ⇒ already `goal` | Done |
+| Corner 3-cycle slide macro from `goal` | Done |
+| **Sufficiency:** correct parity ⇒ reachable `goal` | **In progress** — one proof obligation in `TileConnectivity.lean` (`tiles_to_goal_at_bottomRight`) |
+
+The statement `solvability_four_four` is fully written in Lean; the only gap on the proof path is **tile rearrangement with the blank fixed at the bottom-right** (combinatorial connectivity of even permutations on 15 tiles). Details: [PLAN.md](PLAN.md).

@@ -343,6 +343,37 @@ lemma inversionCount_erase_insert_odd (L : List ℕ) (p q : ℕ) (hp : p < L.len
   rw [inversionCount_erase_insert_mod L p q hp hq hne hnd, Nat.add_mod, hodd]
   omega
 
+lemma headInv_eq_zero {x : ℕ} {xs : List ℕ} : headInv x xs = 0 ↔ ∀ y ∈ xs, x ≤ y := by
+  induction xs with
+  | nil => simp [headInv]
+  | cons a ys ih =>
+    rw [headInv_cons]
+    constructor
+    · intro h z hz
+      rw [mem_cons] at hz
+      rcases hz with rfl | hz
+      · by_cases hxy : x > z
+        · simp [hxy] at h
+        · simpa using Nat.le_of_not_gt hxy
+      · by_cases hxy : x > a
+        · simp [hxy] at h
+        · simp [hxy] at h
+          exact ih.mp h z hz
+    · intro hall
+      have htail : headInv x ys = 0 :=
+        ih.mpr fun z hz => hall z (mem_cons_of_mem _ hz)
+      by_cases hxy : x > a
+      · have := hall _ mem_cons_self
+        omega
+      · simp [hxy, htail]
+
+lemma inversionCount_eq_zero_iff_sorted (L : List ℕ) :
+    inversionCount L = 0 ↔ List.Pairwise (· ≤ ·) L := by
+  induction L with
+  | nil => simp [inversionCount]
+  | cons x xs ih =>
+    simp [inversionCount_def_cons, headInv_eq_zero, ih, List.pairwise_cons, Nat.add_eq_zero_iff]
+
 end Inversion
 
 lemma cellsRowMajorExcept_ne (b c : Cell) (hc : c ∈ cellsRowMajorExcept b) : c ≠ b := by

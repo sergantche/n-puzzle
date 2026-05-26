@@ -159,6 +159,12 @@ lemma swapAt_of_ne {cells : Cell → ℕ} {a b c : Cell} (hca : c ≠ a) (hcb : 
   dsimp [swapAt]
   simp [hca, hcb]
 
+lemma swapAt_swapAt {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b) :
+    swapAt (swapAt cells a b) a b = cells := by
+  funext c
+  dsimp [swapAt]
+  grind
+
 lemma tile_ne_zero_of_ne_blank {cells : Cell → ℕ} (hv : IsValid cells) {a b : Cell}
     (ha0 : cells a = 0) (hne : a ≠ b) : cells b ≠ 0 := by
   intro h0

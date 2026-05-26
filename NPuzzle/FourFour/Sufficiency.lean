@@ -4,7 +4,7 @@ import NPuzzle.FourFour.TileCycles
 
 namespace NPuzzle.FourFour
 
-/-- Solvability criterion for 4×4 (even width): closed modulo `tiles_to_goal_at_bottomRight`. -/
+/-- Solvability criterion for 4×4 (even width); sufficiency uses `tiles_to_goal_at_bottomRight`. -/
 theorem solvability_four_four (cfg : Config) :
     Reachable cfg goal ↔ parityClass cfg = parityClass goal := by
   constructor
