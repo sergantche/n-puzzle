@@ -6,3 +6,6 @@
 
 # Cursor — local agent rules (not shared via git)
 /.cursor/
+
+# lean4-skills — clone locally (see .cursor/rules/lean4.mdc)
+/lean4-skills/

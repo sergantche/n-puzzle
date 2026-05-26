@@ -88,6 +88,14 @@ structure Config where
   cells : Cell → ℕ
   valid : IsValid cells
 
+@[ext]
+theorem Config.ext {cfg cfg' : Config} (h : ∀ c, cfg.cells c = cfg'.cells c) : cfg = cfg' := by
+  rcases cfg with ⟨cells, valid⟩
+  rcases cfg' with ⟨cells', valid'⟩
+  have hcells : cells = cells' := funext h
+  subst hcells
+  rfl
+
 /-! ### Goal board (README).
 
 Tiles `1…15` along cells `0…14`, blank at bottom-right cell `15`.
