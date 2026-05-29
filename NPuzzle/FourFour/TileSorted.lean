@@ -8,7 +8,7 @@ namespace NPuzzle.FourFour
 open List
 
 /-- Every value in `1…15` appears in a length-`15` nodup list bounded in `1…15`. -/
-private lemma mem_Icc_one_fifteen_of_nodup_len (L : List ℕ) (hlen : L.length = 15)
+lemma mem_Icc_one_fifteen_of_nodup_len (L : List ℕ) (hlen : L.length = 15)
     (hnd : L.Nodup) (hmem : ∀ x ∈ L, 1 ≤ x ∧ x ≤ 15) :
     ∀ a, 1 ≤ a → a ≤ 15 → a ∈ L := by
   intro a ha hb

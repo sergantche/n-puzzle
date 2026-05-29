@@ -55,6 +55,12 @@ lemma inversionCount_swap_zero (x y : ℕ) (xs : List ℕ) (hne : x ≠ y) :
   · simp [if_pos hgt, if_neg (Nat.not_lt.mpr (Nat.le_of_lt hgt))]; omega
   · simp [if_neg (Nat.not_lt.mpr (Nat.le_of_lt hgt)), if_pos hgt]; omega
 
+lemma inversionCount_swap_gt (x y : ℕ) (xs : List ℕ) (hgt : x > y) :
+    inversionCount (y :: x :: xs) + 1 = inversionCount (x :: y :: xs) := by
+  rw [inversionCount_two, inversionCount_two]
+  simp only [if_pos hgt, if_neg (Nat.not_lt.mpr (Nat.le_of_lt hgt))]
+  ring
+
 lemma set_swap_succ (a : ℕ) (xs : List ℕ) (k : ℕ) (b c : ℕ) (hk : k + 2 < (a :: xs).length) :
     ((a :: xs).set (k + 1) b).set (k + 2) c = a :: ((xs.set k b).set (k + 1) c) := by
   induction k generalizing xs with
@@ -85,6 +91,33 @@ lemma headInv_swap (a : ℕ) (xs : List ℕ) (k : ℕ) (hk : k + 1 < xs.length)
       have hk' : k + 1 < xs.length := by simp [List.length_cons] at hk; omega
       have hne' : xs[k] ≠ xs[k + 1] := by simpa [List.getElem_cons_succ] using _hne
       simp only [List.getElem_cons_succ, List.set, headInv_cons, ih a k hk' hne']
+
+lemma inversionCount_swapAdjacent_succ (L : List ℕ) (i : ℕ) (hi : i + 1 < L.length)
+    (hne : L[i] ≠ L[i + 1]) (hgt : L[i] > L[i + 1]) :
+    inversionCount (L.set i L[i + 1] |>.set (i + 1) L[i]) + 1 = inversionCount L := by
+  induction L generalizing i with
+  | nil => simp at hi
+  | cons x xs ih =>
+    cases i with
+    | zero =>
+      cases xs with
+      | nil => simp at hi
+      | cons y zs =>
+        simp only [List.getElem_cons_zero, List.getElem_cons_succ, List.set]
+        exact inversionCount_swap_gt x y zs hgt
+    | succ k =>
+      have hi' : k + 1 < xs.length := by simp [List.length_cons] at hi; omega
+      have hk : k + 2 < (x :: xs).length := by simp [List.length_cons] at hi; omega
+      have hswap :
+          ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set (k + 1 + 1) (x :: xs)[k + 1] =
+            x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
+        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+      rw [hswap, inversionCount_def_cons,
+        headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
+        inversionCount_def_cons]
+      have hgt' : xs[k] > xs[k + 1] := by simpa [List.getElem_cons_succ] using hgt
+      have h := ih k hi' (by simpa [List.getElem_cons_succ] using hne) hgt'
+      omega
 
 lemma inversionCount_swapAdjacent (L : List ℕ) (i : ℕ) (hi : i + 1 < L.length)
     (hne : L[i] ≠ L[i + 1]) :
@@ -151,6 +184,13 @@ lemma swapAdjacent_eq_erase_insert (L : List ℕ) (p : ℕ) (hp : p + 1 < L.leng
       simp only [List.eraseIdx, List.set, List.getElem_cons_succ, hget, bubbleRight]
       rw [List.insertIdx_succ_cons, ih xs hp']
       simp [bubbleRight]
+
+lemma inversionCount_bubbleRight_succ (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length)
+    (hgt : L[p]'(Nat.lt_of_succ_lt hp) > L[p + 1]'hp) :
+    inversionCount (bubbleRight L p hp) + 1 = inversionCount L := by
+  dsimp [bubbleRight]
+  have hne : L[p]'(Nat.lt_of_succ_lt hp) ≠ L[p + 1]'hp := by omega
+  exact inversionCount_swapAdjacent_succ L p hp hne hgt
 
 lemma eraseIdx_insertIdx_adjacent_perm (L : List ℕ) (p : ℕ) (hp : p < L.length) (hp' : p + 1 < L.length) :
     ((L.eraseIdx p).insertIdx (p + 1) (L[p]'hp)) ~ L := by
@@ -240,6 +280,11 @@ lemma bubbleRight_perm (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) :
   rw [← swapAdjacent_eq_erase_insert]
   exact eraseIdx_insertIdx_adjacent_perm L p (Nat.lt_of_succ_lt hp) hp
 
+lemma bubbleLeft_perm (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
+    bubbleLeft L p hp0 hp1 hp ~ L := by
+  unfold bubbleLeft
+  simpa using bubbleRight_perm L (p - 1) (by omega)
+
 lemma bubbleRight_nodup (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hnd : L.Nodup) :
     (bubbleRight L p hp).Nodup :=
   Nodup.perm hnd (bubbleRight_perm L p hp).symm
@@ -265,6 +310,53 @@ lemma dist_succ_of_gt {p q : ℕ} (hpq : q < p) :
   have hqle : q ≤ p - 1 := by omega
   rw [Nat.dist_eq_sub_of_le_right (Nat.le_of_lt hpq), Nat.dist_eq_sub_of_le_right hqle]
   omega
+
+lemma list_perm_erase_insert (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q < L.length) (hne : p ≠ q) :
+    (L.eraseIdx p |>.insertIdx q (L[p]'hp)).Perm L := by
+  induction hdist : Nat.dist p q generalizing L p q with
+  | zero => exact absurd (Nat.eq_of_dist_eq_zero hdist) hne
+  | succ d ih =>
+    rcases Nat.lt_or_gt_of_ne hne with hpq | hqp
+    · have hp1 : p + 1 < L.length := by omega
+      by_cases hadj : p + 1 = q
+      · subst q
+        rw [swapAdjacent_eq_erase_insert L p hp1]
+        exact bubbleRight_perm L p hp1
+      · have hp2 : p + 1 < q := by omega
+        have hd : Nat.dist (p + 1) q = d := by
+          rw [dist_succ_of_lt hpq] at hdist
+          exact Nat.succ.inj hdist
+        have hne' : p + 1 ≠ q := by omega
+        have hget := bubbleRight_get L p hp1 hp
+        have hperm := ih (bubbleRight L p hp1) (p + 1) q
+          (by simp [bubbleRight, List.length_set]; exact hp1)
+          (by simp [bubbleRight, List.length_set]; omega) hne' hd
+        rw [bubbleRight_erase_insert L p q hp hp2 hq hp1]
+        have hbridge : ((bubbleRight L p hp1).eraseIdx (p + 1)).insertIdx q L[p] ~
+            bubbleRight L p hp1 := by
+          convert hperm using 2
+          exact hget.symm
+        exact Perm.trans hbridge (bubbleRight_perm L p hp1)
+    · have hp0 : 0 < p := Nat.lt_of_le_of_lt (Nat.zero_le q) hqp
+      have hp1 : p - 1 < L.length := by omega
+      by_cases hadj : p - 1 = q
+      · subst q
+        rw [← bubbleLeft_eq L p hp0 hp1 hp]
+        exact bubbleLeft_perm L p hp0 hp1 hp
+      · have hd : Nat.dist (p - 1) q = d := by
+          rw [dist_succ_of_gt hqp] at hdist
+          exact Nat.succ.inj hdist
+        have hne' : p - 1 ≠ q := by omega
+        have hget := bubbleLeft_get L p hp0 hp1 hp
+        have hperm := ih (bubbleLeft L p hp0 hp1 hp) (p - 1) q
+          (by simp [bubbleLeft, bubbleRight, List.length_set]; exact hp1)
+          (by simp [bubbleLeft, bubbleRight, List.length_set]; omega) hne' hd
+        rw [bubbleLeft_erase_insert L p q hp hqp hq hp0 hp1]
+        have hbridge : ((bubbleLeft L p hp0 hp1 hp).eraseIdx (p - 1)).insertIdx q L[p] ~
+            bubbleLeft L p hp0 hp1 hp := by
+          convert hperm using 2
+          exact hget.symm
+        exact Perm.trans hbridge (bubbleLeft_perm L p hp0 hp1 hp)
 
 lemma inversionCount_erase_insert_mod (L : List ℕ) (p q : ℕ) (hp : p < L.length) (hq : q < L.length)
     (hne : p ≠ q) (hnd : L.Nodup) :
@@ -409,6 +501,10 @@ lemma rankExcept_getElem {skip c : Cell} (hc : c ≠ skip) :
     simp [rankExcept, cellsRowMajorExcept, List.finRange, List.filter,
       List.findIdx, List.findIdx.go] at hc ⊢ <;>
     first | contradiction | rfl
+
+lemma rankExcept_injective {skip : Cell} {c c' : Cell} (hc : c ≠ skip) (hc' : c' ≠ skip)
+    (h : rankExcept skip c = rankExcept skip c') : c = c' := by
+  exact (rankExcept_getElem hc).symm.trans (by simpa [h] using rankExcept_getElem hc')
 
 lemma tileList_get_rankExcept (cfg : Config) (c : Cell) (hc : c ≠ blank cfg) :
     (tileList cfg)[rankExcept (blank cfg) c]'(by

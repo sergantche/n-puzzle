@@ -8,7 +8,9 @@ import NPuzzle.FourFour.BlankGrid
 import NPuzzle.FourFour.BlankReach
 import NPuzzle.FourFour.TileGlue
 import NPuzzle.FourFour.TileSorted
+import NPuzzle.FourFour.TileRank
 import NPuzzle.FourFour.TileMacros
+import NPuzzle.FourFour.TilePerm
 import NPuzzle.FourFour.TileInverse
 import NPuzzle.FourFour.TileConnectivity
 import NPuzzle.FourFour.TileCycles

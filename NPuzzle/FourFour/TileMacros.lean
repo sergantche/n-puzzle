@@ -1,5 +1,6 @@
 import NPuzzle.FourFour
 import NPuzzle.FourFour.BlankReach
+import NPuzzle.FourFour.TileRank
 
 set_option maxHeartbeats 800000
 
@@ -56,6 +57,14 @@ noncomputable def cornerRotCfg : Config :=
 
 lemma blank_cornerRot : blank cornerRotCfg = bottomRight := by
   simp [cornerRotCfg, blank_slide]
+
+/-- Explicit cell labels after the corner macro (reference for `TilePerm`). -/
+def cornerRotCells (i : Cell) : ℕ :=
+  if i = cell10 then 12
+  else if i = cell11 then 15
+  else if i = cell14 then 11
+  else if i = bottomRight then 0
+  else goalCells i
 
 /-- Corner macro is reachable from `goal` in four slides. -/
 lemma reachable_cornerRot_from_goal : Reachable goal cornerRotCfg := by

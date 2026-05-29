@@ -44,7 +44,7 @@ Matches the README for even `M = 4`:
 | **9b.2** | `tileList` + blank determine `cfg` | `TileGlue.lean` | ✅ |
 | **9b.2a** | `invStat = 0` ⇒ sorted `tileList` = goal list | `TileSorted.lean`, `Inversion.lean` | ✅ |
 | **9b.2b** | `invStat = 0` + blank at BR ⇒ `cfg = goal` | `TileGlue.lean` (`cfg_eq_goal_of_invStat_zero`) | ✅ |
-| **9b.3** | Tile connectivity at `bottomRight` (even `invStat`) | `TileConnectivity.lean` | ❌ **2 sorry** |
+| **9b.3** | Tile connectivity at `bottomRight` (even `invStat`) | `TileReach.lean`, `TilePerm.lean`, `TileConnectivity.lean` | ❌ **2 sorry** |
 | **9b.gen** | Corner 3-cycle slide macro from `goal` | `TileMacros.lean` (`reachable_cornerRot_from_goal`) | ✅ |
 | **9b.inv** | Slide inverse / `Reachable` symmetry | `TileInverse.lean` (new) | ✅ |
 | **9c** | Assemble `parity_imp_reachable` | `TileCycles.lean` | ✅ (modulo 9b.3) |
@@ -68,9 +68,10 @@ To finish:
 ## Sorry check
 
 ```text
-NPuzzle/FourFour/TileConnectivity.lean  — 2 sorry
-  reachable_goal_to_cfg_bottomRight
-  tiles_to_goal_at_bottomRight   ← blocks solvability_four_four
+NPuzzle/FourFour/TileReach.lean  — 1 sorry
+  permRealizable_of_mem_alternating    (realize every σ ∈ A₁₅ from goal)
+invStat_even_iff_perm_alternating — in TileSign.lean (build must be green).
+reachable_goal_to_cfg_bottomRight — in TileReach.lean (modulo permRealizable).
 ```
 
 Run: `rg 'sorry' NPuzzle/`
@@ -85,9 +86,11 @@ Run: `rg 'sorry' NPuzzle/`
 | `Invariant.lean`, `Inversion.lean`, `TileListVertical.lean` | Steps 2–5 |
 | `BlankGrid.lean`, `BlankReach.lean` | 9a |
 | `TileGlue.lean`, `TileSorted.lean` | 9b.2, glue |
-| `TileMacros.lean` | Generators |
+| `TileMacros.lean` | Generators (`cornerRotCells` reference) |
+| `TileRank.lean` | `rankExcept` at `bottomRight` |
 | `TileInverse.lean` | `slide_inv`, `reachable_symm` |
-| `TileConnectivity.lean` | 9b.3 (open) |
+| `TilePerm.lean` | 9b.3 Perm bridge (scaffold) |
+| `TileConnectivity.lean` | 9b.3 assembly (1 sorry) |
 | `TileCycles.lean` | 9c |
 | `Sufficiency.lean` | `solvability_four_four` |
 
