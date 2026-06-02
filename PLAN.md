@@ -44,7 +44,7 @@ Matches the README for even `M = 4`:
 | **9b.2** | `tileList` + blank determine `cfg` | `TileGlue.lean` | ✅ |
 | **9b.2a** | `invStat = 0` ⇒ sorted `tileList` = goal list | `TileSorted.lean`, `Inversion.lean` | ✅ |
 | **9b.2b** | `invStat = 0` + blank at BR ⇒ `cfg = goal` | `TileGlue.lean` (`cfg_eq_goal_of_invStat_zero`) | ✅ |
-| **9b.3** | Tile connectivity at `bottomRight` (even `invStat`) | `TileReach.lean`, `TilePerm.lean`, `TileConnectivity.lean` | ❌ **2 sorry** |
+| **9b.3** | Tile connectivity at `bottomRight` (even `invStat`) | `TileReach.lean`, `TilePerm.lean`, `TileSign.lean`, `TileConnectivity.lean` | ❌ **1 sorry** + `TileSign` build |
 | **9b.gen** | Corner 3-cycle slide macro from `goal` | `TileMacros.lean` (`reachable_cornerRot_from_goal`) | ✅ |
 | **9b.inv** | Slide inverse / `Reachable` symmetry | `TileInverse.lean` (new) | ✅ |
 | **9c** | Assemble `parity_imp_reachable` | `TileCycles.lean` | ✅ (modulo 9b.3) |
@@ -55,13 +55,15 @@ With blank fixed at `bottomRight`, legal moves permute `tileList` (horizontal: i
 
 To finish:
 
-1. **`tiles_to_goal_at_bottomRight`** (critical): `parityClass cfg = 1` ⇒ `Reachable cfg goal`.  
-   Equivalently: even `invStat` + blank at BR ⇒ tile list is reachable to `tileList goal` while keeping the blank at BR.
+1. **`permRealizable_of_mem_alternating`** (`TileReach.lean`, **1 sorry**): every `σ ∈ alternatingGroup (Fin 15)` is realized by some `cfg` with blank at BR and `Reachable goal cfg`.
 
-2. **`reachable_goal_to_cfg_bottomRight`** (optional on critical path if using `Reachable.symm`): from `goal`, reach every even-`invStat` configuration at BR.  
-   Typical generators: corner 3-cycle (`TileMacros`) + a long cycle; Mathlib: `Equiv.Perm.closure_three_cycles_eq_alternating` (needs a bridge `Reachable` ↔ `Perm` on labels).
+2. **`TileSign.lean`**: `invStat_even_iff_perm_alternating` and `sign (tileListPerm) = negOnePow (inversionCount)` (file must compile).
 
-**Base cases already in `TileConnectivity.lean`:** `invStat = 0`; symmetry via `TileInverse`.
+3. **`reachable_goal_to_cfg_bottomRight`** (`TileReach.lean`): proved modulo (1)–(2); uses `permOfCfg` + `configOfTileList`.
+
+**Already in `TileConnectivity.lean`:** `tiles_to_goal_at_bottomRight` (via `reachable_symm` and `reachable_goal_to_cfg_bottomRight`); base case `invStat = 0`; symmetry via `TileInverse`.
+
+Typical generators for (1): corner 3-cycle (`TileMacros`) + Mathlib `closure_three_cycles_eq_alternating`, or induction on `inversionCount` with `bubbleRight` tied to vertical slides.
 
 ---
 
@@ -89,8 +91,10 @@ Run: `rg 'sorry' NPuzzle/`
 | `TileMacros.lean` | Generators (`cornerRotCells` reference) |
 | `TileRank.lean` | `rankExcept` at `bottomRight` |
 | `TileInverse.lean` | `slide_inv`, `reachable_symm` |
-| `TilePerm.lean` | 9b.3 Perm bridge (scaffold) |
-| `TileConnectivity.lean` | 9b.3 assembly (1 sorry) |
+| `TilePerm.lean` | 9b.3 perm bridge (`tileListPerm`, `permOfCfg`, `configOfTileList`) |
+| `TileSign.lean` | sign / parity ↔ `alternatingGroup` |
+| `TileReach.lean` | `PermRealizable`, `reachable_goal_to_cfg_bottomRight` (**1 sorry**) |
+| `TileConnectivity.lean` | 9b.3 assembly (`tiles_to_goal_at_bottomRight`) |
 | `TileCycles.lean` | 9c |
 | `Sufficiency.lean` | `solvability_four_four` |
 
