@@ -1,5 +1,6 @@
 import Mathlib.Data.List.InsertIdx
 import Mathlib.Data.List.Perm.Basic
+import Mathlib.Data.List.Sort
 import Mathlib.Data.Nat.Dist
 import NPuzzle.FourFour
 import NPuzzle.FourFour.TileListVertical
@@ -244,6 +245,11 @@ lemma bubbleRight_get (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hp' : p 
   simp only [bubbleRight, List.getElem_set]
   split_ifs <;> omega
 
+lemma bubbleRight_get_at (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hp' : p < L.length) :
+    (bubbleRight L p hp)[p]'(by simp [bubbleRight, List.length_set]; exact hp') = L[p + 1]'hp := by
+  simp only [bubbleRight, List.getElem_set, if_pos rfl, if_neg (by omega : ¬p + 1 = p)]
+  split_ifs <;> rfl
+
 lemma bubbleRight_get_left (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
     (bubbleRight L (p - 1) (by omega))[p - 1]'(by simp [bubbleRight, List.length_set]; exact hp1) = L[p]'hp := by
   simp only [bubbleRight, List.getElem_set, show p - 1 + 1 = p from by omega, if_neg (by omega : ¬p = p - 1)]
@@ -459,12 +465,62 @@ lemma headInv_eq_zero {x : ℕ} {xs : List ℕ} : headInv x xs = 0 ↔ ∀ y ∈
         omega
       · simp [hxy, htail]
 
+lemma headInv_pos_iff {x : ℕ} {xs : List ℕ} :
+    0 < headInv x xs ↔ ∃ y ∈ xs, x > y := by
+  constructor
+  · intro hpos
+    by_contra hall
+    push_neg at hall
+    have hzero : headInv x xs = 0 := (headInv_eq_zero).2 fun y hy => hall y hy
+    omega
+  · rintro ⟨y, hy, hxy⟩
+    rw [Nat.pos_iff_ne_zero, ne_eq, headInv_eq_zero]
+    intro hall
+    exact Nat.not_le.mpr hxy (hall y hy)
+
+private lemma headInv_pos_gt_head_of_sorted {x : ℕ} {xs : List ℕ} (hx : 0 < headInv x xs)
+    (hsorted : List.Pairwise (· ≤ ·) xs) (hne : xs ≠ []) :
+    ∃ hx0 : 0 < xs.length, x > xs[0]'hx0 := by
+  have hx0 : 0 < xs.length := List.length_pos_iff_ne_nil.mpr hne
+  refine ⟨hx0, ?_⟩
+  by_contra hxle
+  push_neg at hxle
+  obtain ⟨y, hy, hxy⟩ := headInv_pos_iff.mp hx
+  obtain ⟨j, hj, heq⟩ := List.mem_iff_getElem.mp hy
+  have hmono := (List.sortedLE_iff_getElem_le_getElem_of_le).mp (Pairwise.sortedLE hsorted)
+  have h0lej : xs[0]'hx0 ≤ xs[j]'hj := hmono (Nat.zero_le j)
+  have hley : x ≤ y := Nat.le_trans hxle (Nat.le_trans h0lej (Nat.le_of_eq heq))
+  exact absurd hley (Nat.not_le.mpr hxy)
+
 lemma inversionCount_eq_zero_iff_sorted (L : List ℕ) :
     inversionCount L = 0 ↔ List.Pairwise (· ≤ ·) L := by
   induction L with
   | nil => simp [inversionCount]
   | cons x xs ih =>
     simp [inversionCount_def_cons, headInv_eq_zero, ih, List.pairwise_cons, Nat.add_eq_zero_iff]
+
+lemma exists_adjacent_gt_of_inversionCount_pos (L : List ℕ) (hpos : 0 < inversionCount L) :
+    ∃ p, ∃ hp1 : p + 1 < L.length, L[p]'(Nat.lt_of_succ_lt hp1) > L[p + 1]'hp1 := by
+  induction L with
+  | nil => simp [inversionCount] at hpos
+  | cons x xs ih =>
+    rw [inversionCount_def_cons] at hpos
+    by_cases hxs : 0 < inversionCount xs
+    · obtain ⟨p, hp1, hgt⟩ := ih hxs
+      refine ⟨p + 1, by simp [List.length_cons]; omega, ?_⟩
+      simpa [List.getElem_cons_succ] using hgt
+    · have hxs0 : inversionCount xs = 0 := by omega
+      have hx : 0 < headInv x xs := by
+        simp only [inversionCount_def_cons, hxs0, add_zero] at hpos
+        exact hpos
+      have hsorted : List.Pairwise (· ≤ ·) xs := (inversionCount_eq_zero_iff_sorted xs).mp hxs0
+      have hne : xs ≠ [] := by
+        rintro rfl
+        simp [headInv] at hx
+      obtain ⟨_, hxgt⟩ := headInv_pos_gt_head_of_sorted hx hsorted hne
+      refine ⟨0, by simp [List.length_cons]; exact List.length_pos_iff_ne_nil.mpr hne, ?_⟩
+      rw [List.getElem_cons_zero, List.getElem_cons_succ]
+      exact hxgt
 
 end Inversion
 

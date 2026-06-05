@@ -24,47 +24,14 @@ lemma adjSwap_isSwap (p : Fin 14) : (adjSwap p).IsSwap := by
 lemma sign_adjSwap (p : Fin 14) : sign (adjSwap p) = -1 := by
   exact (adjSwap_isSwap p).sign_eq
 
-private lemma headInv_pos_iff {x : ℕ} {xs : List ℕ} :
-    0 < headInv x xs ↔ ∃ y ∈ xs, x > y := by
-  constructor
-  · intro hpos
-    by_contra hall
-    push_neg at hall
-    have hzero : headInv x xs = 0 := (headInv_eq_zero).mpr fun y hy => le_of_not_gt (hall y hy)
-    omega
-  · rintro ⟨y, hy, hxy⟩
-    rw [← Nat.pos_iff_ne_zero]
-    intro hzero
-    exact Nat.not_lt.mpr ((headInv_eq_zero).mp hzero y hy) hxy
-
 private lemma tileListSpec_bubbleRight (L : List ℕ) (hs : TileListSpec bottomRight L) (p : ℕ)
     (hp : p + 1 < L.length) :
     TileListSpec bottomRight (bubbleRight L p hp) := by
   refine ⟨by simp [bubbleRight, hs.length_eq], ?_, ?_⟩
   · exact bubbleRight_nodup L p hp hs.nodup
   · intro x hx
-    rw [List.mem_set] at hx
-    rcases hx with rfl | rfl
-    · exact hs.mem_Icc _ (List.getElem_mem (by rw [hs.length_eq] at hp; omega))
-    · exact hs.mem_Icc _ (List.getElem_mem (by rw [hs.length_eq] at hp; omega))
-
-lemma exists_succ_getElem_gt_of_inversionCount_pos (L : List ℕ) (hpos : 0 < inversionCount L) :
-    ∃ p, ∃ hp : p < L.length, ∃ hp1 : p + 1 < L.length, L[p] > L[p + 1] := by
-  induction L with
-  | nil => simp [inversionCount] at hpos
-  | cons x xs ih =>
-    rw [inversionCount_def_cons] at hpos
-    by_cases hx : 0 < headInv x xs
-    · obtain ⟨y, hy, hxy⟩ := headInv_pos_iff.mp hx
-      obtain ⟨j, hj, heq⟩ := List.mem_iff_getElem.mp hy
-      refine ⟨0, by simp, by simp [List.length_cons]; omega, ?_⟩
-      simp [List.getElem_cons_zero, List.getElem_cons_succ, heq, hxy]
-    · have hxs : 0 < inversionCount xs := by
-        rw [inversionCount_def_cons, headInv_eq_zero] at hpos
-        omega
-      obtain ⟨p', hp', hp1', hgt⟩ := ih hxs
-      refine ⟨p' + 1, by simp [List.length_cons] at hp'; omega, ?_, ?_⟩
-      simpa [List.getElem_cons_succ] using hgt
+    have hxL : x ∈ L := (bubbleRight_perm L p hp).mem_iff.mp hx
+    exact hs.mem_Icc x hxL
 
 lemma inversionCount_bubbleRight_succ_of_gt (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length)
     (hgt : L[p]'(Nat.lt_of_succ_lt hp) > L[p + 1]'hp) (_hnd : L.Nodup) :
@@ -73,29 +40,16 @@ lemma inversionCount_bubbleRight_succ_of_gt (L : List ℕ) (p : ℕ) (hp : p + 1
 
 lemma tileListPerm_bubbleRight (L : List ℕ) (hs : TileListSpec bottomRight L) (p : Fin 14)
     (hp : p.1 + 1 < L.length) :
-    let L' := bubbleRight L p.1 (by omega)
-    tileListPerm L' (tileListSpec_bubbleRight L hs p.1 (by omega)) =
+    tileListPerm (bubbleRight L p.1 hp) (tileListSpec_bubbleRight L hs p.1 hp) =
       tileListPerm L hs * adjSwap p := by
-  dsimp only
   ext i
-  simp only [tileListPerm_apply, adjSwap, Equiv.swap_apply_left, Equiv.swap_apply_right]
-  have hi : i.1 < L.length := by rw [hs.length_eq]; exact i.isLt
-  have hp' : p.1 < L.length := by omega
-  by_cases hip : i.1 = p.1
-  · have hi_eq : i = ⟨p.1, by rw [hs.length_eq] at hi; omega⟩ := Fin.ext hip
-    rw [hi_eq]
-    simp [bubbleRight, List.getElem_set, if_pos (by omega : p.1 = p.1),
-      if_neg (by omega : ¬p.1 + 1 = p.1)]
-    congr 1
-    exact bubbleRight_get L p.1 (by omega) (Nat.lt_of_succ_lt hp)
-  · by_cases hip1 : i.1 = p.1 + 1
-    · have hi_eq : i = ⟨p.1 + 1, by rw [hs.length_eq] at hi; omega⟩ := Fin.ext hip1
-      rw [hi_eq]
-      simp [bubbleRight, List.getElem_set, if_neg (by omega : ¬p.1 = p.1 + 1),
-        if_pos (by omega : p.1 + 1 = p.1 + 1)]
-      congr 1
-      exact bubbleRight_get L p.1 (by omega) (Nat.lt_of_succ_lt hp)
-    · simp [bubbleRight, List.getElem_set, if_neg hip, if_neg hip1]
+  fin_cases p
+  all_goals
+    fin_cases i
+    all_goals
+      simp [tileListPerm_apply, tileLabelAt, adjSwap, Equiv.swap_apply_left, Equiv.swap_apply_right,
+        bubbleRight, List.getElem_set, bubbleRight_get, bubbleRight_get_at, Fin.ext_iff, hs.length_eq]
+      <;> try rfl <;> try omega
 
 lemma tileList_eq_goalTileList_of_sorted (L : List ℕ) (hs : TileListSpec bottomRight L)
     (hsorted : List.Pairwise (· ≤ ·) L) : L = (List.range 15).map (· + 1) :=
@@ -109,10 +63,10 @@ lemma tileListPerm_sorted_eq_one (L : List ℕ) (hs : TileListSpec bottomRight L
   have hi : i.1 < L.length := by rw [hs.length_eq]; exact i.isLt
   have heq := tileList_eq_goalTileList_of_sorted L hs hsorted
   have hi15 : i.1 < 15 := by rw [hs.length_eq] at hi; exact hi
-  have hi' : i.1 < (List.range 15).length := by simp
-  have hval : L[i]'hi = i.1 + 1 := by
-    rw [← heq, List.getElem_map, List.getElem_range]
-    simp [hi15]
+  have hi' : i.1 < (List.range 15).length := by simp [hi15]
+  have hmap : ((List.range 15).map (· + 1))[i]'hi' = i.1 + 1 := by
+    simp [List.getElem_map, List.getElem_range, hi15]
+  have hval : L[i]'hi = i.1 + 1 := by simpa [heq] using hmap
   simp [hval]
 
 lemma sign_tileListPerm_eq_neg_one_pow (L : List ℕ) (hs : TileListSpec bottomRight L) :
@@ -123,27 +77,33 @@ lemma sign_tileListPerm_eq_neg_one_pow (L : List ℕ) (hs : TileListSpec bottomR
     simp [Equiv.Perm.sign_one, Int.negOnePow_zero]
   | succ n ih =>
     have hpos : 0 < inversionCount L := by rw [h]; exact Nat.succ_pos n
-    obtain ⟨p, hp, hp1, hgt⟩ := exists_succ_getElem_gt_of_inversionCount_pos L hpos
-    let L' := bubbleRight L p hp1
+    obtain ⟨p, ⟨hp1, hgt⟩⟩ := exists_adjacent_gt_of_inversionCount_pos L hpos
     have hs' := tileListSpec_bubbleRight L hs p hp1
     have hcount := inversionCount_bubbleRight_succ_of_gt L p hp1 hgt hs.nodup
-    have hn' : inversionCount L' = n := by rw [h] at hcount; omega
-    have ih' := ih L' hs' hn'
-    have hperm := tileListPerm_bubbleRight L hs ⟨p, by omega⟩ (by omega)
-    have hz : (inversionCount L : ℤ) = ↑(n + 1) := by rw [h]; rfl
-    rw [hperm, sign_mul, ih', sign_adjSwap, hz, Int.negOnePow_one, Int.negOnePow_succ,
-      mul_neg, mul_one, neg_neg]
-
-lemma even_invStat_iff_perm_alternating (cfg : Config) (hbr : blank cfg = bottomRight) :
-    Even (invStat cfg) ↔ permOfCfg cfg hbr ∈ alternatingGroup (Fin 15) := by
-  have hspec := tileListSpec_of_config cfg bottomRight hbr
-  unfold invStat
-  rw [mem_alternatingGroup, permOfCfg, sign_tileListPerm_eq_neg_one_pow (tileList cfg) hspec,
-    Int.negOnePow_eq_one_iff, ← Even.natCast]
+    have hn' : inversionCount (bubbleRight L p hp1) = n := by linarith [hcount, h]
+    have ih' := ih (bubbleRight L p hp1) hs' hn'
+    have hlen : L.length = 15 := hs.length_eq
+    have hp15 : p + 1 < 15 := by rwa [hlen] at hp1
+    have hperm :=
+      tileListPerm_bubbleRight L hs ⟨p, Nat.lt_succ_iff.mp hp15⟩ hp1
+    have hsign : sign (tileListPerm L hs) = -((↑n : ℤ)).negOnePow := by
+      have hgoal := ih'
+      rw [hperm, Equiv.Perm.sign_mul, sign_adjSwap] at hgoal
+      simpa [mul_neg, mul_one] using congrArg Neg.neg hgoal
+    have hsucc : ((↑(n + 1) : ℤ)).negOnePow = -((↑n : ℤ)).negOnePow := by
+      simpa [Nat.cast_add] using Int.negOnePow_succ (↑n : ℤ)
+    exact hsign.trans hsucc.symm
 
 lemma invStat_even_iff_perm_alternating (cfg : Config) (hbr : blank cfg = bottomRight) :
     invStat cfg % 2 = 0 ↔ permOfCfg cfg hbr ∈ alternatingGroup (Fin 15) := by
-  rw [← Nat.even_iff]
-  exact even_invStat_iff_perm_alternating cfg hbr
+  have hspec := tileListSpec_of_config cfg bottomRight hbr
+  unfold invStat
+  simp [permOfCfg, mem_alternatingGroup, sign_tileListPerm_eq_neg_one_pow (tileList cfg) hspec,
+    Int.negOnePow_eq_one_iff, Nat.even_iff]
+
+lemma even_invStat_iff_perm_alternating (cfg : Config) (hbr : blank cfg = bottomRight) :
+    Even (invStat cfg) ↔ permOfCfg cfg hbr ∈ alternatingGroup (Fin 15) := by
+  rw [Nat.even_iff]
+  exact invStat_even_iff_perm_alternating cfg hbr
 
 end NPuzzle.FourFour
