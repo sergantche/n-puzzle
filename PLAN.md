@@ -112,7 +112,7 @@ Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GO
 | **R2** | Extract layer A → `NPuzzle/List/Inversion.lean` | ⏳ later | `inversionCount` + `Inversion` namespace; no `Cell` / `Config` |
 | **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
 | **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
-| **R5** | Optional Mathlib PR for list-inversion parity | ⏳ optional | Only layer A; separate from 4×4 proof; Mathlib review |
+| **R5** | **Mathlib PR:** list-inversion parity (layer A) | ⏳ planned | After R2; [GOAL.md](GOAL.md#mathlib-contribution-intention); puzzle modules out of scope |
 
 **Do not** advertise `TileReach` / `TileConnectivity` / `Sufficiency` as stable API until `permRealizable_of_mem_alternating` is closed.
 

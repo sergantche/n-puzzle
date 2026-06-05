@@ -97,9 +97,9 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | 4×4 proof |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
-| **R5** | Optional Mathlib PR: generalized `inversionCount_erase_insert_mod` for `List α` | R2, Mathlib review |
+| **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
 
-**Mathlib PR** means contributing layer-A lemmas to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets them via `import Mathlib.Data.List....`. Puzzle modules (`tileList`, `permOfCfg`) are out of scope for Mathlib.
+**Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
 ---
 

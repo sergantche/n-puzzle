@@ -19,7 +19,7 @@ Formally prove the classical **solvability criterion** for the sliding puzzle on
    | **C — Blank geometry** | blank connectivity, glue `cfg` ↔ `tileList` (`BlankGrid`, `BlankReach`, `TileGlue`) | ✅ green, 4×4-specific encoding |
    | **D — Sufficiency** | `PermRealizable`, corner macros, `tiles_to_goal_at_bottomRight` | ❌ 1 `sorry` on critical path |
 
-   **Delivery forms (planned):** Lake dependency + [REUSE.md](REUSE.md); paper chapter mapping Lean names ↔ classical lemmas; later optional `NPuzzle.List` split and Mathlib PR for layer A only.
+   **Delivery forms (planned):** Lake dependency + [REUSE.md](REUSE.md); paper chapter mapping Lean names ↔ classical lemmas; extract layer A to `NPuzzle.List`; **contribute layer A to Mathlib** (see below).
 
 3. **Publication.** An expository paper plus repository: what is proved, what remains, and how it connects to the classics (Archer, Calabro, Mathlib). Paper roadmap: [PLAN.md](PLAN.md#paper-roadmap), draft in [paper/](paper/).
 
@@ -30,7 +30,21 @@ Formally prove the classical **solvability criterion** for the sliding puzzle on
 | **Minimum (4×4)** | `solvability_four_four` builds **without `sorry`**; README and PLAN stay current. |
 | **Useful to others** | [REUSE.md](REUSE.md) documents green modules and stable lemmas; honest `sorry` status in the repo. |
 | **Reuse hygiene** | Layer A split to `NPuzzle.List` (no `Cell` dependency); consumers can `require` this repo without puzzle glue. |
-| **Extension (later)** | General N×M — separate phase; does not block 4×4. Mathlib PR for list-inversion lemmas — only if layer A stabilizes and Mathlib wants it. |
+| **Mathlib contribution** | PR to [mathlib4](https://github.com/leanprover-community/mathlib4) with list-inversion parity lemmas (layer A); after R2 in [PLAN.md](PLAN.md#reuse--extraction-roadmap). |
+| **Extension (later)** | General N×M — separate phase; does not block 4×4 or the Mathlib PR. |
+
+## Mathlib contribution (intention)
+
+We plan to upstream **layer A only** — pure `List` lemmas on `inversionCount`, adjacent swaps, and `eraseIdx`/`insertIdx` parity — into Mathlib, so puzzle-unrelated projects get them via `import Mathlib.Data.List....`.
+
+| In Mathlib | Stays in this repo |
+|------------|-------------------|
+| `inversionCount` API and parity under list edits | `tileList`, `Config`, `permOfCfg` |
+| Generalized `inversionCount_erase_insert_mod` for `List α` | `TileReach`, corner macros, sufficiency |
+
+**Prerequisites:** extract `NPuzzle.List` (R2–R3); lemmas stable and Mathlib-style (docstrings, naming, no puzzle imports). **Does not block** closing the 4×4 `sorry`; can proceed in parallel once R2 is done. **Acceptance** depends on Mathlib review (may require API tweaks or split into smaller PRs).
+
+Tracked as **R5** in [PLAN.md](PLAN.md#reuse--extraction-roadmap).
 
 ## Out of scope (for now)
 
