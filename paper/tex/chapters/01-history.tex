@@ -1,0 +1,141 @@
+% Chapter 1: historical overview and literature through the general criterion.
+
+\section{Origins and the 1879 craze}\label{sec:origins}
+
+The sliding-tile puzzle on a square board is usually traced to the \emph{Gem Puzzle} or \emph{Fifteen Puzzle}, marketed in the United States in the late 1870s.
+A square frame holds $\cells-1$ numbered tiles and one empty cell; a legal move exchanges the blank with an edge-adjacent tile.
+The goal is to restore the tiles to increasing order in row-major layout, traditionally with the blank in the bottom-right corner.
+
+The puzzle became a national fad in \textbf{1879}.
+Sam Loyd later promoted a variant with tiles $14$ and $15$ reversed and offered a prize for its solution.
+That configuration is the famous \emph{14--15 puzzle}.
+The prize was never legitimately claimed: the position is mathematically impossible, a fact established in the same year by two mathematicians at Harvard.
+
+The definitive early reference is the joint note by \textbf{William Woolsey Johnson} and \textbf{William Edward Story} in the \emph{American Journal of Mathematics}~\cite{JohnsonStory1879}.
+The paper has two logically separate parts, still the standard division between \emph{necessary} and \emph{sufficient} conditions for solvability.
+
+\section{Johnson: impossibility and the first invariant}\label{sec:johnson}
+
+Johnson introduced an \emph{order} (sign / parity) of an arrangement of the sixteen cells, including the blank.
+He proved that interchanging two tiles changes this order, and that each legal slide is a product of transpositions whose net effect preserves a binary invariant.
+Hence configurations of opposite order lie in different reachability classes.
+
+Applied to Loyd's challenge, Johnson's result explains why reversing only the $14$ and $15$ tiles cannot be achieved when the blank returns to the corner: such a swap is an odd permutation of the fifteen tiles, while the goal layout is even.
+
+Johnson's argument is purely combinatorial and does not, by itself, show that \emph{all} even arrangements are reachable.
+It already implies, however, that at most half of all labeled states can be solvable, and that solvable and unsolvable positions partition the state space into two classes of equal size (once one fixes the usual counting of permutations).
+
+\section{Story: sufficiency on the square board}\label{sec:story}
+
+Story's supplement to the same note~\cite{JohnsonStory1879} proves \emph{sufficiency} for the ordinary $4\times 4$ board.
+His method is geometric rather than group-theoretic: along a closed tour of cells (two adjacent rows wrapped into a circuit), one can cycle three consecutive tiles past the blank.
+Repeating such operations, any arrangement of the correct order can be transformed into the standard goal; arrangements of the wrong order can be transformed into the reversed standard layout instead.
+
+Story also began the extension to rectangular boards $r\times c$.
+He classified boards into two ``kinds'' depending on parity data involving $r$, $c$, and the row of the blank, and gave criteria for when the standard and reversed standard layouts are reachable.
+For the classical $4\times 4$ case with the blank in the last row, his tables match the modern statement: solvability depends on the parity of the tile permutation relative to the goal.
+
+\section{From the fifteen puzzle to general \texorpdfstring{$N\times M$}{N x M} boards}\label{sec:general-grid}
+
+For an $\rows\times\cols$ board ($\cells$ cells, $\cells-1$ numbered tiles, one blank), the same questions arise:
+\begin{itemize}
+  \item Which configurations can reach the goal by legal slides?
+  \item Is there a simple arithmetic criterion in terms of the tile order and the blank position?
+\end{itemize}
+
+\subsection{Graph and permutation viewpoint}
+
+It is natural to label the $\cells$ cells and view a configuration as a permutation $\sigma$ of $\{1,\ldots,\cells\}$, where one symbol marks the blank.
+A legal move is a transposition of the blank with a graph neighbor on the grid graph.
+The set of reachable configurations from a fixed start is a subgroup of the symmetric group~$S_{\cells-1}$ on the numbered tiles (after fixing the blank).
+
+For the $4\times 4$ puzzle with the blank at the bottom-right corner, modern expositions identify the reachable tile permutations with the alternating group~$A_{15}$~\cite{Conrad15Puzzle,BeelerFifteen,LimMIT2018}.
+The proof pattern is uniform: show that all configurations with the blank at the goal and even tile permutation are reachable, by exhibiting a single $3$-cycle of tiles realized by a short macro of slides, then generating~$A_{15}$ by conjugation.
+
+\subsection{Story's induction and later proofs}
+
+Story's $r\times c$ discussion~\cite{JohnsonStory1879} already points toward induction on board size, with base cases such as $2\times 2$.
+Survey articles record that for all $m,n\ge 2$, every \emph{even} permutation of the tiles is solvable on an $m\times n$ board, with a proof by induction on the dimensions~\cite{Wikipedia15Puzzle}.
+
+\textbf{Aaron Archer}~\cite{Archer1999} gave an elementary \emph{American Mathematical Monthly} proof using a Hamiltonian path on the grid: equivalence classes are tracked by the blank's position along the path, and local moves along the path realize the needed permutations.
+Archer also discusses broader graph puzzles and cites \textbf{Richard Wilson}'s classification~\cite{Wilson1974} of sliding puzzles on general graphs: on most connected graphs the reachable set is either all of~$S_{n-1}$ or exactly~$A_{n-1}$, depending on bipartiteness.
+
+\subsection{Explicit criteria in modern language}
+
+Several equivalent formulations of the solvability criterion are in use.
+
+\paragraph{Taxicab distance and sign (Calabro).}
+Fix the goal blank cell~$B$.
+For a configuration~$\sigma$ with blank at cell~$p$, let $\taxicab(p,B)$ be the Manhattan distance between $p$ and~$B$.
+Calabro~\cite{Calabro15Puzzle} states (for $m,n\ge 2$):
+\begin{quote}
+  The puzzle is solvable if and only if $\sign(\sigma) = \sign(\taxicab(p,B))$,
+\end{quote}
+where $\sign$ is extended to the permutation of all labeled cells in a fixed convention.
+He gives an explicit solving algorithm and a lower bound of $\Omega((m+n)mn)$ moves in the worst case.
+
+\paragraph{Inversions and blank row (row-major list).}
+List the tile numbers in row-major order, skipping the blank:
+\[
+  L = (L_1,\ldots,L_{\cells-1}).
+\]
+Let $\inv(L)$ be the inversion count (pairs $k<\ell$ with $L_k > L_\ell$).
+Let $r_B$ be the row index of the blank counted from the \emph{bottom} of the board ($r_B=1$ on the bottom row).
+
+Then $C$ is solvable if and only if~\cite{Wikipedia15Puzzle,CutTheKnotFifteen}:
+\begin{equation}\label{eq:criterion}
+  \begin{cases}
+    \inv(L) \equiv 0 \pmod 2, & \cols \text{ odd},\\[0.4em]
+    \inv(L) + r_B \equiv 1 \pmod 2, & \cols \text{ even}.
+  \end{cases}
+\end{equation}
+When the blank is in the bottom-right corner ($r_B=1$) and $\cols=4$, this reduces to $\inv(L)$ even---the case pursued in the Lean formalization \texttt{NPuzzle.FourFour} in this repository.
+
+\paragraph{Johnson--Story parity of the full board.}
+Equivalently, one may take the parity of the permutation of all $\cells$ symbols (tiles plus blank) and add the parity of $\taxicab(p,B)$; each slide flips both parities, so their sum mod~$2$ is invariant~\cite{JohnsonStory1879,Wikipedia15Puzzle}.
+This unifies the odd-width and even-width cases and matches~\eqref{eq:criterion} after routine bookkeeping.
+
+\section{Later work, culture, and adjacent directions}\label{sec:later}
+
+\paragraph{Historical scholarship.}
+Slocum and Sonneveld~\cite{SlocumSonneveld2006} document the commercial history, Loyd's marketing, and the confusion between impossible and merely difficult positions.
+Singmaster's recreational-mathematics notes~\cite{SingmasterNotes} place the Fifteen Puzzle in the wider catalog of permutation gadgets.
+
+\paragraph{Expository and educational sources.}
+Cut-the-Knot~\cite{CutTheKnotFifteen} emphasizes cycle decompositions and parity.
+Conrad's note~\cite{Conrad15Puzzle} is a concise group-theory route to $F=A_{15}$.
+Student research expositions~\cite{LimMIT2018,BeelerFifteen} reproduce the $3$-cycle generator argument in coordinates adapted to the $4\times 4$ grid.
+
+\paragraph{Probabilistic and algorithmic angles.}
+Mena and Sinclair~\cite{MenaSinclair2019} study random walks on configurations driven by random moves; the commutator of horizontal and vertical slides furnishes a $3$-cycle, linking puzzle dynamics to mixing on~$A_{n^2-1}$ on the $n\times n$ board.
+
+\paragraph{Non-rectangular boards.}
+Recent work on hexagonal sliding puzzles~\cite{HexagonalSliding2025} extends parity arguments in the Johnson--Story spirit to other cell complexes.
+
+\section{Summary: timeline of the main mathematical results}\label{sec:timeline}
+
+Table~\ref{tab:timeline} collects the works most directly tied to the solvability \emph{criterion} for rectangular boards.
+
+\begin{table}[h]
+  \centering
+  \caption{Main references on solvability of the sliding puzzle (rectangular and related).}
+  \label{tab:timeline}
+  \small
+  \begin{tabular}{@{}llp{6.8cm}@{}}
+    \toprule
+    Year & Authors & Contribution \\
+    \midrule
+    1879 & Johnson~\cite{JohnsonStory1879} & Necessity: parity invariant; 14--15 impossible \\
+    1879 & Story~\cite{JohnsonStory1879} & Sufficiency on $4\times 4$; start of $r\times c$ theory \\
+    1974 & Wilson~\cite{Wilson1974} & General graphs: $A_{n-1}$ vs.\ $S_{n-1}$ classification \\
+    1999 & Archer~\cite{Archer1999} & Elementary proof via Hamiltonian path; graph extensions \\
+    2006 & Slocum--Sonneveld~\cite{SlocumSonneveld2006} & Historical monograph \\
+    2017 & Conrad~\cite{Conrad15Puzzle} & Modern $S_{16}$ / $A_{15}$ exposition \\
+    2019 & Mena--Sinclair~\cite{MenaSinclair2019} & Random walks; commutator $3$-cycles on $n\times n$ \\
+    ---  & Calabro~\cite{Calabro15Puzzle} & Explicit $m\times n$ criterion $\sign(\sigma)=\sign(\taxicab)$; algorithms \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The criterion~\eqref{eq:criterion} is the form used in the README of this project and is the target theorem for a full $N\times M$ formalization.
+The $4\times 4$ instance is the smallest nontrivial even-width case; its sufficiency proof in Lean is the current focus of the companion formal development.

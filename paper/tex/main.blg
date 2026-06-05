@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: amsalpha.bst
+Database file #1: references.bib
+Warning--missing pages in HexagonalSliding2025
+Warning--missing journal name in MenaSinclair2019
+Warning--missing journal, volume, and year in MenaSinclair2019
+Warning--missing pages in MenaSinclair2019
+You've used 13 entries,
+            2624 wiz_defined-function locations,
+            637 strings with 6032 characters,
+and the built_in function-call counts, 4037 in all, are:
+= -- 353
+> -- 159
+< -- 8
++ -- 49
+- -- 46
+* -- 288
+:= -- 641
+add.period$ -- 13
+call.type$ -- 13
+change.case$ -- 68
+chr.to.int$ -- 13
+cite$ -- 17
+duplicate$ -- 191
+empty$ -- 352
+format.name$ -- 65
+if$ -- 817
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 20
+newline$ -- 50
+num.names$ -- 39
+pop$ -- 134
+preamble$ -- 1
+purify$ -- 81
+quote$ -- 0
+skip$ -- 127
+stack$ -- 0
+substring$ -- 163
+swap$ -- 18
+text.length$ -- 8
+text.prefix$ -- 8
+top$ -- 0
+type$ -- 100
+warning$ -- 4
+while$ -- 37
+width$ -- 15
+write$ -- 138
+(There were 4 warnings)

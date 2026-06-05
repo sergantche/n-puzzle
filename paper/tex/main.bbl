@@ -1,0 +1,64 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\providecommand{\bysame}{\leavevmode\hbox to3em{\hrulefill}\thinspace}
+\providecommand{\MR}{\relax\ifhmode\unskip\space\fi MR }
+% \MRhref is called by the amsart/book/proc definition of \MR.
+\providecommand{\MRhref}[2]{%
+  \href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}
+}
+\providecommand{\href}[2]{#2}
+\begin{thebibliography}{{Wik}26}
+
+\bibitem[Arc99]{Archer1999}
+Aaron~F. Archer, \emph{A modern treatment of the 15 puzzle}, The American
+  Mathematical Monthly \textbf{106} (1999), no.~9, 793--799. \MR{MR1732661}
+
+\bibitem[B{\etalchar{+}}]{BeelerFifteen}
+Robert~A. Beeler et~al., \emph{Fifteen puzzle supplement}, ETSU;
+  group-theoretic proof that $P \cong A_{15}$.
+
+\bibitem[B{\etalchar{+}}25]{HexagonalSliding2025}
+Mikl{\'o}s B{\'o}na et~al., \emph{Parity property of hexagonal sliding
+  puzzles}, The American Mathematical Monthly (2025), Extends Johnson--Story
+  parity ideas to hexagonal boards.
+
+\bibitem[Bog]{CutTheKnotFifteen}
+Alexander Bogomolny, \emph{Group theory for {S}am {L}oyd's fifteen puzzle}, Cut
+  the Knot.
+
+\bibitem[Cal]{Calabro15Puzzle}
+Chris Calabro, \emph{Solving the 15-puzzle}, Essay; includes $m\times n$
+  criterion and algorithms.
+
+\bibitem[Con17]{Conrad15Puzzle}
+Keith Conrad, \emph{The 15 puzzle, group theory, and permutations}, 2017,
+  Expository note.
+
+\bibitem[JS79]{JohnsonStory1879}
+Wm.~Woolsey Johnson and William~E. Story, \emph{Notes on the ``{15}''
+  {P}uzzle}, American Journal of Mathematics \textbf{2} (1879), no.~4,
+  397--404.
+
+\bibitem[Lim18]{LimMIT2018}
+Andrew Lim, \emph{Group theory and the fifteen puzzle}, 2018, MIT PRIMES
+  conference paper.
+
+\bibitem[MS19]{MenaSinclair2019}
+Ricardo Mena and Douglas Sinclair, \emph{Solution of the 15 puzzle problem}.
+
+\bibitem[Sin]{SingmasterNotes}
+David Singmaster, \emph{Notes on rubik's cube and related puzzles},
+  Recreational mathematics bibliography; see also \emph{Sources in Recreational
+  Mathematics}.
+
+\bibitem[SS06]{SlocumSonneveld2006}
+Jerry Slocum and Dolf Sonneveld, \emph{The 15 puzzle: How it drove the world
+  crazy}, Slocum Puzzle Foundation, 2006.
+
+\bibitem[{Wik}26]{Wikipedia15Puzzle}
+{Wikipedia contributors}, \emph{15 puzzle}, 2026, Online encyclopedia article.
+
+\bibitem[Wil74]{Wilson1974}
+Richard~M. Wilson, \emph{Graph puzzles, homotopy, and the alternating group},
+  Journal of Combinatorial Theory, Series B \textbf{16} (1974), no.~1, 86--96.
+
+\end{thebibliography}

@@ -1,0 +1,17 @@
+\contentsline {section}{\numberline {1}Historical overview and literature}{2}{section.1}%
+\contentsline {section}{\numberline {2}Origins and the 1879 craze}{2}{section.2}%
+\contentsline {section}{\numberline {3}Johnson: impossibility and the first invariant}{2}{section.3}%
+\contentsline {section}{\numberline {4}Story: sufficiency on the square board}{2}{section.4}%
+\contentsline {section}{\numberline {5}From the fifteen puzzle to general $N\times M$ boards}{2}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Graph and permutation viewpoint}{3}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Story's induction and later proofs}{3}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Explicit criteria in modern language}{3}{subsection.5.3}%
+\contentsline {paragraph}{Taxicab distance and sign (Calabro).}{3}{section*.2}%
+\contentsline {paragraph}{Inversions and blank row (row-major list).}{3}{section*.3}%
+\contentsline {paragraph}{Johnson--Story parity of the full board.}{4}{section*.4}%
+\contentsline {section}{\numberline {6}Later work, culture, and adjacent directions}{4}{section.6}%
+\contentsline {paragraph}{Historical scholarship.}{4}{section*.5}%
+\contentsline {paragraph}{Expository and educational sources.}{4}{section*.6}%
+\contentsline {paragraph}{Probabilistic and algorithmic angles.}{4}{section*.7}%
+\contentsline {paragraph}{Non-rectangular boards.}{4}{section*.8}%
+\contentsline {section}{\numberline {7}Summary: timeline of the main mathematical results}{4}{section.7}%

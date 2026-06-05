@@ -1,5 +1,7 @@
 # Formalization plan (n-puzzle)
 
+**Living documents:** [GOAL.md](GOAL.md) · [PLAN.md](PLAN.md) · [REUSE.md](REUSE.md).
+
 Repository goal: the [solvability criterion](README.md#target-theorem-solvability-criterion) in Lean 4.  
 **Current focus:** the **4×4** special case (`NPuzzle.FourFour`).
 
@@ -100,15 +102,52 @@ Run: `rg 'sorry' NPuzzle/`
 
 ---
 
+## Reuse & extraction roadmap
+
+Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GOAL.md](GOAL.md#what-counts-as-success).
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| **R1** | Maintain [REUSE.md](REUSE.md) after green-module changes | 🔄 ongoing | Update import table and “not reusable” list |
+| **R2** | Extract layer A → `NPuzzle/List/Inversion.lean` | ⏳ later | `inversionCount` + `Inversion` namespace; no `Cell` / `Config` |
+| **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
+| **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
+| **R5** | Optional Mathlib PR for list-inversion parity | ⏳ optional | Only layer A; separate from 4×4 proof; Mathlib review |
+
+**Do not** advertise `TileReach` / `TileConnectivity` / `Sufficiency` as stable API until `permRealizable_of_mem_alternating` is closed.
+
+---
+
+## Paper roadmap
+
+Outline: [paper/outline.md](paper/outline.md) · build: `cd paper/tex && make clean && make`.
+
+| Ch. | Topic | Source / module | Status |
+|-----|-------|-----------------|--------|
+| **1** | History: Johnson–Story → modern N×M criterion | [paper/tex/chapters/01-history.tex](paper/tex/chapters/01-history.tex), [paper/literature.md](paper/literature.md) | ✅ draft in PDF |
+| **2** | Problem statement: `Config`, moves, $L$, $I(L)$, $r_B$ | [README.md](README.md) | ⏳ |
+| **3** | Classical proofs (necessity / sufficiency / parity formula) | Johnson–Story, Calabro | ⏳ |
+| **4** | Group view: $A_{15}$, 3-cycles, $F = A_{15}$ | Conrad, `TileSign`, `TilePerm` | ⏳ |
+| **5** | Lean architecture: steps 1–9, module map | This file, [REUSE.md](REUSE.md) | ⏳ |
+| **6** | Literature comparison; honest gap (`sorry`) | [paper/literature.md](paper/literature.md), `TileReach.lean` | ⏳ |
+| **7** | Conclusion | — | ⏳ |
+
+**Historical wording:** 1879 = start of theory (Johnson necessity, Story 4×4 + rectangular start); full modern N×M packaging = Story + later sources (Archer, Calabro). See [GOAL.md](GOAL.md).
+
+---
+
 ## After 4×4 (out of scope for now)
 
 - General `N×M` (separate theory / modules).
 - Full README criterion for odd `M` (inversion-only).
+- Layer B/C parameterized by `Fin (m*n)` instead of `Fin 16`.
 
 ---
 
 ## Quick links
 
+- Goals: [GOAL.md](GOAL.md)
+- Reuse: [REUSE.md](REUSE.md)
 - Main theorem: `NPuzzle/FourFour/Sufficiency.lean`
 - Invariant chain: `NPuzzle/FourFour/Invariant.lean`
 - Build: `lake build`

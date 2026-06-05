@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+
+\hypersetup{
+  pdftitle  = {Sliding puzzle solvability on N x M boards},
+  pdfauthor = {},
+  colorlinks = true,
+  linkcolor  = blue,
+  citecolor  = blue,
+  urlcolor   = blue
+}
+
+\input{macros}
+
+\title{Sliding Puzzle Solvability on \texorpdfstring{$N\times M$}{N×M} Boards}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries Sliding Puzzle Solvability on $N\times M$ Boards\par}
+  \vspace{0.6em}
+  {\large Classical criteria and a Lean~4 formalization\par}
+  \vspace{0.4em}
+  {\normalsize\today\par}
+\end{center}
+\vspace{1.5em}
+
+\begin{abstract}
+\noindent
+We survey the classical solvability theory of the rectangular sliding-tile puzzle
+and record the standard necessary and sufficient conditions in terms of inversions
+and the blank row.
+This draft accompanies a Lean~4 formalization of the $4\times 4$ case;
+only the historical chapter is written so far.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Historical overview and literature}\label{ch:history}
+\input{chapters/01-history}
+
+% Future sections:
+% \section{Problem statement}\label{ch:statement}
+% \section{The solvability criterion}\label{ch:criterion}
+% \section{Lean formalization of the $4\times 4$ case}\label{ch:lean}
+
+\bibliographystyle{amsalpha}
+\bibliography{references}
+
+\end{document}

@@ -18,7 +18,8 @@ _Figure 2._ The **goal configuration** on **3×3**: tiles **1…8** in row-major
 
 Starting from an arbitrary configuration that uses the same tiles and one blank, we ask whether it is possible to reach the goal configuration using only legal moves.
 
-This repository aims to state that question in precise mathematical terms and to formalize the classical **solvability criterion** (together with its proof) in Lean 4.
+This repository aims to state that question in precise mathematical terms and to formalize the classical **solvability criterion** (together with its proof) in Lean 4.  
+**Goals:** [GOAL.md](GOAL.md) · **Plan:** [PLAN.md](PLAN.md) · **Reusable modules:** [REUSE.md](REUSE.md).
 
 ## Formalization
 
@@ -87,6 +88,8 @@ This statement is the main mathematical result we intend to prove formally in Le
 - **9b.3 (one sorry left):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileConnectivity.lean` — tile-list permutations and connectivity with the blank at bottom-right.
 
 Build the library: `lake build`.
+
+**Paper and literature:** [paper/](paper/).
 
 ### 4×4 status (`NPuzzle.FourFour`)
 
