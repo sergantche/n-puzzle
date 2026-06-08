@@ -51,6 +51,18 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ---
 
+### Layer D0 — Group-theoretic sufficiency tail
+
+| Module | Key exports |
+|--------|-------------|
+| `NPuzzle/Group/CycleThree.lean` | `isPreprimitive_of_mem_full_cycle_and_three_cycle`, `alternatingGroup_le_of_mem_full_cycle_and_three_cycle` |
+
+**Typical consumer:** a rectangular-grid proof after it has constructed two realizable tile permutations: a full cycle and a compatible 3-cycle.
+
+**Geometry-free:** the module speaks only about subgroups of `Equiv.Perm α`, blocks, primitive actions, and `alternatingGroup`.
+
+---
+
 ## Green but heavy / 4×4-specific
 
 | Module | Reason |
@@ -98,6 +110,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | Step | Action | Blocks |
 |------|--------|--------|
 | **R1** | Keep this file aligned with green modules after each merge | — |
+| **R0** | Extract group tail: full cycle + compatible 3-cycle ⇒ `alternatingGroup` | done in `NPuzzle/Group/CycleThree.lean` |
 | **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | cleaner API / Mathlib prep |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
@@ -117,6 +130,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | Necessity: reachable ⇒ parity class | `reachable_imp_parity` |
 | $\mathrm{sign}(\sigma) = (-1)^{I(L)}$ | `sign_tileListPerm_eq_neg_one_pow` |
 | Even tile perm ⇔ $A_{n-1}$ (blank fixed) | `invStat_even_iff_perm_alternating` |
-| Sufficiency: $A_{15}$ realized by slides | `permRealizable_of_mem_alternating` |
+| Sufficiency group tail: full cycle + 3-cycle contains alternating group | `alternatingGroup_le_of_mem_full_cycle_and_three_cycle` |
+| 4×4 sufficiency: $A_{15}$ realized by slides | `permRealizable_of_mem_alternating` |
 
 Full bibliography: [paper/literature.md](paper/literature.md).

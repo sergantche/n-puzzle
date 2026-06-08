@@ -1,8 +1,8 @@
 import Mathlib.GroupTheory.Perm.Cycle.Type
 import Mathlib.GroupTheory.Perm.Cycle.Concrete
 import Mathlib.GroupTheory.Perm.List
-import Mathlib.GroupTheory.GroupAction.Jordan
 import Mathlib.GroupTheory.SpecificGroups.Alternating
+import NPuzzle.Group.CycleThree
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
 import NPuzzle.FourFour.TileGlue
@@ -673,141 +673,30 @@ lemma hamPerm_mem_generatorSubgroup : hamPerm ∈ generatorSubgroup := by
   apply Subgroup.subset_closure
   simp
 
-noncomputable def genHamPow (k : ℕ) : generatorSubgroup :=
-  ⟨hamPerm ^ k, Subgroup.pow_mem generatorSubgroup hamPerm_mem_generatorSubgroup k⟩
-
-noncomputable def genCorner : generatorSubgroup :=
-  ⟨cornerPerm, cornerPerm_mem_generatorSubgroup⟩
-
-lemma block_apply_mem_of_maps_mem {B : Set (Fin 15)}
-    (hB : MulAction.IsBlock generatorSubgroup B) {g : generatorSubgroup} {x z : Fin 15}
-    (hx : x ∈ B) (hgx : (g : Equiv.Perm (Fin 15)) x ∈ B) (hz : z ∈ B) :
-    (g : Equiv.Perm (Fin 15)) z ∈ B := by
-  have hgx' : g • x ∈ B := by
-    simpa [Equiv.Perm.smul_def] using hgx
-  have hEq : g • B = B := hB.smul_eq_of_mem hx hgx'
-  have hzimg : g • z ∈ g • B := Set.smul_mem_smul_set hz
-  rw [hEq] at hzimg
-  simpa [Equiv.Perm.smul_def] using hzimg
-
-lemma block_pow_apply_mem_of_maps_mem {B : Set (Fin 15)}
-    (hB : MulAction.IsBlock generatorSubgroup B) {g : generatorSubgroup} {x : Fin 15}
-    (hx : x ∈ B) (hgx : (g : Equiv.Perm (Fin 15)) x ∈ B) (n : ℕ) :
-    ((g : Equiv.Perm (Fin 15)) ^ n) x ∈ B := by
-  induction n with
-  | zero => simpa using hx
-  | succ n ih =>
-      have hnext := block_apply_mem_of_maps_mem hB hx hgx ih
-      simpa [pow_succ'] using hnext
-
-lemma block_eq_univ_of_cycle_maps_mem {B : Set (Fin 15)}
-    (hB : MulAction.IsBlock generatorSubgroup B) {g : generatorSubgroup} {x : Fin 15}
-    (hcycle : IsCycle (g : Equiv.Perm (Fin 15)))
-    (hsupp : (g : Equiv.Perm (Fin 15)).support = Finset.univ)
-    (hx : x ∈ B) (hgx : (g : Equiv.Perm (Fin 15)) x ∈ B) : B = Set.univ := by
-  apply Set.eq_univ_of_forall
-  intro y
-  have hxSupp : (g : Equiv.Perm (Fin 15)) x ≠ x := by
-    rw [← mem_support, hsupp]
-    exact Finset.mem_univ x
-  have hySupp : (g : Equiv.Perm (Fin 15)) y ≠ y := by
-    rw [← mem_support, hsupp]
-    exact Finset.mem_univ y
-  obtain ⟨n, hn⟩ := hcycle.exists_pow_eq hxSupp hySupp
-  have hmem := block_pow_apply_mem_of_maps_mem hB hx hgx n
-  rwa [hn] at hmem
-
-lemma block_eq_univ_of_corner_maps_mem {B : Set (Fin 15)}
-    (hB : MulAction.IsBlock generatorSubgroup B) (h10 : finTile10 ∈ B) {x : Fin 15}
-    (hx : x ∈ B) (hcx : cornerPerm x ∈ B) : B = Set.univ := by
-  have hcx' : (genCorner : Equiv.Perm (Fin 15)) x ∈ B := by
-    simpa [genCorner] using hcx
-  have h11' := block_apply_mem_of_maps_mem hB hx hcx' h10
-  have h11 : finTile11 ∈ B := by
-    simpa [genCorner, cornerPerm_apply_finTile10] using h11'
-  have h14' := block_apply_mem_of_maps_mem hB hx hcx' h11
-  have h14 : finTile14 ∈ B := by
-    simpa [genCorner, cornerPerm_apply_finTile11] using h14'
-  have hham : (genHamPow 1 : Equiv.Perm (Fin 15)) finTile14 ∈ B := by
-    simpa [genHamPow, hamPerm_apply_finTile14] using h10
-  exact block_eq_univ_of_cycle_maps_mem hB (g := genHamPow 1) (x := finTile14)
-    (by simpa [genHamPow] using hamPerm_isCycle)
-    (by simpa [genHamPow] using hamPerm_support_univ)
-    h14 hham
-
-lemma generatorSubgroup_isPretransitive :
-    MulAction.IsPretransitive generatorSubgroup (Fin 15) := by
-  rw [MulAction.isPretransitive_iff_base finTile10]
-  intro y
-  have hxSupp : hamPerm finTile10 ≠ finTile10 := by
-    rw [← mem_support, hamPerm_support_univ]
-    exact Finset.mem_univ finTile10
-  have hySupp : hamPerm y ≠ y := by
-    rw [← mem_support, hamPerm_support_univ]
-    exact Finset.mem_univ y
-  obtain ⟨n, hn⟩ := hamPerm_isCycle.exists_pow_eq hxSupp hySupp
-  exact ⟨⟨hamPerm ^ n, Subgroup.pow_mem generatorSubgroup hamPerm_mem_generatorSubgroup n⟩, hn⟩
+lemma cornerPerm_apply_of_not_corner {x : Fin 15}
+    (h10 : x ≠ finTile10) (h11 : x ≠ finTile11) (h14 : x ≠ finTile14) :
+    cornerPerm x = x := by
+  fin_cases x <;>
+    simp [cornerPerm, finTile10, finTile11, finTile14, List.formPerm] at h10 h11 h14 ⊢
+  all_goals decide
 
 lemma generatorSubgroup_isPreprimitive :
     MulAction.IsPreprimitive generatorSubgroup (Fin 15) := by
-  haveI : MulAction.IsPretransitive generatorSubgroup (Fin 15) :=
-    generatorSubgroup_isPretransitive
-  apply MulAction.IsPreprimitive.of_isTrivialBlock_base finTile10
-  intro B h10 hB
-  by_cases hsub : B.Subsingleton
-  · exact Or.inl hsub
-  · right
-    obtain ⟨x, hx, hxne⟩ : ∃ x ∈ B, x ≠ finTile10 := by
-      by_contra hno
-      apply hsub
-      intro y hy z hz
-      have hy10 : y = finTile10 := by
-        by_contra hyne
-        exact hno ⟨y, hy, hyne⟩
-      have hz10 : z = finTile10 := by
-        by_contra hzne
-        exact hno ⟨z, hz, hzne⟩
-      rw [hy10, hz10]
-    fin_cases x
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile0, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile1, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile2, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile3, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile4, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile5, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile6, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile7, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile8, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile9, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact (hxne rfl).elim
-    · exact block_eq_univ_of_corner_maps_mem hB h10 h10 (by
-        simpa [cornerPerm_apply_finTile10] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile12, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm, finTile13, finTile10, finTile11, finTile14, List.formPerm] using hx)
-    · exact block_eq_univ_of_corner_maps_mem hB h10 hx (by
-        simpa [cornerPerm_apply_finTile14] using h10)
-
-lemma alternatingGroup_le_generatorSubgroup_of_isPreprimitive
-    (hprim : MulAction.IsPreprimitive generatorSubgroup (Fin 15)) :
-    alternatingGroup (Fin 15) ≤ generatorSubgroup := by
-  exact Equiv.Perm.alternatingGroup_le_of_isPreprimitive_of_isThreeCycle_mem hprim
-    cornerPerm_isThreeCycle cornerPerm_mem_generatorSubgroup
+  exact NPuzzle.Group.isPreprimitive_of_mem_full_cycle_and_three_cycle
+    hamPerm_mem_generatorSubgroup cornerPerm_mem_generatorSubgroup
+    hamPerm_isCycle hamPerm_support_univ
+    cornerPerm_apply_finTile10 cornerPerm_apply_finTile11 cornerPerm_apply_finTile14
+    (fun x hx10 hx11 hx14 => cornerPerm_apply_of_not_corner hx10 hx11 hx14)
+    hamPerm_apply_finTile14
 
 lemma alternatingGroup_le_generatorSubgroup :
-    alternatingGroup (Fin 15) ≤ generatorSubgroup :=
-  alternatingGroup_le_generatorSubgroup_of_isPreprimitive generatorSubgroup_isPreprimitive
+    alternatingGroup (Fin 15) ≤ generatorSubgroup := by
+  exact NPuzzle.Group.alternatingGroup_le_of_mem_full_cycle_and_three_cycle
+    hamPerm_mem_generatorSubgroup cornerPerm_mem_generatorSubgroup
+    hamPerm_isCycle hamPerm_support_univ cornerPerm_isThreeCycle
+    cornerPerm_apply_finTile10 cornerPerm_apply_finTile11 cornerPerm_apply_finTile14
+    (fun x hx10 hx11 hx14 => cornerPerm_apply_of_not_corner hx10 hx11 hx14)
+    hamPerm_apply_finTile14
 
 /-- Every even permutation is realized from `goal` (classical 15-puzzle group). -/
 lemma permRealizable_of_mem_alternating {σ : Equiv.Perm (Fin 15)}
