@@ -6,7 +6,7 @@
 
 ## Abstract (idea)
 
-Classical solvability theory from Johnson–Story (1879) through the modern `N×M` criterion, plus progress on a machine-checked proof for 4×4.
+Classical solvability theory from Johnson–Story (1879) through the modern `N×M` criterion, plus a machine-checked Lean proof for the 4×4 case and a roadmap toward rectangular-grid generalization.
 
 ## Structure
 
@@ -16,9 +16,9 @@ Tracked in [PLAN.md](../PLAN.md#paper-roadmap). Lean name mapping: [REUSE.md](..
 2. **Problem statement** — configuration, moves, row-major list $L$, $I(L)$, $r_B$, theorem (as in README).
 3. **Classical proofs** — Johnson (necessity), Story (sufficiency), parity formula.
 4. **Group-theoretic view** — $S_{NM}$, $A_{NM-1}$, 3-cycles, $F = A_{15}$ for 4×4.
-5. **Lean formalization** — `NPuzzle.FourFour` architecture, reuse layers A–D, what is proved, one remaining gap.
+5. **Lean formalization** — `NPuzzle.FourFour` architecture, reuse layers A–D, what is proved, and what remains for generalization.
 6. **Comparison with the literature** — Calabro $m\times n$, Conrad, encoding choices; Lean ↔ classical table.
-7. **Conclusion** — 4×4 nearly closed; general case is separate work.
+7. **Conclusion** — 4×4 closed; general case is separate work.
 
 ## Target length
 

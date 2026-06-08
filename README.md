@@ -85,7 +85,7 @@ This statement is the main mathematical result we intend to prove formally in Le
 - **`NPuzzle.lean`** — root of the `NPuzzle` library.
 - **`NPuzzle/FourFour/`** — 4×4 formalization (see [PLAN.md](PLAN.md) for the proof checklist).
 - **`NPuzzle/FourFour/Sufficiency.lean`** — target theorem `solvability_four_four`.
-- **9b.3 (one sorry left):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileConnectivity.lean` — tile-list permutations and connectivity with the blank at bottom-right.
+- **9b.3 (closed):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileRelabel.lean`, `TileConnectivity.lean` — tile-list permutations, even-permutation realization, and connectivity with the blank at bottom-right.
 
 Build the library: `lake build`.
 
@@ -107,8 +107,8 @@ For even width **M = 4**, the README criterion is
 | `TileInverse` — slide inverse / `Reachable` symmetry | Done |
 | `TilePerm` / `TileRank` — `tileListPerm`, `permOfCfg`, ranks | Done |
 | `TileSign` — `sign (tileListPerm) = negOnePow (inversionCount)`; even `invStat` ↔ `A₁₅` | Done |
-| `TileReach` — `PermRealizable`, `reachable_goal_to_cfg_bottomRight` | 1 `sorry` (`permRealizable_of_mem_alternating`) |
-| `TileConnectivity` — `tiles_to_goal_at_bottomRight` | Done modulo `TileReach` |
-| **Sufficiency:** correct parity ⇒ reachable `goal` | **In progress** — one `sorry` in `TileReach.lean` |
+| `TileReach` — `PermRealizable`, `reachable_goal_to_cfg_bottomRight` | Done |
+| `TileConnectivity` — `tiles_to_goal_at_bottomRight` | Done |
+| **Sufficiency:** correct parity ⇒ reachable `goal` | **Done** |
 
-The statement `solvability_four_four` is fully written in Lean and the dependency chain builds (`TileSign` → `TileReach` → `Sufficiency`). The **only remaining gap** on the critical path is **`permRealizable_of_mem_alternating`** in `TileReach.lean`: every even permutation of the 15 tiles must be realizable from `goal` with the blank at bottom-right. Details: [PLAN.md](PLAN.md).
+The statement `solvability_four_four` is fully proved in Lean, and the dependency chain builds (`TileSign` → `TileReach` → `TileConnectivity` → `Sufficiency`) without `sorry` on the 4×4 critical path. The last group-theoretic step is `permRealizable_of_mem_alternating` in `TileReach.lean`: every even permutation of the 15 tiles is realized from `goal` with the blank at bottom-right. Details: [PLAN.md](PLAN.md).

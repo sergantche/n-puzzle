@@ -1,6 +1,6 @@
 # Reusable Lean artifacts
 
-What others can import from this repository **without** closing the full 4×4 sufficiency proof.  
+What others can import from this repository, and which modules are green but still 4×4-specific.  
 Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ---
@@ -51,12 +51,12 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ---
 
-## Not reusable yet (do not re-export)
+## Green but heavy / 4×4-specific
 
 | Module | Reason |
 |--------|--------|
-| `TileReach.lean` | **1 `sorry`:** `permRealizable_of_mem_alternating` |
-| `TileConnectivity.lean` | depends on `TileReach` |
+| `TileReach.lean` | Closed proof of `permRealizable_of_mem_alternating`, but the current generators and block argument are tuned to `Fin 15` / 4×4. |
+| `TileConnectivity.lean` | Closed 4×4 bottom-right connectivity, depends on the `TileReach` surface. |
 | `TileMacros.lean` | corner 3-cycle macro tuned to 4×4 geometry |
 | `Sufficiency.lean` | end-to-end theorem — integration test, not a library boundary |
 
@@ -73,6 +73,10 @@ import NPuzzle.FourFour.TileSign
 
 -- List inversion lemmas (namespace Inversion):
 import NPuzzle.FourFour.Inversion
+
+-- Closed 4×4 theorem:
+import NPuzzle.FourFour.Sufficiency
+#check NPuzzle.FourFour.solvability_four_four
 ```
 
 Add to your `lakefile.toml`:
@@ -94,7 +98,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | Step | Action | Blocks |
 |------|--------|--------|
 | **R1** | Keep this file aligned with green modules after each merge | — |
-| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | 4×4 proof |
+| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | cleaner API / Mathlib prep |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
@@ -113,6 +117,6 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | Necessity: reachable ⇒ parity class | `reachable_imp_parity` |
 | $\mathrm{sign}(\sigma) = (-1)^{I(L)}$ | `sign_tileListPerm_eq_neg_one_pow` |
 | Even tile perm ⇔ $A_{n-1}$ (blank fixed) | `invStat_even_iff_perm_alternating` |
-| Sufficiency: $A_{15}$ realized by slides | `permRealizable_of_mem_alternating` (**open**) |
+| Sufficiency: $A_{15}$ realized by slides | `permRealizable_of_mem_alternating` |
 
 Full bibliography: [paper/literature.md](paper/literature.md).

@@ -92,7 +92,7 @@ One paragraph in the paper; not core proof material.
 | **Lean 4 + Mathlib** | No packaged “solvability criterion”; `alternatingGroup`, 3-cycles, `sign`, perms — what this repo uses. |
 | **Coq / Isabelle** | Parity exercises; no full $m\times n$ criterion in one library found. |
 
-**This repo:** 4×4 (`NPuzzle.FourFour`); necessity done; sufficiency — one `sorry` (`permRealizable_of_mem_alternating` ≈ $A_{15}$ realizable from `goal`).
+**This repo:** 4×4 (`NPuzzle.FourFour`) is closed in Lean: necessity, sufficiency, and the end theorem `solvability_four_four` build without `sorry` on the critical path.
 
 ---
 
@@ -105,7 +105,7 @@ One paragraph in the paper; not core proof material.
 | $I(L)+r_B \bmod 2$ invariant | `Invariant.lean` |
 | Blank reaches any cell | `BlankGrid.lean`, `BlankReach.lean` |
 | $\mathrm{sign} = (-1)^{I(L)}$ at BR | `TileSign.lean` |
-| $A_{15}$ from 3-cycle | `TileMacros.lean`, `TileReach.lean` (**open**) |
+| $A_{15}$ from 3-cycle | `TileMacros.lean`, `TileReach.lean` |
 | Criterion ↔ reachability of `goal` | `Sufficiency.lean` |
 
 ---
