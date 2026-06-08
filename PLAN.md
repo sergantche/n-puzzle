@@ -3,7 +3,7 @@
 **Living documents:** [GOAL.md](GOAL.md) · [PLAN.md](PLAN.md) · [REUSE.md](REUSE.md).
 
 Repository goal: the [solvability criterion](README.md#target-theorem-solvability-criterion) in Lean 4.  
-**Current focus:** the **4×4** special case (`NPuzzle.FourFour`).
+**Current focus:** the **4×4** special case is closed; the `general-rectangular` branch is starting reusable `N×M` infrastructure.
 
 ---
 
@@ -115,8 +115,9 @@ Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GO
 | **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
 | **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
 | **R5** | **Mathlib PR:** list-inversion parity (layer A) | ⏳ planned | After R2; [GOAL.md](GOAL.md#mathlib-contribution-intention); puzzle modules out of scope |
+| **R6** | Start rectangular geometry core | ✅ started | `NPuzzle/Rect/Basic.lean`: `Board`, `Cell`, row-major cells, adjacency |
 
-`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the remaining generalization work is to build rectangular-grid analogues of the full cycle and compatible 3-cycle macros.
+`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the first board-generic geometry component is `NPuzzle/Rect/Basic.lean`. The remaining generalization work is to build rectangular-grid analogues of the full cycle and compatible 3-cycle macros.
 
 ---
 
@@ -138,9 +139,9 @@ Outline: [paper/outline.md](paper/outline.md) · build: `cd paper/tex && make cl
 
 ---
 
-## After 4×4 (out of scope for now)
+## After 4×4
 
-- General `N×M` (separate theory / modules).
+- General `N×M` (separate theory / modules), now started on `general-rectangular`.
 - Full README criterion for odd `M` (inversion-only).
 - Layer B/C parameterized by `Fin (m*n)` instead of `Fin 16`.
 

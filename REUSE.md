@@ -39,6 +39,18 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ---
 
+### Layer C0 — Rectangular board geometry
+
+| Module | Key exports |
+|--------|-------------|
+| `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `cellsRowMajor`, `cellsRowMajorExcept` |
+
+**Typical consumer:** the next `N×M` proof layer, before adding tile labels and parity.
+
+**General:** parameterized by positive row/column counts; independent of 4×4 tile labels.
+
+---
+
 ### Layer C — Blank geometry and config glue
 
 | Module | Key exports |
@@ -89,6 +101,9 @@ import NPuzzle.FourFour.Inversion
 -- Closed 4×4 theorem:
 import NPuzzle.FourFour.Sufficiency
 #check NPuzzle.FourFour.solvability_four_four
+
+-- Parameterized rectangular board geometry:
+import NPuzzle.Rect.Basic
 ```
 
 Add to your `lakefile.toml`:
@@ -115,6 +130,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
+| **R6** | Add `NPuzzle.Rect.Basic` as the first board-generic geometry layer | general `N×M` proof |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
