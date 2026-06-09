@@ -47,8 +47,9 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `cellsRowMajor`, `cellsRowMajorExcept` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
+| `NPuzzle/Rect/Invariant.lean` | `parityClass_legalStep_of_invStat_mod`, `parityClass_reachable_of_invStat_mod` |
 
-**Typical consumer:** the next `N×M` proof layer, before proving parity invariance and generator macros.
+**Typical consumer:** the next `N×M` proof layer, before proving list-level slide lemmas and generator macros.
 
 **General:** parameterized by positive row/column counts; independent of 4×4 cell indices.
 
@@ -116,6 +117,9 @@ import NPuzzle.Rect.Config
 
 -- Parameterized rectangular parity statistic:
 import NPuzzle.Rect.Parity
+
+-- Conditional rectangular parity-invariance shell:
+import NPuzzle.Rect.Invariant
 ```
 
 Add to your `lakefile.toml`:
@@ -142,7 +146,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` as the first board-generic layer | general `N×M` proof |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | general `N×M` proof |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 

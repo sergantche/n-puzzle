@@ -115,9 +115,9 @@ Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GO
 | **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
 | **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
 | **R5** | **Mathlib PR:** list-inversion parity (layer A) | ⏳ planned | After R2; [GOAL.md](GOAL.md#mathlib-contribution-intention); puzzle modules out of scope |
-| **R6** | Start rectangular core | ✅ started | `NPuzzle/Rect/Basic.lean`, `Config.lean`, `Parity.lean`: board geometry, moves, README parity statistic |
+| **R6** | Start rectangular core | ✅ started | `NPuzzle/Rect/Basic.lean`, `Config.lean`, `Parity.lean`, `Invariant.lean`: board geometry, moves, README parity statistic, conditional invariance shell |
 
-`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the first board-generic surface is `NPuzzle.Rect` (`Basic`, `Config`, `Parity`). The remaining generalization work is to prove rectangular parity invariance and build rectangular-grid analogues of the full cycle and compatible 3-cycle macros.
+`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the first board-generic surface is `NPuzzle.Rect` (`Basic`, `Config`, `Parity`, `Invariant`). The remaining generalization work is to prove the list-level slide lemmas that discharge the conditional invariance shell, then build rectangular-grid analogues of the full cycle and compatible 3-cycle macros.
 
 ---
 

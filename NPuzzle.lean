@@ -5,6 +5,7 @@ import NPuzzle.List.Inversion
 import NPuzzle.Rect.Basic
 import NPuzzle.Rect.Config
 import NPuzzle.Rect.Parity
+import NPuzzle.Rect.Invariant
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
 import NPuzzle.FourFour.Inversion

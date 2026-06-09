@@ -240,4 +240,32 @@ lemma tileList_length {B : Board} (cfg : Config B) :
     (tileList cfg).length = B.tileCount := by
   rw [tileList, List.length_map, cellsRowMajorExcept_length]
 
+lemma cfg_cells_injective_of_ne_blank {B : Board} (cfg : Config B) {i j : Cell B}
+    (hi : i ≠ blank cfg) (hij : cfg.cells i = cfg.cells j) :
+    i = j := by
+  have hi0 : cfg.cells i ≠ 0 := by
+    intro h0
+    exact hi (ExistsUnique.unique cfg.valid.2.1 h0 (blank_zero cfg))
+  have hk : 1 ≤ cfg.cells i ∧ cfg.cells i ≤ B.tileCount := by
+    constructor
+    · omega
+    · exact cfg.valid.1 i
+  rcases cfg.valid.2.2 (cfg.cells i) hk with ⟨w, hw, huniq⟩
+  have hji : j = i := (huniq j hij.symm).trans (huniq i rfl).symm
+  exact hji.symm
+
+lemma tileList_get_rankExcept {B : Board} (cfg : Config B) (c : Cell B)
+    (hc : c ≠ blank cfg) :
+    (tileList cfg)[rankExcept (blank cfg) c]'(by
+      rw [tileList, List.length_map]
+      exact rankExcept_lt hc) = cfg.cells c := by
+  simp [tileList, List.getElem_map, rankExcept_getElem hc]
+
+lemma tileList_nodup {B : Board} (cfg : Config B) : (tileList cfg).Nodup := by
+  rw [tileList]
+  refine List.Nodup.map_on ?_ (cellsRowMajorExcept_nodup _)
+  intro a ha b hb hab
+  exact cfg_cells_injective_of_ne_blank cfg
+    (cellsRowMajorExcept_ne ha) hab
+
 end NPuzzle.Rect
