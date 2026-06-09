@@ -14,6 +14,34 @@ paths: a closed path whose induced tile permutation is a compatible full cycle
 is enough for the bottom-right sufficiency tail.
 -/
 
+lemma closedFullList_left_compat_of_prefix {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {ys : List (Cell B)}
+    (hxs : ∀ c ∈ cornerLeft B :: cornerUpLeft B :: ys, c ≠ bottomRight B)
+    (hnd :
+      ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+        (nonblankCellEquivFin B)).Nodup) :
+    List.formPerm
+        ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+          (nonblankCellEquivFin B))
+        (cornerLeftIdx B hcols) =
+      cornerUpLeftIdx B hrows := by
+  let L :=
+    (nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+      (nonblankCellEquivFin B)
+  have hL0 : 0 < L.length := by
+    simp [L, nonblankSubtypeList]
+  have hL1 : 1 < L.length := by
+    simp [L, nonblankSubtypeList]
+  have h0 : L[0]'hL0 = cornerLeftIdx B hcols := by
+    apply Fin.ext
+    simp [L, nonblankSubtypeList, cornerLeftIdx]
+  have h1 : L[1]'hL1 = cornerUpLeftIdx B hrows := by
+    apply Fin.ext
+    simp [L, nonblankSubtypeList, cornerUpLeftIdx]
+  have h := List.formPerm_apply_getElem L hnd 0 hL0
+  simpa [L, h0, h1] using h
+
 lemma reachable_goal_to_cfg_bottomRight_of_closedFullPath {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     {xs : List (Cell B)}
