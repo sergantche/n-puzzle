@@ -197,4 +197,47 @@ lemma tiles_to_goal_bottomRight_of_leftClosedFullList {B : Board}
     (reachable_goal_to_cfg_bottomRight_of_leftClosedFullList hrows hcols
       hchain hxs hcycle hsupp hcompat cfg hbr hpar)
 
+lemma reachable_goal_to_cfg_bottomRight_of_prefixedFullList {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {ys : List (Cell B)}
+    (hchain :
+      AdjacentChain (bottomRight B)
+        ((cornerLeft B :: cornerUpLeft B :: ys) ++ [bottomRight B]))
+    (hxs : ∀ c ∈ cornerLeft B :: cornerUpLeft B :: ys, c ≠ bottomRight B)
+    (hnd :
+      ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+        (nonblankCellEquivFin B)).Nodup)
+    (huniv :
+      ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+        (nonblankCellEquivFin B)).toFinset = Finset.univ)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_leftClosedFullList hrows hcols
+    hchain hxs
+    (formPerm_isCycle_of_nodup_toFinset_univ hrows hcols hnd huniv)
+    (support_formPerm_of_nodup_toFinset_univ hrows hcols hnd huniv)
+    (closedFullList_left_compat_of_prefix hrows hcols hxs hnd)
+    cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_prefixedFullList {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {ys : List (Cell B)}
+    (hchain :
+      AdjacentChain (bottomRight B)
+        ((cornerLeft B :: cornerUpLeft B :: ys) ++ [bottomRight B]))
+    (hxs : ∀ c ∈ cornerLeft B :: cornerUpLeft B :: ys, c ≠ bottomRight B)
+    (hnd :
+      ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+        (nonblankCellEquivFin B)).Nodup)
+    (huniv :
+      ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) hxs).map
+        (nonblankCellEquivFin B)).toFinset = Finset.univ)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_prefixedFullList hrows hcols
+      hchain hxs hnd huniv cfg hbr hpar)
+
 end NPuzzle.Rect
