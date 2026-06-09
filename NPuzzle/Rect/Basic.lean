@@ -281,4 +281,30 @@ lemma rankExcept_injective {B : Board} {skip c c' : Cell B}
     c = c' := by
   exact (rankExcept_getElem hc).symm.trans (by simpa [h] using rankExcept_getElem hc')
 
+/-- Nonblank cells, in row-major order, are equivalent to tile-list indices. -/
+noncomputable def nonblankCellEquivFin (B : Board) :
+    {c : Cell B // c ≠ bottomRight B} ≃ Fin B.tileCount where
+  toFun c :=
+    ⟨rankExcept (bottomRight B) c.1, by
+      rw [← cellsRowMajorExcept_length]
+      exact rankExcept_lt c.2⟩
+  invFun i :=
+    ⟨(cellsRowMajorExcept (bottomRight B))[i.1]'(by
+        rw [cellsRowMajorExcept_length]
+        exact i.2),
+      cellsRowMajorExcept_ne (List.getElem_mem (by
+        rw [cellsRowMajorExcept_length]
+        exact i.2))⟩
+  left_inv c := by
+    apply Subtype.ext
+    exact rankExcept_getElem c.2
+  right_inv i := by
+    apply Fin.ext
+    simp [rankExcept_cellsRowMajorExcept]
+
+@[simp]
+lemma nonblankCellEquivFin_apply_val {B : Board}
+    (c : {c : Cell B // c ≠ bottomRight B}) :
+    (nonblankCellEquivFin B c).val = rankExcept (bottomRight B) c.1 := rfl
+
 end NPuzzle.Rect
