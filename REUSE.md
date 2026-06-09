@@ -9,17 +9,16 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ### Layer A — Pure list combinatorics
 
-**Modules:** `NPuzzle/List/Inversion.lean` (shared definition) and `NPuzzle/FourFour/Inversion.lean` (current lemma store).
+**Modules:** `NPuzzle/List/Inversion.lean` (shared definition and list-move lemmas) and `NPuzzle/FourFour/Inversion.lean` (current 4×4 puzzle-glue store).
 
 **Provides:**
 
-- `inversionCount` in `NPuzzle.List`
-- `headInv`, `bubbleRight`, `bubbleLeft` in `NPuzzle.FourFour.Inversion`
+- `inversionCount`, `headInv`, `bubbleRight`, `bubbleLeft` in `NPuzzle.List`
 - adjacent swap toggles `inversionCount mod 2` (with `Nodup`)
 - `eraseIdx` / `insertIdx`: parity flips by `Nat.dist p q`
 - `inversionCount_eq_zero_iff_sorted`, `exists_adjacent_gt_of_inversionCount_pos`
 
-**Depends on today:** the reusable definition has no puzzle dependency; most parity lemmas still import 4×4 puzzle glue.
+**Depends on today:** the reusable list layer has no puzzle dependency; some 4×4 parity lemmas still duplicate/import older puzzle glue.
 
 **Typical consumer:** any formalization where a move permutes a list and parity is the invariant (puzzles, sorting networks, permutation games).
 

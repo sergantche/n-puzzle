@@ -111,7 +111,7 @@ Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GO
 |----|------|--------|-------|
 | **R0** | Extract group-theoretic tail: full cycle + compatible 3-cycle ⇒ `alternatingGroup` | ✅ started | `NPuzzle/Group/CycleThree.lean`; used by 4×4 `TileReach` |
 | **R1** | Maintain [REUSE.md](REUSE.md) after green-module changes | 🔄 ongoing | Update import table and heavy/4×4-specific surface |
-| **R2** | Extract layer A → `NPuzzle/List/Inversion.lean` | ✅ advanced | shared `inversionCount`, `inversionCount_erase_insert_mod`, list move helpers |
+| **R2** | Extract layer A → `NPuzzle/List/Inversion.lean` | ✅ advanced | shared `inversionCount`, `inversionCount_erase_insert_mod`, list move helpers, sorted/adjacent-inversion lemmas |
 | **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
 | **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
 | **R5** | **Mathlib PR:** list-inversion parity (layer A) | ⏳ planned | After R2; [GOAL.md](GOAL.md#mathlib-contribution-intention); puzzle modules out of scope |
