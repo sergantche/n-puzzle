@@ -63,6 +63,23 @@ lemma swapAlongList_append {B : Board} (cells : Cell B → ℕ)
   | cons x xs ih =>
       simp [ih]
 
+lemma swapAlongList_of_not_mem {B : Board} (cells : Cell B → ℕ)
+    {a c : Cell B} {xs : List (Cell B)}
+    (hca : c ≠ a) (hcxs : c ∉ xs) :
+    swapAlongList cells a xs c = cells c := by
+  induction xs generalizing cells a with
+  | nil => rfl
+  | cons b rest ih =>
+      have hcb : c ≠ b := by
+        intro h
+        exact hcxs (by simp [h])
+      have hcrest : c ∉ rest := by
+        intro h
+        exact hcxs (by simp [h])
+      rw [swapAlongList_cons]
+      rw [ih (cells := swapAt cells a b) (a := b) hcb hcrest]
+      exact swapAt_of_ne hca hcb
+
 lemma swapAlongBlankPathStart_eq_swapAlongList {B : Board} (cells : Cell B → ℕ)
     {a t : Cell B} (path : BlankGridPath a t) :
     swapAlongBlankPathStart cells a t path =
