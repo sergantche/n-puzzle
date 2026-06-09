@@ -104,6 +104,81 @@ lemma cornerUp_ne_cornerLeft {B : Board} (hrows : 2 ≤ B.rows) :
     cornerUp B ≠ cornerLeft B :=
   (cornerLeft_ne_cornerUp hrows).symm
 
+/-- Tile-list index of `cornerLeft` when the blank is at `bottomRight`. -/
+def cornerLeftIdx (B : Board) (hcols : 2 ≤ B.cols) : Fin B.tileCount :=
+  ⟨rankExcept (bottomRight B) (cornerLeft B), by
+    rw [← cellsRowMajorExcept_length]
+    exact rankExcept_lt (cornerLeft_ne_bottomRight hcols)⟩
+
+/-- Tile-list index of `cornerUpLeft` when the blank is at `bottomRight`. -/
+def cornerUpLeftIdx (B : Board) (hrows : 2 ≤ B.rows) : Fin B.tileCount :=
+  ⟨rankExcept (bottomRight B) (cornerUpLeft B), by
+    rw [← cellsRowMajorExcept_length]
+    exact rankExcept_lt (cornerUpLeft_ne_bottomRight hrows)⟩
+
+/-- Tile-list index of `cornerUp` when the blank is at `bottomRight`. -/
+def cornerUpIdx (B : Board) (hrows : 2 ≤ B.rows) : Fin B.tileCount :=
+  ⟨rankExcept (bottomRight B) (cornerUp B), by
+    rw [← cellsRowMajorExcept_length]
+    exact rankExcept_lt (cornerUp_ne_bottomRight hrows)⟩
+
+@[simp]
+lemma cornerLeftIdx_ne_cornerUpLeftIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerLeftIdx B hcols ≠ cornerUpLeftIdx B hrows := by
+  intro h
+  have hrank := congrArg Fin.val h
+  simp [cornerLeftIdx, cornerUpLeftIdx] at hrank
+  exact cornerLeft_ne_cornerUpLeft hrows
+    (rankExcept_injective
+      (cornerLeft_ne_bottomRight hcols)
+      (cornerUpLeft_ne_bottomRight hrows)
+      hrank)
+
+@[simp]
+lemma cornerUpLeftIdx_ne_cornerLeftIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerUpLeftIdx B hrows ≠ cornerLeftIdx B hcols :=
+  (cornerLeftIdx_ne_cornerUpLeftIdx hrows hcols).symm
+
+@[simp]
+lemma cornerUpLeftIdx_ne_cornerUpIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerUpLeftIdx B hrows ≠ cornerUpIdx B hrows := by
+  intro h
+  have hrank := congrArg Fin.val h
+  simp [cornerUpLeftIdx, cornerUpIdx] at hrank
+  exact cornerUpLeft_ne_cornerUp hcols
+    (rankExcept_injective
+      (cornerUpLeft_ne_bottomRight hrows)
+      (cornerUp_ne_bottomRight hrows)
+      hrank)
+
+@[simp]
+lemma cornerUpIdx_ne_cornerUpLeftIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerUpIdx B hrows ≠ cornerUpLeftIdx B hrows :=
+  (cornerUpLeftIdx_ne_cornerUpIdx hrows hcols).symm
+
+@[simp]
+lemma cornerUpIdx_ne_cornerLeftIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerUpIdx B hrows ≠ cornerLeftIdx B hcols := by
+  intro h
+  have hrank := congrArg Fin.val h
+  simp [cornerUpIdx, cornerLeftIdx] at hrank
+  exact cornerUp_ne_cornerLeft hrows
+    (rankExcept_injective
+      (cornerUp_ne_bottomRight hrows)
+      (cornerLeft_ne_bottomRight hcols)
+      hrank)
+
+@[simp]
+lemma cornerLeftIdx_ne_cornerUpIdx {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerLeftIdx B hcols ≠ cornerUpIdx B hrows :=
+  (cornerUpIdx_ne_cornerLeftIdx hrows hcols).symm
+
 lemma adjacent_bottomRight_cornerLeft (B : Board) (hcols : 2 ≤ B.cols) :
     adjacent (bottomRight B) (cornerLeft B) := by
   left
