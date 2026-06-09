@@ -12,6 +12,45 @@ inductive BlankGridPath {B : Board} : Cell B → Cell B → Type
   | cons {a b t : Cell B} (hab : adjacent a b) (rest : BlankGridPath b t) :
       BlankGridPath a t
 
+namespace BlankGridPath
+
+/-- Concatenate blank-grid paths. -/
+def append {B : Board} {a b c : Cell B} :
+    BlankGridPath a b → BlankGridPath b c → BlankGridPath a c
+  | .nil _, q => q
+  | .cons hab rest, q => .cons hab (append rest q)
+
+@[simp]
+lemma nil_append {B : Board} {a b : Cell B} (p : BlankGridPath a b) :
+    append (.nil a) p = p := rfl
+
+@[simp]
+lemma append_nil {B : Board} {a b : Cell B} (p : BlankGridPath a b) :
+    append p (.nil b) = p := by
+  induction p with
+  | nil _ => rfl
+  | cons hab rest ih => simp [append, ih]
+
+@[simp]
+lemma append_assoc {B : Board} {a b c d : Cell B}
+    (p : BlankGridPath a b) (q : BlankGridPath b c) (r : BlankGridPath c d) :
+    append (append p q) r = append p (append q r) := by
+  induction p with
+  | nil _ => rfl
+  | cons hab rest ih => simp [append, ih]
+
+/-- Reverse a blank-grid path. -/
+def reverse {B : Board} {a b : Cell B} :
+    BlankGridPath a b → BlankGridPath b a
+  | .nil a => .nil a
+  | .cons hab rest => append (reverse rest) (.cons (adjacent_symm hab) (.nil _))
+
+@[simp]
+lemma reverse_nil {B : Board} (a : Cell B) :
+    reverse (.nil a) = .nil a := rfl
+
+end BlankGridPath
+
 /-- One legal slide as reachability. -/
 lemma reachable_one_step {B : Board} (cfg : Config B) (n : Cell B)
     (h : adjacent (blank cfg) n) :
