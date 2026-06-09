@@ -1,3 +1,4 @@
+import Mathlib.Data.Nat.Dist
 import NPuzzle.Rect.TileInverse
 
 namespace NPuzzle.Rect
@@ -51,6 +52,78 @@ lemma reverse_nil {B : Board} (a : Cell B) :
 
 end BlankGridPath
 
+/-- Any two cells in the same row are connected by a blank-grid path. -/
+lemma existsBlankGridPath_row {B : Board} (r : Fin B.rows) (c d : Fin B.cols) :
+    Nonempty (BlankGridPath (r, c) (r, d)) := by
+  by_cases hcd : c = d
+  · subst d
+    exact ⟨.nil _⟩
+  · by_cases hlt : c.val < d.val
+    · let c' : Fin B.cols := ⟨c.val + 1, by omega⟩
+      have hdist : Nat.dist c'.val d.val < Nat.dist c.val d.val := by
+        simp [c']
+        rw [Nat.dist_eq_sub_of_le (Nat.succ_le_of_lt hlt),
+          Nat.dist_eq_sub_of_le (Nat.le_of_lt hlt)]
+        omega
+      rcases existsBlankGridPath_row r c' d with ⟨p⟩
+      exact ⟨.cons (adjacent_right r c (by omega)) p⟩
+    · have hgt : d.val < c.val := by
+        have hvne : c.val ≠ d.val := fun hv => hcd (Fin.ext hv)
+        omega
+      let c' : Fin B.cols := ⟨c.val - 1, by omega⟩
+      have hdist : Nat.dist c'.val d.val < Nat.dist c.val d.val := by
+        simp [c']
+        rw [Nat.dist_eq_sub_of_le_right (by omega : d.val ≤ c.val - 1),
+          Nat.dist_eq_sub_of_le_right (Nat.le_of_lt hgt)]
+        omega
+      rcases existsBlankGridPath_row r c' d with ⟨p⟩
+      exact ⟨.cons (adjacent_left r c (by omega)) p⟩
+termination_by Nat.dist c.val d.val
+
+/-- Any two cells in the same column are connected by a blank-grid path. -/
+lemma existsBlankGridPath_col {B : Board} (c : Fin B.cols) (r s : Fin B.rows) :
+    Nonempty (BlankGridPath (r, c) (s, c)) := by
+  by_cases hrs : r = s
+  · subst s
+    exact ⟨.nil _⟩
+  · by_cases hlt : r.val < s.val
+    · let r' : Fin B.rows := ⟨r.val + 1, by omega⟩
+      have hdist : Nat.dist r'.val s.val < Nat.dist r.val s.val := by
+        simp [r']
+        rw [Nat.dist_eq_sub_of_le (Nat.succ_le_of_lt hlt),
+          Nat.dist_eq_sub_of_le (Nat.le_of_lt hlt)]
+        omega
+      rcases existsBlankGridPath_col c r' s with ⟨p⟩
+      exact ⟨.cons (adjacent_down r c (by omega)) p⟩
+    · have hgt : s.val < r.val := by
+        have hvne : r.val ≠ s.val := fun hv => hrs (Fin.ext hv)
+        omega
+      let r' : Fin B.rows := ⟨r.val - 1, by omega⟩
+      have hdist : Nat.dist r'.val s.val < Nat.dist r.val s.val := by
+        simp [r']
+        rw [Nat.dist_eq_sub_of_le_right (by omega : s.val ≤ r.val - 1),
+          Nat.dist_eq_sub_of_le_right (Nat.le_of_lt hgt)]
+        omega
+      rcases existsBlankGridPath_col c r' s with ⟨p⟩
+      exact ⟨.cons (adjacent_up r c (by omega)) p⟩
+termination_by Nat.dist r.val s.val
+
+/-- A concrete blank-grid path inside one row. -/
+noncomputable def blankGridPath_row {B : Board} (r : Fin B.rows) (c d : Fin B.cols) :
+    BlankGridPath (r, c) (r, d) :=
+  Classical.choice (existsBlankGridPath_row r c d)
+
+/-- A concrete blank-grid path inside one column. -/
+noncomputable def blankGridPath_col {B : Board} (c : Fin B.cols) (r s : Fin B.rows) :
+    BlankGridPath (r, c) (s, c) :=
+  Classical.choice (existsBlankGridPath_col c r s)
+
+/-- L-shaped blank-grid path between any two cells. -/
+noncomputable def blankGridPath_any {B : Board} (a b : Cell B) : BlankGridPath a b := by
+  rcases a with ⟨ra, ca⟩
+  rcases b with ⟨rb, cb⟩
+  exact BlankGridPath.append (blankGridPath_row ra ca cb) (blankGridPath_col cb ra rb)
+
 /-- One legal slide as reachability. -/
 lemma reachable_one_step {B : Board} (cfg : Config B) (n : Cell B)
     (h : adjacent (blank cfg) n) :
@@ -82,5 +155,10 @@ lemma reachable_blank_gridPath {B : Board} (cfg : Config B) (t : Cell B)
     (path : BlankGridPath (blank cfg) t) :
     ∃ cfg', Reachable cfg cfg' ∧ blank cfg' = t :=
   reachable_blank_gridPath_start (blank cfg) cfg rfl t path
+
+/-- The blank can be moved to any target cell. -/
+lemma reachable_blank_any {B : Board} (cfg : Config B) (t : Cell B) :
+    ∃ cfg', Reachable cfg cfg' ∧ blank cfg' = t :=
+  reachable_blank_gridPath cfg t (blankGridPath_any (blank cfg) t)
 
 end NPuzzle.Rect
