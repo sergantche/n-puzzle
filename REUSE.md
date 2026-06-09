@@ -46,7 +46,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `adjacent_right`, `adjacent_left`, `adjacent_down`, `adjacent_up`, `cellsRowMajor`, `cellsRowMajorExcept`, `rankExcept_of_index_lt`, `rankExcept_of_index_gt` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/TileInverse.lean` | `slide_inv`, `legalStep_symm`, `reachable_symm` |
-| `NPuzzle/Rect/Reach.lean` | `BlankGridPath`, `BlankGridPath.vertices`, `BlankGridPath.append`, `BlankGridPath.reverse`, `blankGridPath_row`, `blankGridPath_col`, `blankGridPath_any`, `reachable_one_step`, `reachable_blank_gridPath`, `reachable_blank_any` |
+| `NPuzzle/Rect/Reach.lean` | `BlankGridPath`, `BlankGridPath.vertices`, `BlankGridPath.append`, `BlankGridPath.reverse`, `blankGridPath_row`, `blankGridPath_col`, `blankGridPath_any`, `followBlankGridPathStart`, `reachable_one_step`, `reachable_blank_gridPath`, `reachable_blank_any` |
 | `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, `cornerLeftIdx`, `cornerUpLeftIdx`, `cornerUpIdx`, bottom-right 2x2 adjacency/distinctness lemmas, `cornerCyclePath`, `cornerCycleCells`, `cornerCycleCfg`, `blank_cornerCycleCfg`, `cornerCycleCfg_cells_*`, `reachable_cornerCycleCfg`, `reachable_cornerCycle_blank` |
 | `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/CornerRealizable.lean` | `cornerCycleCfg_goal_eq_relabel_cornerPerm`, `permOfCfg_cornerCycleCfg_goal`, `cornerPerm_realizable` |

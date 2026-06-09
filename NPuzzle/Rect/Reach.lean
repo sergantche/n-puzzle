@@ -158,6 +158,41 @@ lemma reachable_blank_step {B : Board} (cfg : Config B) (n : Cell B)
     Reachable cfg (slide cfg n hadj) ∧ blank (slide cfg n hadj) = n :=
   ⟨reachable_one_step cfg n hadj, blank_slide cfg n hadj⟩
 
+/-- Run a concrete blank-grid path from a configuration whose blank is at the path start. -/
+noncomputable def followBlankGridPathStart {B : Board} (a : Cell B) (cfg : Config B)
+    (ha : blank cfg = a) (t : Cell B) : BlankGridPath a t → Config B
+  | .nil _ => cfg
+  | .cons (b := b) hab rest =>
+      let h : adjacent (blank cfg) b := by
+        rw [ha]
+        exact hab
+      followBlankGridPathStart b (slide cfg b h) (blank_slide cfg b h) t rest
+
+lemma blank_followBlankGridPathStart {B : Board} (a : Cell B) (cfg : Config B)
+    (ha : blank cfg = a) (t : Cell B) (path : BlankGridPath a t) :
+    blank (followBlankGridPathStart a cfg ha t path) = t := by
+  match path with
+  | .nil _ => simpa [followBlankGridPathStart] using ha
+  | .cons (b := b) hab rest =>
+      let h : adjacent (blank cfg) b := by
+        rw [ha]
+        exact hab
+      exact blank_followBlankGridPathStart b (slide cfg b h) (blank_slide cfg b h) t rest
+
+lemma reachable_followBlankGridPathStart {B : Board} (a : Cell B) (cfg : Config B)
+    (ha : blank cfg = a) (t : Cell B) (path : BlankGridPath a t) :
+    Reachable cfg (followBlankGridPathStart a cfg ha t path) := by
+  match path with
+  | .nil _ =>
+      simp [followBlankGridPathStart]
+      exact Relation.ReflTransGen.refl
+  | .cons (b := b) hab rest =>
+      let h : adjacent (blank cfg) b := by
+        rw [ha]
+        exact hab
+      exact Relation.ReflTransGen.trans (reachable_one_step cfg b h)
+        (reachable_followBlankGridPathStart b (slide cfg b h) (blank_slide cfg b h) t rest)
+
 /-- Along a `BlankGridPath` from `a`, move the blank from `blank cfg = a` to `t`. -/
 lemma reachable_blank_gridPath_start {B : Board} (a : Cell B) (cfg : Config B)
     (ha : blank cfg = a) (t : Cell B) (path : BlankGridPath a t) :
