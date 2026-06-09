@@ -16,6 +16,12 @@ def swapAlongBlankPathStart {B : Board} (cells : Cell B → ℕ) (a : Cell B)
   | .nil _ => cells
   | .cons (b := b) _ rest => swapAlongBlankPathStart (swapAt cells a b) b t rest
 
+/-- Cell labels after swapping from `a` through an explicit list of visited cells. -/
+def swapAlongList {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
+    List (Cell B) → Cell B → ℕ
+  | [] => cells
+  | b :: rest => swapAlongList (swapAt cells a b) b rest
+
 @[simp]
 lemma swapAlongBlankPathStart_nil {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
     swapAlongBlankPathStart cells a a (.nil a) = cells := rfl
@@ -25,6 +31,23 @@ lemma swapAlongBlankPathStart_cons {B : Board} (cells : Cell B → ℕ)
     {a b t : Cell B} (hab : adjacent a b) (rest : BlankGridPath b t) :
     swapAlongBlankPathStart cells a t (.cons hab rest) =
       swapAlongBlankPathStart (swapAt cells a b) b t rest := rfl
+
+@[simp]
+lemma swapAlongList_nil {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
+    swapAlongList cells a [] = cells := rfl
+
+@[simp]
+lemma swapAlongList_cons {B : Board} (cells : Cell B → ℕ) (a b : Cell B)
+    (rest : List (Cell B)) :
+    swapAlongList cells a (b :: rest) = swapAlongList (swapAt cells a b) b rest := rfl
+
+lemma swapAlongBlankPathStart_eq_swapAlongList {B : Board} (cells : Cell B → ℕ)
+    {a t : Cell B} (path : BlankGridPath a t) :
+    swapAlongBlankPathStart cells a t path =
+      swapAlongList cells a (BlankGridPath.vertices path) := by
+  induction path generalizing cells with
+  | nil _ => rfl
+  | cons hab rest ih => simp [ih]
 
 lemma followBlankGridPathStart_cells {B : Board} (a : Cell B) (cfg : Config B)
     (ha : blank cfg = a) (t : Cell B) (path : BlankGridPath a t) :
