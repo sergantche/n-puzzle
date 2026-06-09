@@ -1,6 +1,9 @@
+import Mathlib.GroupTheory.Perm.List
 import NPuzzle.Rect.Reach
 
 namespace NPuzzle.Rect
+
+open Equiv Equiv.Perm
 
 /-!
 Cell-level effect of running a blank path.
@@ -21,6 +24,11 @@ def swapAlongList {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
     List (Cell B) → Cell B → ℕ
   | [] => cells
   | b :: rest => swapAlongList (swapAt cells a b) b rest
+
+/-- The cell permutation induced by following a list from a starting cell. -/
+def cellPermAlongList {B : Board} (a : Cell B) : List (Cell B) → Equiv.Perm (Cell B)
+  | [] => 1
+  | b :: rest => Equiv.swap a b * cellPermAlongList b rest
 
 /-- Current blank location after following an explicit list of visited cells. -/
 def listEndpoint {B : Board} (a : Cell B) : List (Cell B) → Cell B
@@ -47,6 +55,14 @@ lemma swapAlongList_cons {B : Board} (cells : Cell B → ℕ) (a b : Cell B)
     swapAlongList cells a (b :: rest) = swapAlongList (swapAt cells a b) b rest := rfl
 
 @[simp]
+lemma cellPermAlongList_nil {B : Board} (a : Cell B) :
+    cellPermAlongList a [] = 1 := rfl
+
+@[simp]
+lemma cellPermAlongList_cons {B : Board} (a b : Cell B) (rest : List (Cell B)) :
+    cellPermAlongList a (b :: rest) = Equiv.swap a b * cellPermAlongList b rest := rfl
+
+@[simp]
 lemma listEndpoint_nil {B : Board} (a : Cell B) :
     listEndpoint a [] = a := rfl
 
@@ -62,6 +78,48 @@ lemma swapAlongList_append {B : Board} (cells : Cell B → ℕ)
   | nil => rfl
   | cons x xs ih =>
       simp [ih]
+
+lemma cellPermAlongList_append {B : Board} (a : Cell B)
+    (xs ys : List (Cell B)) :
+    cellPermAlongList a (xs ++ ys) =
+      cellPermAlongList a xs * cellPermAlongList (listEndpoint a xs) ys := by
+  induction xs generalizing a with
+  | nil => simp
+  | cons x xs ih =>
+      simp [ih, mul_assoc]
+
+lemma cellPermAlongList_eq_formPerm_cons {B : Board} (a : Cell B) (xs : List (Cell B)) :
+    cellPermAlongList a xs = List.formPerm (a :: xs) := by
+  induction xs generalizing a with
+  | nil => simp
+  | cons x xs ih =>
+      simp [ih]
+
+lemma swapAt_eq_apply_swap {B : Board} (cells : Cell B → ℕ) (a b c : Cell B) :
+    swapAt cells a b c = cells ((Equiv.swap a b) c) := by
+  by_cases hca : c = a
+  · subst c
+    simp [swapAt]
+  · by_cases hcb : c = b
+    · subst c
+      simp [swapAt, hca]
+    · simp [swapAt, hca, hcb, Equiv.swap_apply_of_ne_of_ne]
+
+lemma swapAlongList_eq_cellPermAlongList {B : Board} (cells : Cell B → ℕ)
+    (a : Cell B) (xs : List (Cell B)) (c : Cell B) :
+    swapAlongList cells a xs c = cells (cellPermAlongList a xs c) := by
+  induction xs generalizing cells a c with
+  | nil => simp
+  | cons b rest ih =>
+      calc
+        swapAlongList cells a (b :: rest) c =
+            swapAlongList (swapAt cells a b) b rest c := rfl
+        _ = swapAt cells a b (cellPermAlongList b rest c) :=
+            ih (cells := swapAt cells a b) (a := b) (c := c)
+        _ = cells ((Equiv.swap a b) (cellPermAlongList b rest c)) :=
+            swapAt_eq_apply_swap cells a b (cellPermAlongList b rest c)
+        _ = cells (cellPermAlongList a (b :: rest) c) := by
+            simp [Equiv.Perm.mul_apply]
 
 lemma swapAlongList_of_not_mem {B : Board} (cells : Cell B → ℕ)
     {a c : Cell B} {xs : List (Cell B)}
