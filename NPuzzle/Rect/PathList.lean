@@ -16,6 +16,22 @@ def AdjacentChain {B : Board} (a : Cell B) : List (Cell B) → Prop
   | [] => True
   | b :: xs => adjacent a b ∧ AdjacentChain b xs
 
+lemma AdjacentChain_singleton {B : Board} {a b : Cell B}
+    (h : adjacent a b) :
+    AdjacentChain a [b] :=
+  ⟨h, trivial⟩
+
+lemma AdjacentChain_append {B : Board} {a : Cell B}
+    {xs ys : List (Cell B)}
+    (hxs : AdjacentChain a xs)
+    (hys : AdjacentChain (listEndpoint a xs) ys) :
+    AdjacentChain a (xs ++ ys) := by
+  induction xs generalizing a with
+  | nil =>
+      exact hys
+  | cons x xs ih =>
+      exact ⟨hxs.1, ih hxs.2 hys⟩
+
 /-- Endpoint of a nonempty path list is its last cell. -/
 @[simp]
 lemma listEndpoint_append_singleton {B : Board} (a z : Cell B) (xs : List (Cell B)) :
