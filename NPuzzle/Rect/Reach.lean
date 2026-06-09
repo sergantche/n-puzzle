@@ -15,6 +15,20 @@ inductive BlankGridPath {B : Board} : Cell B → Cell B → Type
 
 namespace BlankGridPath
 
+/-- Cells visited after each step of a blank-grid path. -/
+def vertices {B : Board} {a b : Cell B} : BlankGridPath a b → List (Cell B)
+  | .nil _ => []
+  | .cons (b := b) _ rest => b :: vertices rest
+
+@[simp]
+lemma vertices_nil {B : Board} (a : Cell B) :
+    vertices (.nil a) = [] := rfl
+
+@[simp]
+lemma vertices_cons {B : Board} {a b t : Cell B}
+    (hab : adjacent a b) (rest : BlankGridPath b t) :
+    vertices (.cons hab rest) = b :: vertices rest := rfl
+
 /-- Concatenate blank-grid paths. -/
 def append {B : Board} {a b c : Cell B} :
     BlankGridPath a b → BlankGridPath b c → BlankGridPath a c
@@ -36,6 +50,14 @@ lemma append_nil {B : Board} {a b : Cell B} (p : BlankGridPath a b) :
 lemma append_assoc {B : Board} {a b c d : Cell B}
     (p : BlankGridPath a b) (q : BlankGridPath b c) (r : BlankGridPath c d) :
     append (append p q) r = append p (append q r) := by
+  induction p with
+  | nil _ => rfl
+  | cons hab rest ih => simp [append, ih]
+
+@[simp]
+lemma vertices_append {B : Board} {a b c : Cell B}
+    (p : BlankGridPath a b) (q : BlankGridPath b c) :
+    vertices (append p q) = vertices p ++ vertices q := by
   induction p with
   | nil _ => rfl
   | cons hab rest ih => simp [append, ih]
