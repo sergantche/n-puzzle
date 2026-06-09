@@ -10,6 +10,7 @@ import NPuzzle.Rect.Reach
 import NPuzzle.Rect.PathEffect
 import NPuzzle.Rect.PathTilePerm
 import NPuzzle.Rect.PathRealizable
+import NPuzzle.Rect.PathSufficiency
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
 import NPuzzle.Rect.CornerRealizable
