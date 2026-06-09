@@ -22,6 +22,11 @@ def swapAlongList {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
   | [] => cells
   | b :: rest => swapAlongList (swapAt cells a b) b rest
 
+/-- Current blank location after following an explicit list of visited cells. -/
+def listEndpoint {B : Board} (a : Cell B) : List (Cell B) → Cell B
+  | [] => a
+  | b :: rest => listEndpoint b rest
+
 @[simp]
 lemma swapAlongBlankPathStart_nil {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
     swapAlongBlankPathStart cells a a (.nil a) = cells := rfl
@@ -40,6 +45,23 @@ lemma swapAlongList_nil {B : Board} (cells : Cell B → ℕ) (a : Cell B) :
 lemma swapAlongList_cons {B : Board} (cells : Cell B → ℕ) (a b : Cell B)
     (rest : List (Cell B)) :
     swapAlongList cells a (b :: rest) = swapAlongList (swapAt cells a b) b rest := rfl
+
+@[simp]
+lemma listEndpoint_nil {B : Board} (a : Cell B) :
+    listEndpoint a [] = a := rfl
+
+@[simp]
+lemma listEndpoint_cons {B : Board} (a b : Cell B) (xs : List (Cell B)) :
+    listEndpoint a (b :: xs) = listEndpoint b xs := rfl
+
+lemma swapAlongList_append {B : Board} (cells : Cell B → ℕ)
+    (a : Cell B) (xs ys : List (Cell B)) :
+    swapAlongList cells a (xs ++ ys) =
+      swapAlongList (swapAlongList cells a xs) (listEndpoint a xs) ys := by
+  induction xs generalizing cells a with
+  | nil => rfl
+  | cons x xs ih =>
+      simp [ih]
 
 lemma swapAlongBlankPathStart_eq_swapAlongList {B : Board} (cells : Cell B → ℕ)
     {a t : Cell B} (path : BlankGridPath a t) :
