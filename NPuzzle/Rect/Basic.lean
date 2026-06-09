@@ -103,14 +103,50 @@ lemma cellsRowMajor_nodup (B : Board) : (cellsRowMajor B).Nodup := by
 
 /-- Row-major order, skipping one cell (usually the blank). -/
 def cellsRowMajorExcept {B : Board} (skip : Cell B) : List (Cell B) :=
-  (cellsRowMajor B).filter (· ≠ skip)
+  (cellsRowMajor B).erase skip
 
 lemma mem_cellsRowMajorExcept {B : Board} {skip c : Cell B} :
     c ∈ cellsRowMajorExcept skip ↔ c ≠ skip := by
-  simp [cellsRowMajorExcept, mem_cellsRowMajor]
+  rw [cellsRowMajorExcept, (cellsRowMajor_nodup B).mem_erase_iff]
+  simp [mem_cellsRowMajor]
+
+lemma cellsRowMajorExcept_ne {B : Board} {skip c : Cell B}
+    (hc : c ∈ cellsRowMajorExcept skip) : c ≠ skip :=
+  mem_cellsRowMajorExcept.mp hc
 
 lemma cellsRowMajorExcept_nodup {B : Board} (skip : Cell B) :
     (cellsRowMajorExcept skip).Nodup := by
-  exact (cellsRowMajor_nodup B).filter _
+  exact (cellsRowMajor_nodup B).erase skip
+
+lemma cellsRowMajorExcept_length {B : Board} (skip : Cell B) :
+    (cellsRowMajorExcept skip).length = B.tileCount := by
+  have hmem : skip ∈ cellsRowMajor B := mem_cellsRowMajor skip
+  have hlen := List.length_erase_add_one (a := skip) (l := cellsRowMajor B) hmem
+  rw [← cellsRowMajorExcept, cellsRowMajor_length] at hlen
+  rw [Board.tileCount]
+  omega
+
+/-- Index of `c` in the row-major cell list that skips `skip`. -/
+def rankExcept {B : Board} (skip c : Cell B) : ℕ :=
+  (cellsRowMajorExcept skip).idxOf c
+
+lemma rankExcept_lt {B : Board} {skip c : Cell B} (hc : c ≠ skip) :
+    rankExcept skip c < (cellsRowMajorExcept skip).length := by
+  exact List.idxOf_lt_length_of_mem (mem_cellsRowMajorExcept.mpr hc)
+
+lemma rankExcept_getElem {B : Board} {skip c : Cell B} (hc : c ≠ skip) :
+    (cellsRowMajorExcept skip)[rankExcept skip c]'(rankExcept_lt hc) = c := by
+  exact
+    List.idxOf_get (a := c) (l := cellsRowMajorExcept skip) (rankExcept_lt hc)
+
+lemma rankExcept_cellsRowMajorExcept {B : Board} (skip : Cell B) (j : ℕ)
+    (hj : j < (cellsRowMajorExcept skip).length) :
+    rankExcept skip ((cellsRowMajorExcept skip)[j]'hj) = j := by
+  simpa [rankExcept] using (cellsRowMajorExcept_nodup skip).idxOf_getElem j hj
+
+lemma rankExcept_injective {B : Board} {skip c c' : Cell B}
+    (hc : c ≠ skip) (hc' : c' ≠ skip) (h : rankExcept skip c = rankExcept skip c') :
+    c = c' := by
+  exact (rankExcept_getElem hc).symm.trans (by simpa [h] using rankExcept_getElem hc')
 
 end NPuzzle.Rect
