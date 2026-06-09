@@ -9,16 +9,17 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 ### Layer A — Pure list combinatorics
 
-**Module:** `NPuzzle/FourFour/Inversion.lean` (namespace `NPuzzle.FourFour.Inversion`, lines before the `FourFour`-specific glue).
+**Modules:** `NPuzzle/List/Inversion.lean` (shared definition) and `NPuzzle/FourFour/Inversion.lean` (current lemma store).
 
 **Provides:**
 
-- `headInv`, `bubbleRight`, `bubbleLeft`
+- `inversionCount` in `NPuzzle.List`
+- `headInv`, `bubbleRight`, `bubbleLeft` in `NPuzzle.FourFour.Inversion`
 - adjacent swap toggles `inversionCount mod 2` (with `Nodup`)
 - `eraseIdx` / `insertIdx`: parity flips by `Nat.dist p q`
 - `inversionCount_eq_zero_iff_sorted`, `exists_adjacent_gt_of_inversionCount_pos`
 
-**Depends on today:** `inversionCount` is defined in `FourFour.lean`; file also imports `TileListVertical` for puzzle lemmas at the bottom.
+**Depends on today:** the reusable definition has no puzzle dependency; most parity lemmas still import 4×4 puzzle glue.
 
 **Typical consumer:** any formalization where a move permutes a list and parity is the invariant (puzzles, sorting networks, permutation games).
 
@@ -45,8 +46,9 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 |--------|-------------|
 | `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `cellsRowMajor`, `cellsRowMajorExcept` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
+| `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
 
-**Typical consumer:** the next `N×M` proof layer, before adding parity and generator macros.
+**Typical consumer:** the next `N×M` proof layer, before proving parity invariance and generator macros.
 
 **General:** parameterized by positive row/column counts; independent of 4×4 cell indices.
 
@@ -99,6 +101,9 @@ import NPuzzle.FourFour.TileSign
 -- List inversion lemmas (namespace Inversion):
 import NPuzzle.FourFour.Inversion
 
+-- Shared inversion-count definition:
+import NPuzzle.List.Inversion
+
 -- Closed 4×4 theorem:
 import NPuzzle.FourFour.Sufficiency
 #check NPuzzle.FourFour.solvability_four_four
@@ -108,6 +113,9 @@ import NPuzzle.Rect.Basic
 
 -- Parameterized rectangular configurations and moves:
 import NPuzzle.Rect.Config
+
+-- Parameterized rectangular parity statistic:
+import NPuzzle.Rect.Parity
 ```
 
 Add to your `lakefile.toml`:
@@ -130,11 +138,11 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 |------|--------|--------|
 | **R1** | Keep this file aligned with green modules after each merge | — |
 | **R0** | Extract group tail: full cycle + compatible 3-cycle ⇒ `alternatingGroup` | done in `NPuzzle/Group/CycleThree.lean` |
-| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | cleaner API / Mathlib prep |
+| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | started: definition only |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` as the first board-generic layer | general `N×M` proof |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` as the first board-generic layer | general `N×M` proof |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
