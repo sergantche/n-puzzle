@@ -72,6 +72,20 @@ lemma support_formPerm_of_nodup_toFinset_univ {B : Board}
     have htc := Board.tileCount_ge_three hrows hcols
     omega
 
+/-- A closed full route whose first two cells align with the corner 3-cycle. -/
+structure PrefixedFullRoute (B : Board) (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) where
+  ys : List (Cell B)
+  chain :
+    AdjacentChain (bottomRight B)
+      ((cornerLeft B :: cornerUpLeft B :: ys) ++ [bottomRight B])
+  nonblank : ∀ c ∈ cornerLeft B :: cornerUpLeft B :: ys, c ≠ bottomRight B
+  nodup :
+    ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) nonblank).map
+      (nonblankCellEquivFin B)).Nodup
+  covers :
+    ((nonblankSubtypeList (cornerLeft B :: cornerUpLeft B :: ys) nonblank).map
+      (nonblankCellEquivFin B)).toFinset = Finset.univ
+
 lemma reachable_goal_to_cfg_bottomRight_of_closedFullPath {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     {xs : List (Cell B)}
@@ -239,5 +253,23 @@ lemma tiles_to_goal_bottomRight_of_prefixedFullList {B : Board}
   reachable_symm
     (reachable_goal_to_cfg_bottomRight_of_prefixedFullList hrows hcols
       hchain hxs hnd huniv cfg hbr hpar)
+
+lemma reachable_goal_to_cfg_bottomRight_of_prefixedFullRoute {B : Board}
+    {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
+    (route : PrefixedFullRoute B hrows hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_prefixedFullList hrows hcols
+    route.chain route.nonblank route.nodup route.covers cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_prefixedFullRoute {B : Board}
+    {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
+    (route : PrefixedFullRoute B hrows hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_prefixedFullRoute route cfg hbr hpar)
 
 end NPuzzle.Rect
