@@ -60,6 +60,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/TileRelabel.lean` | `relabelConfig`, `reachable_relabel`, `tileListPerm_relabel`, `tileListPerm_congr`, `permOfCfg_relabel` |
 | `NPuzzle/Rect/Realizable.lean` | `PermRealizable`, `permRealizableSubgroup`, `permRealizable_mul`, `permRealizable_inv`, `permRealizable_of_mem_closure` |
 | `NPuzzle/Rect/AbstractSufficiency.lean` | `invStat_even_of_parity_bottomRight`, `permRealizable_of_mem_alternating_of_generators`, `reachable_goal_to_cfg_bottomRight_of_parity_generators`, `tiles_to_goal_bottomRight_of_parity_generators` |
+| `NPuzzle/Rect/GeneratorSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_fullCycle`, `tiles_to_goal_bottomRight_of_fullCycle` |
 
 **Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 
@@ -158,7 +159,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, and abstract compatible full-cycle shape done; full-cycle realization next |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle shape, and conditional named sufficiency done; full-cycle realization next |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
