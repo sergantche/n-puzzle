@@ -85,6 +85,30 @@ lemma adjacent_ne {B : Board} {a b : Cell B} (h : adjacent a b) : a ≠ b := by
   rcases h with (⟨_, hstep⟩ | ⟨_, hstep⟩) <;>
     rcases hstep with hstep | hstep <;> omega
 
+lemma adjacent_right {B : Board} (r : Fin B.rows) (c : Fin B.cols)
+    (hc : c.val + 1 < B.cols) :
+    adjacent (r, c) (r, ⟨c.val + 1, hc⟩) :=
+  Or.inl ⟨rfl, Or.inl rfl⟩
+
+lemma adjacent_left {B : Board} (r : Fin B.rows) (c : Fin B.cols)
+    (hc : 0 < c.val) :
+    adjacent (r, c) (r, ⟨c.val - 1, by omega⟩) := by
+  refine Or.inl ⟨rfl, Or.inr ?_⟩
+  change c.val - 1 + 1 = c.val
+  omega
+
+lemma adjacent_down {B : Board} (r : Fin B.rows) (c : Fin B.cols)
+    (hr : r.val + 1 < B.rows) :
+    adjacent (r, c) (⟨r.val + 1, hr⟩, c) :=
+  Or.inr ⟨rfl, Or.inl rfl⟩
+
+lemma adjacent_up {B : Board} (r : Fin B.rows) (c : Fin B.cols)
+    (hr : 0 < r.val) :
+    adjacent (r, c) (⟨r.val - 1, by omega⟩, c) := by
+  refine Or.inr ⟨rfl, Or.inr ?_⟩
+  change r.val - 1 + 1 = r.val
+  omega
+
 /-- All cells in row-major order. -/
 def cellsRowMajor (B : Board) : List (Cell B) :=
   (List.finRange B.rows) ×ˢ (List.finRange B.cols)
