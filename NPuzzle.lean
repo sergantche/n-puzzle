@@ -8,6 +8,7 @@ import NPuzzle.Rect.Config
 import NPuzzle.Rect.TileInverse
 import NPuzzle.Rect.Reach
 import NPuzzle.Rect.PathEffect
+import NPuzzle.Rect.PathTilePerm
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
 import NPuzzle.Rect.CornerRealizable

@@ -165,6 +165,22 @@ lemma tilePermOfCellPerm_apply {B : Board} (π : Equiv.Perm (Cell B))
       nonblankCellEquivFin B
         (nonblankPermOfCellPerm π hπ ((nonblankCellEquivFin B).symm i)) := rfl
 
+lemma tilePermOfCellPerm_irrel {B : Board} (π : Equiv.Perm (Cell B))
+    (h₁ h₂ : π (bottomRight B) = bottomRight B) :
+    tilePermOfCellPerm π h₁ = tilePermOfCellPerm π h₂ := by
+  have h : h₁ = h₂ := Subsingleton.elim h₁ h₂
+  subst h
+  rfl
+
+lemma tilePermOfCellPerm_congr_perm {B : Board}
+    {π τ : Equiv.Perm (Cell B)}
+    (hπτ : π = τ)
+    (hπ : π (bottomRight B) = bottomRight B)
+    (hτ : τ (bottomRight B) = bottomRight B) :
+    tilePermOfCellPerm π hπ = tilePermOfCellPerm τ hτ := by
+  subst hπτ
+  exact tilePermOfCellPerm_irrel _ hπ hτ
+
 lemma ofSubtype_fix_bottomRight {B : Board}
     (σ : Equiv.Perm {c : Cell B // c ≠ bottomRight B}) :
     Equiv.Perm.ofSubtype σ (bottomRight B) = bottomRight B :=

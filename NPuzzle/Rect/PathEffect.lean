@@ -141,6 +141,12 @@ lemma cellPermAlongList_closed_eq_formPerm {B : Board} (a : Cell B)
             _ = List.formPerm (x :: y :: ys) := by
                   simp
 
+lemma cellPermAlongList_closed_fix_start {B : Board} (a : Cell B)
+    (xs : List (Cell B)) (ha : a ∉ xs) :
+    cellPermAlongList a (xs ++ [a]) a = a := by
+  rw [cellPermAlongList_closed_eq_formPerm a xs ha]
+  exact List.formPerm_apply_of_notMem ha
+
 lemma swapAt_eq_apply_swap {B : Board} (cells : Cell B → ℕ) (a b c : Cell B) :
     swapAt cells a b c = cells ((Equiv.swap a b) c) := by
   by_cases hca : c = a
