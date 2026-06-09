@@ -48,6 +48,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/TileInverse.lean` | `slide_inv`, `legalStep_symm`, `reachable_symm` |
 | `NPuzzle/Rect/Reach.lean` | `BlankGridPath`, `BlankGridPath.append`, `BlankGridPath.reverse`, `blankGridPath_row`, `blankGridPath_col`, `blankGridPath_any`, `reachable_one_step`, `reachable_blank_gridPath`, `reachable_blank_any` |
 | `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, `cornerLeftIdx`, `cornerUpLeftIdx`, `cornerUpIdx`, bottom-right 2x2 adjacency/distinctness lemmas, `cornerCyclePath`, `cornerCycleCells`, `cornerCycleCfg`, `blank_cornerCycleCfg`, `cornerCycleCfg_cells_*`, `reachable_cornerCycleCfg`, `reachable_cornerCycle_blank` |
+| `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
 | `NPuzzle/Rect/Invariant.lean` | `tileList_slide_eq_erase_insert`, `invStat_slide_horizontal_mod`, `invStat_slide_vertical_mod`, `parityClass_legalStep`, `parityClass_reachable`, `reachable_imp_parity` |
 | `NPuzzle/Rect/TileGlue.lean` | `config_eq_of_tileList_and_blank`, `reachable_goal_of_tileList`, `tileList_goal`, `cfg_eq_goal_of_tileList` |
@@ -155,7 +156,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance done; sufficiency next |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance and corner 3-cycle permutation layer done; sufficiency next |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
