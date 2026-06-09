@@ -54,6 +54,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/TileSign.lean` | `adjSwap`, `tileListPerm_bubbleRight`, `sign_tileListPerm_eq_neg_one_pow`, `invStat_even_iff_perm_alternating` |
 | `NPuzzle/Rect/TileRelabel.lean` | `relabelConfig`, `reachable_relabel`, `tileListPerm_relabel`, `tileListPerm_congr`, `permOfCfg_relabel` |
 | `NPuzzle/Rect/Realizable.lean` | `PermRealizable`, `permRealizableSubgroup`, `permRealizable_mul`, `permRealizable_inv`, `permRealizable_of_mem_closure` |
+| `NPuzzle/Rect/AbstractSufficiency.lean` | `invStat_even_of_parity_bottomRight`, `permRealizable_of_mem_alternating_of_generators`, `reachable_goal_to_cfg_bottomRight_of_parity_generators`, `tiles_to_goal_bottomRight_of_parity_generators` |
 
 **Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 

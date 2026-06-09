@@ -13,6 +13,7 @@ import NPuzzle.Rect.TileSorted
 import NPuzzle.Rect.TileSign
 import NPuzzle.Rect.TileRelabel
 import NPuzzle.Rect.Realizable
+import NPuzzle.Rect.AbstractSufficiency
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
 import NPuzzle.FourFour.Inversion
