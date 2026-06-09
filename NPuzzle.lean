@@ -3,6 +3,7 @@ import NPuzzle.Basic
 import NPuzzle.Group.CycleThree
 import NPuzzle.List.Inversion
 import NPuzzle.Rect.Basic
+import NPuzzle.Rect.CellPerm
 import NPuzzle.Rect.Config
 import NPuzzle.Rect.TileInverse
 import NPuzzle.Rect.Reach
