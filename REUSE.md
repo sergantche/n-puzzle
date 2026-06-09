@@ -43,7 +43,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 | Module | Key exports |
 |--------|-------------|
-| `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `adjacent_right`, `adjacent_left`, `adjacent_down`, `adjacent_up`, `cellsRowMajor`, `cellsRowMajorExcept`, `rankExcept_of_index_lt`, `rankExcept_of_index_gt`, `nonblankCellEquivFin` |
+| `NPuzzle/Rect/Basic.lean` | `Board`, `Board.tileCount_ge_three`, `Cell`, `index`, `bottomRight`, `adjacent`, `adjacent_right`, `adjacent_left`, `adjacent_down`, `adjacent_up`, `cellsRowMajor`, `cellsRowMajorExcept`, `rankExcept_of_index_lt`, `rankExcept_of_index_gt`, `nonblankCellEquivFin` |
 | `NPuzzle/Rect/CellPerm.lean` | `permCongr_formPerm`, `nonblankSubtypeList`, `ofSubtype_swap`, `ofSubtype_formPerm_nonblankSubtypeList`, `nonblankPermOfCellPerm`, `tilePermOfCellPerm`, `tilePermOfCellPerm_irrel`, `tilePermOfCellPerm_congr_perm`, `ofSubtype_fix_bottomRight`, `tilePermOfCellPerm_ofSubtype_formPerm` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/TileInverse.lean` | `slide_inv`, `legalStep_symm`, `reachable_symm` |
@@ -52,7 +52,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/PathList.lean` | `AdjacentChain`, `AdjacentChain_singleton`, `AdjacentChain_append`, `blankGridPathOfList`, `closedBlankGridPathOfList`, `vertices_blankGridPathOfList`, `vertices_closedBlankGridPathOfList` |
 | `NPuzzle/Rect/PathTilePerm.lean` | `tilePermOfCellPerm_closed_list` |
 | `NPuzzle/Rect/PathRealizable.lean` | `permOfCfg_eq_tilePermOfCellPerm_of_goal_cells`, `permOfCfg_followClosedPath_goal`, `closedPathPermRealizable` |
-| `NPuzzle/Rect/PathSufficiency.lean` | `closedFullList_left_compat_of_prefix`, `reachable_goal_to_cfg_bottomRight_of_closedFullPath`, `tiles_to_goal_bottomRight_of_closedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullPath`, `tiles_to_goal_bottomRight_of_leftClosedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullList`, `tiles_to_goal_bottomRight_of_leftClosedFullList` |
+| `NPuzzle/Rect/PathSufficiency.lean` | `closedFullList_left_compat_of_prefix`, `formPerm_isCycle_of_nodup_toFinset_univ`, `support_formPerm_of_nodup_toFinset_univ`, `reachable_goal_to_cfg_bottomRight_of_closedFullPath`, `tiles_to_goal_bottomRight_of_closedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullPath`, `tiles_to_goal_bottomRight_of_leftClosedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullList`, `tiles_to_goal_bottomRight_of_leftClosedFullList` |
 | `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, `cornerLeftIdx`, `cornerUpLeftIdx`, `cornerUpIdx`, bottom-right 2x2 adjacency/distinctness lemmas, `cornerCyclePath`, `cornerCycleCells`, `cornerCycleCfg`, `blank_cornerCycleCfg`, `cornerCycleCfg_cells_*`, `reachable_cornerCycleCfg`, `reachable_cornerCycle_blank` |
 | `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/CornerRealizable.lean` | `cornerCycleCfg_goal_eq_relabel_cornerPerm`, `permOfCfg_cornerCycleCfg_goal`, `cornerPerm_realizable` |

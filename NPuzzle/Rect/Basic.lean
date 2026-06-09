@@ -37,6 +37,14 @@ lemma tileCount_add_one (B : Board) : B.tileCount + 1 = B.size := by
   have hsize := B.size_pos
   omega
 
+lemma tileCount_ge_three {B : Board} (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    3 ≤ B.tileCount := by
+  have hsize : 4 ≤ B.size := by
+    unfold size
+    exact Nat.mul_le_mul hrows hcols
+  rw [tileCount]
+  omega
+
 end Board
 
 /-- A cell is a row/column pair. Rows and columns are zero-indexed. -/

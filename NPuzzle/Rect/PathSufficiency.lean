@@ -42,6 +42,36 @@ lemma closedFullList_left_compat_of_prefix {B : Board}
   have h := List.formPerm_apply_getElem L hnd 0 hL0
   simpa [L, h0, h1] using h
 
+lemma formPerm_isCycle_of_nodup_toFinset_univ {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {L : List (Fin B.tileCount)}
+    (hnd : L.Nodup) (huniv : L.toFinset = Finset.univ) :
+    IsCycle (List.formPerm L) := by
+  apply List.isCycle_formPerm
+  · exact hnd
+  · have hlen : L.length = B.tileCount := by
+      rw [← List.toFinset_card_of_nodup hnd, huniv]
+      simp
+    rw [hlen]
+    have htc := Board.tileCount_ge_three hrows hcols
+    omega
+
+lemma support_formPerm_of_nodup_toFinset_univ {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {L : List (Fin B.tileCount)}
+    (hnd : L.Nodup) (huniv : L.toFinset = Finset.univ) :
+    (List.formPerm L).support = Finset.univ := by
+  rw [List.support_formPerm_of_nodup]
+  · exact huniv
+  · exact hnd
+  · intro x hsingle
+    have hcard : L.toFinset.card = 1 := by
+      simp [hsingle]
+    rw [huniv] at hcard
+    simp at hcard
+    have htc := Board.tileCount_ge_three hrows hcols
+    omega
+
 lemma reachable_goal_to_cfg_bottomRight_of_closedFullPath {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     {xs : List (Cell B)}
