@@ -95,6 +95,52 @@ lemma cellPermAlongList_eq_formPerm_cons {B : Board} (a : Cell B) (xs : List (Ce
   | cons x xs ih =>
       simp [ih]
 
+lemma swap_mul_swap_chain {α : Type*} [DecidableEq α] {a x y : α}
+    (hax : a ≠ x) (hay : a ≠ y) :
+    Equiv.swap a x * Equiv.swap x y = Equiv.swap x y * Equiv.swap a y := by
+  have h := mul_swap_eq_swap_mul (Equiv.swap x y) a y
+  have hfix : Equiv.swap x y a = a := Equiv.swap_apply_of_ne_of_ne hax hay
+  rw [hfix] at h
+  simpa [hax, hay] using h.symm
+
+lemma cellPermAlongList_closed_eq_formPerm {B : Board} (a : Cell B)
+    (xs : List (Cell B)) (ha : a ∉ xs) :
+    cellPermAlongList a (xs ++ [a]) = List.formPerm xs := by
+  induction xs with
+  | nil =>
+      apply Equiv.ext
+      intro c
+      simp [cellPermAlongList]
+  | cons x xs ih =>
+      have hax : a ≠ x := by
+        intro h
+        exact ha (by simp [h])
+      have haxs : a ∉ xs := by
+        intro h
+        exact ha (by simp [h])
+      cases xs with
+      | nil =>
+          simp [Equiv.swap_comm]
+      | cons y ys =>
+          have hay : a ≠ y := by
+            intro h
+            exact ha (by simp [h])
+          have htail : Equiv.swap a y * cellPermAlongList y (ys ++ [a]) =
+              List.formPerm (y :: ys) := by
+            simpa using ih haxs
+          calc
+            cellPermAlongList a ((x :: y :: ys) ++ [a])
+                = Equiv.swap a x *
+                    (Equiv.swap x y * cellPermAlongList y (ys ++ [a])) := by
+                  simp
+            _ = Equiv.swap x y *
+                    (Equiv.swap a y * cellPermAlongList y (ys ++ [a])) := by
+                  rw [← mul_assoc, swap_mul_swap_chain hax hay, mul_assoc]
+            _ = Equiv.swap x y * List.formPerm (y :: ys) := by
+                  rw [htail]
+            _ = List.formPerm (x :: y :: ys) := by
+                  simp
+
 lemma swapAt_eq_apply_swap {B : Board} (cells : Cell B → ℕ) (a b c : Cell B) :
     swapAt cells a b c = cells ((Equiv.swap a b) c) := by
   by_cases hca : c = a
