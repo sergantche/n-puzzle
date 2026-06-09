@@ -54,6 +54,22 @@ lemma permCongr_formPerm {α β : Type*} [DecidableEq α] [DecidableEq β]
       | cons y ys =>
           simp [permCongr_swap, ih]
 
+/-- Repackage a list of nonblank cells as a list in the nonblank-cell subtype. -/
+def nonblankSubtypeList {B : Board} (xs : List (Cell B))
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B) :
+    List {c : Cell B // c ≠ bottomRight B} :=
+  xs.pmap (fun c hc => ⟨c, hc⟩) hxs
+
+@[simp]
+lemma nonblankSubtypeList_map_val {B : Board} (xs : List (Cell B))
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B) :
+    (nonblankSubtypeList xs hxs).map (fun c => c.1) = xs := by
+  unfold nonblankSubtypeList
+  induction xs with
+  | nil => simp
+  | cons x xs ih =>
+      simp [ih]
+
 /-- Restrict a cell permutation fixing `bottomRight` to nonblank cells. -/
 noncomputable def nonblankPermOfCellPerm {B : Board} (π : Equiv.Perm (Cell B))
     (hπ : π (bottomRight B) = bottomRight B) :

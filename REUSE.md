@@ -44,7 +44,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | Module | Key exports |
 |--------|-------------|
 | `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `adjacent_right`, `adjacent_left`, `adjacent_down`, `adjacent_up`, `cellsRowMajor`, `cellsRowMajorExcept`, `rankExcept_of_index_lt`, `rankExcept_of_index_gt`, `nonblankCellEquivFin` |
-| `NPuzzle/Rect/CellPerm.lean` | `permCongr_formPerm`, `nonblankPermOfCellPerm`, `tilePermOfCellPerm`, `ofSubtype_fix_bottomRight`, `tilePermOfCellPerm_ofSubtype_formPerm` |
+| `NPuzzle/Rect/CellPerm.lean` | `permCongr_formPerm`, `nonblankSubtypeList`, `nonblankPermOfCellPerm`, `tilePermOfCellPerm`, `ofSubtype_fix_bottomRight`, `tilePermOfCellPerm_ofSubtype_formPerm` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/TileInverse.lean` | `slide_inv`, `legalStep_symm`, `reachable_symm` |
 | `NPuzzle/Rect/Reach.lean` | `BlankGridPath`, `BlankGridPath.vertices`, `BlankGridPath.append`, `BlankGridPath.reverse`, `blankGridPath_row`, `blankGridPath_col`, `blankGridPath_any`, `followBlankGridPathStart`, `reachable_one_step`, `reachable_blank_gridPath`, `reachable_blank_any` |
