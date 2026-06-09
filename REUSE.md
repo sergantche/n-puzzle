@@ -44,12 +44,12 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 | Module | Key exports |
 |--------|-------------|
-| `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `cellsRowMajor`, `cellsRowMajorExcept` |
+| `NPuzzle/Rect/Basic.lean` | `Board`, `Cell`, `index`, `bottomRight`, `adjacent`, `cellsRowMajor`, `cellsRowMajorExcept`, `rankExcept_of_index_lt`, `rankExcept_of_index_gt` |
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
-| `NPuzzle/Rect/Invariant.lean` | `parityClass_legalStep_of_invStat_mod`, `parityClass_reachable_of_invStat_mod` |
+| `NPuzzle/Rect/Invariant.lean` | `tileList_slide_eq_erase_insert`, `invStat_slide_horizontal_mod`, `invStat_slide_vertical_mod`, `parityClass_legalStep`, `parityClass_reachable`, `reachable_imp_parity` |
 
-**Typical consumer:** the next `N×M` proof layer, before proving list-level slide lemmas and generator macros.
+**Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 
 **General:** parameterized by positive row/column counts; independent of 4×4 cell indices.
 
@@ -118,7 +118,7 @@ import NPuzzle.Rect.Config
 -- Parameterized rectangular parity statistic:
 import NPuzzle.Rect.Parity
 
--- Conditional rectangular parity-invariance shell:
+-- Rectangular parity invariance / necessity:
 import NPuzzle.Rect.Invariant
 ```
 
@@ -142,11 +142,11 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 |------|--------|--------|
 | **R1** | Keep this file aligned with green modules after each merge | — |
 | **R0** | Extract group tail: full cycle + compatible 3-cycle ⇒ `alternatingGroup` | done in `NPuzzle/Group/CycleThree.lean` |
-| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | started: definition only |
+| **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | done for `inversionCount_erase_insert_mod` and list move helpers |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
-| **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` for `List α` | R2, then Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | general `N×M` proof |
+| **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance done; sufficiency next |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
@@ -156,9 +156,9 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 
 | Classical idea | Lean anchor |
 |----------------|-------------|
-| $I(L)$ unchanged by horizontal slide | `tileList_slide_horizontal` |
-| Vertical slide = one adjacent transposition in $L$ | `tileList_slide_vertical` |
-| $I(L) \bmod 2$ flips on vertical move | `invStat_slide_vertical_mod` |
+| $I(L)$ unchanged by horizontal slide | `invStat_slide_horizontal_mod` |
+| Vertical slide = erase/insert in $L$ | `tileList_slide_eq_erase_insert` |
+| $I(L) \bmod 2$ changes by board width | `invStat_slide_vertical_mod` |
 | Necessity: reachable ⇒ parity class | `reachable_imp_parity` |
 | $\mathrm{sign}(\sigma) = (-1)^{I(L)}$ | `sign_tileListPerm_eq_neg_one_pow` |
 | Even tile perm ⇔ $A_{n-1}$ (blank fixed) | `invStat_even_iff_perm_alternating` |

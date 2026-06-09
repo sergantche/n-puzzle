@@ -101,6 +101,98 @@ lemma cellsRowMajor_length (B : Board) : (cellsRowMajor B).length = B.size := by
 lemma cellsRowMajor_nodup (B : Board) : (cellsRowMajor B).Nodup := by
   exact (List.nodup_finRange B.rows).product (List.nodup_finRange B.cols)
 
+lemma idxOf_erase_of_idxOf_lt {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) {a b : α} (h : xs.idxOf b < xs.idxOf a) :
+    (xs.erase a).idxOf b = xs.idxOf b := by
+  induction xs with
+  | nil => simp at h
+  | cons x xs ih =>
+      by_cases hxa : x = a
+      · subst x
+        simp at h
+      · by_cases hxb : x = b
+        · subst x
+          have hbeq_ba : (b == a) = false := by simp [hxa]
+          simp [List.erase, hbeq_ba]
+        · have hbeq_xa : (x == a) = false := by simp [hxa]
+          have htail : xs.idxOf b < xs.idxOf a := by
+            simp [hxa, hxb] at h
+            exact h
+          simp [List.erase, hbeq_xa, hxb, ih htail]
+
+lemma idxOf_erase_of_idxOf_gt {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) {a b : α} (h : xs.idxOf a < xs.idxOf b) :
+    (xs.erase a).idxOf b = xs.idxOf b - 1 := by
+  induction xs with
+  | nil => simp at h
+  | cons x xs ih =>
+      by_cases hxa : x = a
+      · subst x
+        have hne : a ≠ b := by
+          intro hab
+          subst b
+          simp at h
+        have hbeq_ab : (a == b) = false := by simp [hne]
+        simp [List.idxOf_cons, hbeq_ab]
+      · by_cases hxb : x = b
+        · subst x
+          simp [hxa] at h
+        · have hbeq_xa : (x == a) = false := by simp [hxa]
+          have htail : xs.idxOf a < xs.idxOf b := by
+            simp [hxa, hxb] at h
+            exact h
+          have hih := ih htail
+          have hbpos : 0 < xs.idxOf b := by omega
+          simp [List.erase, hbeq_xa, hxb, hih]
+          omega
+
+lemma idxOf_map_const_prod {α β : Type} [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
+    (a : α) (b : β) (xs : List β) :
+    ((xs.map fun y => (a, y)).idxOf (a, b)) = xs.idxOf b := by
+  induction xs with
+  | nil => simp
+  | cons x xs ih =>
+      by_cases hxb : x = b
+      · subst x
+        simp
+      · have hpair : (a, x) ≠ (a, b) := by
+          intro h
+          exact hxb (Prod.ext_iff.mp h).2
+        simp [hxb, hpair, ih]
+
+lemma idxOf_product {α β : Type} [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
+    (xs : List α) (ys : List β) {a : α} {b : β}
+    (ha : a ∈ xs) (hb : b ∈ ys) :
+    (xs ×ˢ ys).idxOf (a, b) = xs.idxOf a * ys.length + ys.idxOf b := by
+  induction xs generalizing a b with
+  | nil => simp at ha
+  | cons x xs ih =>
+      by_cases hxa : x = a
+      · subst x
+        rw [List.product_cons]
+        have hmem : (a, b) ∈ (ys.map fun y => (a, y)) :=
+          List.mem_map.mpr ⟨b, hb, rfl⟩
+        rw [List.idxOf_append_of_mem hmem, idxOf_map_const_prod]
+        simp
+      · have hnot : (a, b) ∉ (ys.map fun y => (x, y)) := by
+          intro hmem
+          rcases List.mem_map.mp hmem with ⟨y, _, hy⟩
+          exact hxa (Prod.ext_iff.mp hy).1
+        have haxs : a ∈ xs := by
+          have hxa' : a ≠ x := fun h => hxa h.symm
+          simpa [hxa'] using ha
+        rw [List.product_cons, List.idxOf_append_of_notMem hnot, ih haxs hb]
+        simp [hxa]
+        ring
+
+lemma idxOf_cellsRowMajor {B : Board} (c : Cell B) :
+    (cellsRowMajor B).idxOf c = index c := by
+  rcases c with ⟨r, c⟩
+  rw [cellsRowMajor, idxOf_product]
+  · simp [index]
+  · simp
+  · simp
+
 /-- Row-major order, skipping one cell (usually the blank). -/
 def cellsRowMajorExcept {B : Board} (skip : Cell B) : List (Cell B) :=
   (cellsRowMajor B).erase skip
@@ -129,6 +221,22 @@ lemma cellsRowMajorExcept_length {B : Board} (skip : Cell B) :
 /-- Index of `c` in the row-major cell list that skips `skip`. -/
 def rankExcept {B : Board} (skip c : Cell B) : ℕ :=
   (cellsRowMajorExcept skip).idxOf c
+
+lemma rankExcept_of_index_lt {B : Board} {skip c : Cell B} (h : index c < index skip) :
+    rankExcept skip c = index c := by
+  unfold rankExcept cellsRowMajorExcept
+  rw [idxOf_erase_of_idxOf_lt]
+  · exact idxOf_cellsRowMajor c
+  · rw [idxOf_cellsRowMajor, idxOf_cellsRowMajor]
+    exact h
+
+lemma rankExcept_of_index_gt {B : Board} {skip c : Cell B} (h : index skip < index c) :
+    rankExcept skip c = index c - 1 := by
+  unfold rankExcept cellsRowMajorExcept
+  rw [idxOf_erase_of_idxOf_gt]
+  · rw [idxOf_cellsRowMajor]
+  · rw [idxOf_cellsRowMajor, idxOf_cellsRowMajor]
+    exact h
 
 lemma rankExcept_lt {B : Board} {skip c : Cell B} (hc : c ≠ skip) :
     rankExcept skip c < (cellsRowMajorExcept skip).length := by
