@@ -47,6 +47,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/Config.lean` | `IsValid`, `Config`, `blank`, `slide`, `legalStep`, `Reachable`, `goal`, `tileList` |
 | `NPuzzle/Rect/TileInverse.lean` | `slide_inv`, `legalStep_symm`, `reachable_symm` |
 | `NPuzzle/Rect/Reach.lean` | `BlankGridPath`, `BlankGridPath.append`, `BlankGridPath.reverse`, `blankGridPath_row`, `blankGridPath_col`, `blankGridPath_any`, `reachable_one_step`, `reachable_blank_gridPath`, `reachable_blank_any` |
+| `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, bottom-right 2x2 adjacency lemmas, `cornerCyclePath`, `reachable_cornerCycle_blank` |
 | `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
 | `NPuzzle/Rect/Invariant.lean` | `tileList_slide_eq_erase_insert`, `invStat_slide_horizontal_mod`, `invStat_slide_vertical_mod`, `parityClass_legalStep`, `parityClass_reachable`, `reachable_imp_parity` |
 | `NPuzzle/Rect/TileGlue.lean` | `config_eq_of_tileList_and_blank`, `reachable_goal_of_tileList`, `tileList_goal`, `cfg_eq_goal_of_tileList` |

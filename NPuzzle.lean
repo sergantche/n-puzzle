@@ -6,6 +6,7 @@ import NPuzzle.Rect.Basic
 import NPuzzle.Rect.Config
 import NPuzzle.Rect.TileInverse
 import NPuzzle.Rect.Reach
+import NPuzzle.Rect.Corner
 import NPuzzle.Rect.Parity
 import NPuzzle.Rect.Invariant
 import NPuzzle.Rect.TileGlue
