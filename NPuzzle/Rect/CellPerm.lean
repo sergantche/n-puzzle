@@ -70,6 +70,68 @@ lemma nonblankSubtypeList_map_val {B : Board} (xs : List (Cell B))
   | cons x xs ih =>
       simp [ih]
 
+lemma ofSubtype_swap {α : Type*} [DecidableEq α] {p : α → Prop} [DecidablePred p]
+    (x y : Subtype p) :
+    Equiv.Perm.ofSubtype (Equiv.swap x y) = Equiv.swap x.1 y.1 := by
+  apply Equiv.ext
+  intro z
+  by_cases hz : p z
+  · rw [Equiv.Perm.ofSubtype_apply_of_mem (Equiv.swap x y) hz]
+    by_cases hzx : z = x.1
+    · subst z
+      simp
+    · by_cases hzy : z = y.1
+      · subst z
+        simp
+      · have hsx : (⟨z, hz⟩ : Subtype p) ≠ x := by
+          intro h
+          exact hzx (congrArg Subtype.val h)
+        have hsy : (⟨z, hz⟩ : Subtype p) ≠ y := by
+          intro h
+          exact hzy (congrArg Subtype.val h)
+        simp [Equiv.swap_apply_of_ne_of_ne hsx hsy,
+          Equiv.swap_apply_of_ne_of_ne hzx hzy]
+  · rw [Equiv.Perm.ofSubtype_apply_of_not_mem (Equiv.swap x y) hz]
+    have hzx : z ≠ x.1 := by
+      intro h
+      exact hz (h.symm ▸ x.2)
+    have hzy : z ≠ y.1 := by
+      intro h
+      exact hz (h.symm ▸ y.2)
+    exact (Equiv.swap_apply_of_ne_of_ne hzx hzy).symm
+
+lemma ofSubtype_formPerm_nonblankSubtypeList {B : Board} (xs : List (Cell B))
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B) :
+    Equiv.Perm.ofSubtype (List.formPerm (nonblankSubtypeList xs hxs)) =
+      List.formPerm xs := by
+  induction xs with
+  | nil => simp [nonblankSubtypeList]
+  | cons x xs ih =>
+      cases xs with
+      | nil => simp [nonblankSubtypeList]
+      | cons y ys =>
+          have hx : x ≠ bottomRight B := hxs x (by simp)
+          have hy : y ≠ bottomRight B := hxs y (by simp)
+          have htail : ∀ c ∈ y :: ys, c ≠ bottomRight B := by
+            intro c hc
+            exact hxs c (by simp [hc])
+          have hys : ∀ c ∈ ys, c ≠ bottomRight B := by
+            intro c hc
+            exact htail c (by simp [hc])
+          have hlist :
+              nonblankSubtypeList (x :: y :: ys) hxs =
+                (⟨x, hx⟩ : {c : Cell B // c ≠ bottomRight B}) ::
+                  nonblankSubtypeList (y :: ys) htail := by
+            simp [nonblankSubtypeList]
+          have htailList :
+              nonblankSubtypeList (y :: ys) htail =
+                (⟨y, hy⟩ : {c : Cell B // c ≠ bottomRight B}) ::
+                  nonblankSubtypeList ys hys := by
+            simp [nonblankSubtypeList]
+          rw [hlist, htailList, List.formPerm_cons_cons, map_mul, ofSubtype_swap]
+          rw [← htailList, ih htail]
+          simp [List.formPerm_cons_cons]
+
 /-- Restrict a cell permutation fixing `bottomRight` to nonblank cells. -/
 noncomputable def nonblankPermOfCellPerm {B : Board} (π : Equiv.Perm (Cell B))
     (hπ : π (bottomRight B) = bottomRight B) :
