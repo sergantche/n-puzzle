@@ -8,6 +8,7 @@ import NPuzzle.Rect.TileInverse
 import NPuzzle.Rect.Reach
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
+import NPuzzle.Rect.CornerRealizable
 import NPuzzle.Rect.Parity
 import NPuzzle.Rect.Invariant
 import NPuzzle.Rect.TileGlue
