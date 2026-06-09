@@ -10,6 +10,7 @@ import NPuzzle.Rect.TileGlue
 import NPuzzle.Rect.TilePerm
 import NPuzzle.Rect.TileSorted
 import NPuzzle.Rect.TileSign
+import NPuzzle.Rect.TileRelabel
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
 import NPuzzle.FourFour.Inversion
