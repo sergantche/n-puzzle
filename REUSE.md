@@ -50,6 +50,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/Invariant.lean` | `tileList_slide_eq_erase_insert`, `invStat_slide_horizontal_mod`, `invStat_slide_vertical_mod`, `parityClass_legalStep`, `parityClass_reachable`, `reachable_imp_parity` |
 | `NPuzzle/Rect/TileGlue.lean` | `config_eq_of_tileList_and_blank`, `reachable_goal_of_tileList`, `tileList_goal`, `cfg_eq_goal_of_tileList` |
 | `NPuzzle/Rect/TilePerm.lean` | `TileListSpec`, `mem_Icc_of_nodup_len`, `cellsOfTileList`, `configOfTileList`, `tileList_configOfTileList`, `config_eq_configOfTileList`, `tileLabelAt`, `tileListPerm`, `permOfCfg`, `tileList_eq_of_permOfCfg_eq` |
+| `NPuzzle/Rect/TileSorted.lean` | `eq_range_map_succ_of_sorted`, `tileList_eq_goalTileList_of_sorted`, `tileListPerm_sorted_eq_one` |
 
 **Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 

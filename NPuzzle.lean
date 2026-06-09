@@ -8,6 +8,7 @@ import NPuzzle.Rect.Parity
 import NPuzzle.Rect.Invariant
 import NPuzzle.Rect.TileGlue
 import NPuzzle.Rect.TilePerm
+import NPuzzle.Rect.TileSorted
 import NPuzzle.FourFour
 import NPuzzle.FourFour.Invariant
 import NPuzzle.FourFour.Inversion
