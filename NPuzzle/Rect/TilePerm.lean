@@ -1,5 +1,6 @@
 import Mathlib.Data.Finset.Interval
 import Mathlib.Data.List.Nodup
+import Mathlib.GroupTheory.Perm.Basic
 import NPuzzle.Rect.TileGlue
 
 namespace NPuzzle.Rect
@@ -180,5 +181,107 @@ lemma config_eq_configOfTileList {B : Board} (cfg : Config B) (b : Cell B) (L : 
   apply config_eq_of_tileList_and_blank cfg (configOfTileList b L hs)
   · rw [blank_configOfTileList b L hs, hb]
   · rw [tileList_configOfTileList b L hs, ht]
+
+/-!
+### `Equiv.Perm (Fin B.tileCount)` from a tile list at `bottomRight`
+-/
+
+/-- Goal label at list index `i` (1-based tile value minus 1). -/
+noncomputable def tileLabelAt {B : Board} (L : List ℕ) (i : Fin B.tileCount)
+    (hs : TileListSpec (bottomRight B) L) : Fin B.tileCount :=
+  have hi : i.1 < L.length := by
+    rw [hs.length_eq]
+    exact i.isLt
+  let x := L[i]'hi
+  have hmem : 1 ≤ x ∧ x ≤ B.tileCount := hs.mem_Icc x (List.getElem_mem hi)
+  ⟨x - 1, by
+    rcases hmem with ⟨hlo, hhi⟩
+    omega⟩
+
+lemma tileLabelAt_goal {B : Board} (i : Fin B.tileCount) :
+    tileLabelAt (tileList (goal B)) i (tileListSpec_goal B) = i := by
+  ext
+  simp [tileLabelAt, tileList_goal]
+
+lemma tileLabelAt_injective {B : Board} (L : List ℕ)
+    (hs : TileListSpec (bottomRight B) L) :
+    Function.Injective (fun i => tileLabelAt L i hs) := by
+  intro i j hij
+  have hval := congrArg Fin.val hij
+  simp only [tileLabelAt] at hval
+  have hi : i.1 < L.length := by
+    rw [hs.length_eq]
+    exact i.isLt
+  have hj : j.1 < L.length := by
+    rw [hs.length_eq]
+    exact j.isLt
+  have hlo_i := (hs.mem_Icc _ (List.getElem_mem hi)).1
+  have hlo_j := (hs.mem_Icc _ (List.getElem_mem hj)).1
+  have hL := Nat.pred_inj hlo_i hlo_j hval
+  exact Fin.eq_of_val_eq ((hs.nodup.getElem_inj_iff (hi := hi) (hj := hj)).mp hL)
+
+lemma tileLabelAt_surjective {B : Board} (L : List ℕ)
+    (hs : TileListSpec (bottomRight B) L) :
+    Function.Surjective (fun i => tileLabelAt L i hs) := by
+  intro k
+  have hk : k.1 + 1 ∈ L := by
+    exact mem_Icc_of_nodup_len L hs.length_eq hs.nodup (fun x hx => hs.mem_Icc x hx)
+      (k.1 + 1) (by omega) (by omega)
+  obtain ⟨j, hj, heq⟩ := List.mem_iff_getElem.mp hk
+  refine ⟨⟨j, by rw [hs.length_eq] at hj; exact hj⟩, ?_⟩
+  ext
+  simp [tileLabelAt, heq]
+
+/-- Bijection `Fin B.tileCount ≃ Fin B.tileCount` encoded by tile values in `L`. -/
+noncomputable def tileListPerm {B : Board} (L : List ℕ)
+    (hs : TileListSpec (bottomRight B) L) : Equiv.Perm (Fin B.tileCount) :=
+  Equiv.ofBijective (fun i => tileLabelAt L i hs)
+    ⟨tileLabelAt_injective L hs, tileLabelAt_surjective L hs⟩
+
+lemma tileListPerm_goal (B : Board) :
+    tileListPerm (tileList (goal B)) (tileListSpec_goal B) = 1 := by
+  ext i
+  simp [tileListPerm, tileLabelAt_goal]
+
+lemma tileListPerm_apply {B : Board} (L : List ℕ)
+    (hs : TileListSpec (bottomRight B) L) (j : Fin B.tileCount) :
+    tileListPerm L hs j = tileLabelAt L j hs := by
+  simp [tileListPerm, Equiv.ofBijective_apply]
+
+lemma tileList_eq_of_tileListPerm_eq {B : Board} (L L' : List ℕ)
+    (hs : TileListSpec (bottomRight B) L)
+    (hs' : TileListSpec (bottomRight B) L')
+    (h : tileListPerm L hs = tileListPerm L' hs') : L = L' := by
+  apply List.ext_getElem
+  · rw [hs.length_eq, hs'.length_eq]
+  · intro i hi hi'
+    have hiB : i < B.tileCount := by
+      rw [hs.length_eq] at hi
+      exact hi
+    let j : Fin B.tileCount := ⟨i, hiB⟩
+    have hlab : tileLabelAt L j hs = tileLabelAt L' j hs' := by
+      rw [← tileListPerm_apply, h, tileListPerm_apply]
+    have heq := congrArg Fin.val hlab
+    simp only [tileLabelAt] at heq
+    have hlo := (hs.mem_Icc _ (List.getElem_mem hi)).1
+    have hlo' := (hs'.mem_Icc _ (List.getElem_mem hi')).1
+    exact Nat.pred_inj hlo hlo' heq
+
+/-- The permutation encoded by a configuration whose blank is at `bottomRight`. -/
+noncomputable def permOfCfg {B : Board} (cfg : Config B)
+    (hbr : blank cfg = bottomRight B) : Equiv.Perm (Fin B.tileCount) :=
+  tileListPerm (tileList cfg) (tileListSpec_of_config cfg (bottomRight B) hbr)
+
+lemma permOfCfg_goal (B : Board) :
+    permOfCfg (goal B) (blank_goal B) = 1 := by
+  simp [permOfCfg, tileListPerm_goal]
+
+lemma tileList_eq_of_permOfCfg_eq {B : Board} (cfg cfg' : Config B)
+    (hbr : blank cfg = bottomRight B) (hbr' : blank cfg' = bottomRight B)
+    (h : permOfCfg cfg hbr = permOfCfg cfg' hbr') :
+    tileList cfg = tileList cfg' := by
+  exact tileList_eq_of_tileListPerm_eq (tileList cfg) (tileList cfg')
+    (tileListSpec_of_config cfg (bottomRight B) hbr)
+    (tileListSpec_of_config cfg' (bottomRight B) hbr') h
 
 end NPuzzle.Rect

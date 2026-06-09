@@ -115,9 +115,9 @@ Import guide and layer descriptions: [REUSE.md](REUSE.md). Success criteria: [GO
 | **R3** | Slim `FourFour/Inversion.lean` to puzzle glue only | ⏳ after R2 | `invStat_slide_vertical_mod`, `tileList_nodup`, … |
 | **R4** | Paper: Lean ↔ classical lemma table | ⏳ later | See [REUSE.md](REUSE.md#paper-mapping-planned); chapters 5–6 in [paper/outline.md](paper/outline.md) |
 | **R5** | **Mathlib PR:** list-inversion parity (layer A) | ⏳ planned | After R2; [GOAL.md](GOAL.md#mathlib-contribution-intention); puzzle modules out of scope |
-| **R6** | Start rectangular core | ✅ necessity + tile-list package done | `NPuzzle/Rect/Basic.lean`, `Config.lean`, `Parity.lean`, `Invariant.lean`, `TileGlue.lean`, `TilePerm.lean`: board geometry, moves, README parity statistic, parity invariance, `tileList`+blank ⇒ config, valid tile-list ⇒ config |
+| **R6** | Start rectangular core | ✅ necessity + tile-list/permutation package done | `NPuzzle/Rect/Basic.lean`, `Config.lean`, `Parity.lean`, `Invariant.lean`, `TileGlue.lean`, `TilePerm.lean`: board geometry, moves, README parity statistic, parity invariance, `tileList`+blank ⇒ config, valid tile-list ⇒ config/`Fin B.tileCount` permutation |
 
-`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the first board-generic surface is `NPuzzle.Rect` (`Basic`, `Config`, `Parity`, `Invariant`, `TileGlue`, `TilePerm`). Rectangular necessity/parity invariance, `tileList` glue, and valid tile-list packaging are now discharged; the remaining generalization work is rectangular-grid analogues of the full cycle and compatible 3-cycle macros for sufficiency.
+`TileReach` / `TileConnectivity` / `Sufficiency` are green for 4×4, but still heavy and 4×4-specific. The first geometry-free sufficiency component is now `NPuzzle/Group/CycleThree.lean`; the first board-generic surface is `NPuzzle.Rect` (`Basic`, `Config`, `Parity`, `Invariant`, `TileGlue`, `TilePerm`). Rectangular necessity/parity invariance, `tileList` glue, valid tile-list packaging, and the bottom-right tile-list permutation bridge are now discharged; the remaining generalization work is rectangular-grid analogues of the full cycle and compatible 3-cycle macros for sufficiency.
 
 ---
 
