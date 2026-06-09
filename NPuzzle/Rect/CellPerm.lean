@@ -87,4 +87,27 @@ lemma tilePermOfCellPerm_apply {B : Board} (π : Equiv.Perm (Cell B))
       nonblankCellEquivFin B
         (nonblankPermOfCellPerm π hπ ((nonblankCellEquivFin B).symm i)) := rfl
 
+lemma ofSubtype_fix_bottomRight {B : Board}
+    (σ : Equiv.Perm {c : Cell B // c ≠ bottomRight B}) :
+    Equiv.Perm.ofSubtype σ (bottomRight B) = bottomRight B :=
+  Equiv.Perm.ofSubtype_apply_of_not_mem σ (by intro h; exact h rfl)
+
+lemma nonblankPermOfCellPerm_ofSubtype {B : Board}
+    (σ : Equiv.Perm {c : Cell B // c ≠ bottomRight B})
+    (hfix : Equiv.Perm.ofSubtype σ (bottomRight B) = bottomRight B) :
+    nonblankPermOfCellPerm (Equiv.Perm.ofSubtype σ) hfix = σ := by
+  apply Equiv.ext
+  intro c
+  apply Subtype.ext
+  simp [nonblankPermOfCellPerm]
+
+lemma tilePermOfCellPerm_ofSubtype_formPerm {B : Board}
+    (xs : List {c : Cell B // c ≠ bottomRight B}) :
+    tilePermOfCellPerm (Equiv.Perm.ofSubtype (List.formPerm xs))
+        (ofSubtype_fix_bottomRight (List.formPerm xs)) =
+      List.formPerm (xs.map (nonblankCellEquivFin B)) := by
+  unfold tilePermOfCellPerm
+  rw [nonblankPermOfCellPerm_ofSubtype]
+  exact permCongr_formPerm (nonblankCellEquivFin B) xs
+
 end NPuzzle.Rect
