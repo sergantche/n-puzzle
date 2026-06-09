@@ -50,6 +50,42 @@ lemma tiles_to_goal_bottomRight_of_compatibleFullCycle {B : Board}
     (reachable_goal_to_cfg_bottomRight_of_compatibleFullCycle hrows hcols
       hfull hcycle hsupp hcompat cfg hbr hpar)
 
+lemma reachable_goal_to_cfg_bottomRight_of_cornerLeftFullCycle {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {g : Equiv.Perm (Fin B.tileCount)}
+    (hfull : PermRealizable (B := B) g)
+    (hcycle : IsCycle g) (hsupp : g.support = Finset.univ)
+    (hcompat : g (cornerLeftIdx B hcols) = cornerUpLeftIdx B hrows)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_parity_generators
+    hfull
+    (cornerPerm_realizable B hrows hcols)
+    hcycle
+    hsupp
+    (cornerPerm_isThreeCycle B hrows hcols)
+    (cornerPerm_apply_cornerUpLeftIdx B hrows hcols)
+    (cornerPerm_apply_cornerUpIdx B hrows hcols)
+    (cornerPerm_apply_cornerLeftIdx B hrows hcols)
+    (fun _ hxupleft hxup hxleft =>
+      cornerPerm_apply_of_not_corner hrows hcols hxleft hxupleft hxup)
+    hcompat
+    cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_cornerLeftFullCycle {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {g : Equiv.Perm (Fin B.tileCount)}
+    (hfull : PermRealizable (B := B) g)
+    (hcycle : IsCycle g) (hsupp : g.support = Finset.univ)
+    (hcompat : g (cornerLeftIdx B hcols) = cornerUpLeftIdx B hrows)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_cornerLeftFullCycle hrows hcols
+      hfull hcycle hsupp hcompat cfg hbr hpar)
+
 lemma reachable_goal_to_cfg_bottomRight_of_fullCycle {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (hfull : PermRealizable (B := B) (fullCyclePerm B hrows hcols))

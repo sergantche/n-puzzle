@@ -51,7 +51,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/PathEffect.lean` | `listEndpoint`, `swapAlongList`, `cellPermAlongList`, `swapAlongList_append`, `cellPermAlongList_append`, `cellPermAlongList_eq_formPerm_cons`, `cellPermAlongList_closed_eq_formPerm`, `cellPermAlongList_closed_fix_start`, `swapAlongList_eq_cellPermAlongList`, `swapAlongList_of_not_mem`, `swapAlongBlankPathStart`, `swapAlongBlankPathStart_eq_swapAlongList`, `followBlankGridPathStart_cells` |
 | `NPuzzle/Rect/PathTilePerm.lean` | `tilePermOfCellPerm_closed_list` |
 | `NPuzzle/Rect/PathRealizable.lean` | `permOfCfg_eq_tilePermOfCellPerm_of_goal_cells`, `permOfCfg_followClosedPath_goal`, `closedPathPermRealizable` |
-| `NPuzzle/Rect/PathSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_closedFullPath`, `tiles_to_goal_bottomRight_of_closedFullPath` |
+| `NPuzzle/Rect/PathSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_closedFullPath`, `tiles_to_goal_bottomRight_of_closedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullPath`, `tiles_to_goal_bottomRight_of_leftClosedFullPath` |
 | `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, `cornerLeftIdx`, `cornerUpLeftIdx`, `cornerUpIdx`, bottom-right 2x2 adjacency/distinctness lemmas, `cornerCyclePath`, `cornerCycleCells`, `cornerCycleCfg`, `blank_cornerCycleCfg`, `cornerCycleCfg_cells_*`, `reachable_cornerCycleCfg`, `reachable_cornerCycle_blank` |
 | `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/CornerRealizable.lean` | `cornerCycleCfg_goal_eq_relabel_cornerPerm`, `permOfCfg_cornerCycleCfg_goal`, `cornerPerm_realizable` |
@@ -65,7 +65,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/TileRelabel.lean` | `relabelConfig`, `reachable_relabel`, `tileListPerm_relabel`, `tileListPerm_congr`, `permOfCfg_relabel` |
 | `NPuzzle/Rect/Realizable.lean` | `PermRealizable`, `permRealizableSubgroup`, `permRealizable_mul`, `permRealizable_inv`, `permRealizable_of_mem_closure` |
 | `NPuzzle/Rect/AbstractSufficiency.lean` | `invStat_even_of_parity_bottomRight`, `permRealizable_of_mem_alternating_of_generators`, `reachable_goal_to_cfg_bottomRight_of_parity_generators`, `tiles_to_goal_bottomRight_of_parity_generators` |
-| `NPuzzle/Rect/GeneratorSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_compatibleFullCycle`, `tiles_to_goal_bottomRight_of_compatibleFullCycle`, `reachable_goal_to_cfg_bottomRight_of_fullCycle`, `tiles_to_goal_bottomRight_of_fullCycle` |
+| `NPuzzle/Rect/GeneratorSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_compatibleFullCycle`, `tiles_to_goal_bottomRight_of_compatibleFullCycle`, `reachable_goal_to_cfg_bottomRight_of_cornerLeftFullCycle`, `tiles_to_goal_bottomRight_of_cornerLeftFullCycle`, `reachable_goal_to_cfg_bottomRight_of_fullCycle`, `tiles_to_goal_bottomRight_of_fullCycle` |
 
 **Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 
