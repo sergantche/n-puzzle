@@ -26,6 +26,84 @@ def cornerUpLeft (B : Board) : Cell B :=
     have hlt := (bottomRight B).2.isLt
     omega⟩)
 
+@[simp]
+lemma cornerLeft_ne_bottomRight {B : Board} (hcols : 2 ≤ B.cols) :
+    cornerLeft B ≠ bottomRight B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.2.val) h
+  simp [cornerLeft, bottomRight] at hv
+  omega
+
+@[simp]
+lemma bottomRight_ne_cornerLeft {B : Board} (hcols : 2 ≤ B.cols) :
+    bottomRight B ≠ cornerLeft B :=
+  (cornerLeft_ne_bottomRight hcols).symm
+
+@[simp]
+lemma cornerUp_ne_bottomRight {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerUp B ≠ bottomRight B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.1.val) h
+  simp [cornerUp, bottomRight] at hv
+  omega
+
+@[simp]
+lemma bottomRight_ne_cornerUp {B : Board} (hrows : 2 ≤ B.rows) :
+    bottomRight B ≠ cornerUp B :=
+  (cornerUp_ne_bottomRight hrows).symm
+
+@[simp]
+lemma cornerUpLeft_ne_bottomRight {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerUpLeft B ≠ bottomRight B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.1.val) h
+  simp [cornerUpLeft, bottomRight] at hv
+  omega
+
+@[simp]
+lemma bottomRight_ne_cornerUpLeft {B : Board} (hrows : 2 ≤ B.rows) :
+    bottomRight B ≠ cornerUpLeft B :=
+  (cornerUpLeft_ne_bottomRight hrows).symm
+
+@[simp]
+lemma cornerUpLeft_ne_cornerLeft {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerUpLeft B ≠ cornerLeft B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.1.val) h
+  simp [cornerUpLeft, cornerLeft, bottomRight] at hv
+  omega
+
+@[simp]
+lemma cornerLeft_ne_cornerUpLeft {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerLeft B ≠ cornerUpLeft B :=
+  (cornerUpLeft_ne_cornerLeft hrows).symm
+
+@[simp]
+lemma cornerUp_ne_cornerUpLeft {B : Board} (hcols : 2 ≤ B.cols) :
+    cornerUp B ≠ cornerUpLeft B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.2.val) h
+  simp [cornerUp, cornerUpLeft, bottomRight] at hv
+  omega
+
+@[simp]
+lemma cornerUpLeft_ne_cornerUp {B : Board} (hcols : 2 ≤ B.cols) :
+    cornerUpLeft B ≠ cornerUp B :=
+  (cornerUp_ne_cornerUpLeft hcols).symm
+
+@[simp]
+lemma cornerLeft_ne_cornerUp {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerLeft B ≠ cornerUp B := by
+  intro h
+  have hv := congrArg (fun c : Cell B => c.1.val) h
+  simp [cornerLeft, cornerUp, bottomRight] at hv
+  omega
+
+@[simp]
+lemma cornerUp_ne_cornerLeft {B : Board} (hrows : 2 ≤ B.rows) :
+    cornerUp B ≠ cornerLeft B :=
+  (cornerLeft_ne_cornerUp hrows).symm
+
 lemma adjacent_bottomRight_cornerLeft (B : Board) (hcols : 2 ≤ B.cols) :
     adjacent (bottomRight B) (cornerLeft B) := by
   left
@@ -74,6 +152,16 @@ def cornerCyclePath (B : Board) (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
       (.cons (adjacent_cornerUpLeft_cornerUp B hcols)
         (.cons (adjacent_cornerUp_bottomRight B hrows) (.nil _))))
 
+/-- Cell-label function obtained by the bottom-right 2x2 loop. -/
+def cornerCycleCells {B : Board} (cfg : Config B) : Cell B → ℕ :=
+  swapAt
+    (swapAt
+      (swapAt
+        (swapAt cfg.cells (bottomRight B) (cornerLeft B))
+        (cornerLeft B) (cornerUpLeft B))
+      (cornerUpLeft B) (cornerUp B))
+    (cornerUp B) (bottomRight B)
+
 /-- The concrete configuration obtained by running the bottom-right 2x2 blank loop. -/
 noncomputable def cornerCycleCfg {B : Board} (cfg : Config B)
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
@@ -100,6 +188,66 @@ lemma blank_cornerCycleCfg {B : Board} (cfg : Config B)
     (hbr : blank cfg = bottomRight B) :
     blank (cornerCycleCfg cfg hrows hcols hbr) = bottomRight B := by
   simp [cornerCycleCfg, blank_slide]
+
+lemma cornerCycleCfg_cells_eq {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    (cornerCycleCfg cfg hrows hcols hbr).cells = cornerCycleCells cfg := by
+  funext c
+  simp [cornerCycleCfg, cornerCycleCells, slide_cells, hbr, blank_slide]
+
+lemma cornerCycleCells_cornerLeft {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerCycleCells cfg (cornerLeft B) = cfg.cells (cornerUpLeft B) := by
+  simp [cornerCycleCells, swapAt, hrows, hcols]
+
+lemma cornerCycleCells_cornerUpLeft {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerCycleCells cfg (cornerUpLeft B) = cfg.cells (cornerUp B) := by
+  simp [cornerCycleCells, swapAt, hrows, hcols]
+
+lemma cornerCycleCells_cornerUp {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    cornerCycleCells cfg (cornerUp B) = cfg.cells (cornerLeft B) := by
+  simp [cornerCycleCells, swapAt, hrows, hcols]
+
+lemma cornerCycleCells_bottomRight {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    cornerCycleCells cfg (bottomRight B) = 0 := by
+  simp [cornerCycleCells, swapAt, hrows, hcols]
+  simpa [hbr] using blank_zero cfg
+
+lemma cornerCycleCfg_cells_cornerLeft {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    (cornerCycleCfg cfg hrows hcols hbr).cells (cornerLeft B) =
+      cfg.cells (cornerUpLeft B) := by
+  rw [cornerCycleCfg_cells_eq cfg hrows hcols hbr]
+  exact cornerCycleCells_cornerLeft cfg hrows hcols
+
+lemma cornerCycleCfg_cells_cornerUpLeft {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    (cornerCycleCfg cfg hrows hcols hbr).cells (cornerUpLeft B) =
+      cfg.cells (cornerUp B) := by
+  rw [cornerCycleCfg_cells_eq cfg hrows hcols hbr]
+  exact cornerCycleCells_cornerUpLeft cfg hrows hcols
+
+lemma cornerCycleCfg_cells_cornerUp {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    (cornerCycleCfg cfg hrows hcols hbr).cells (cornerUp B) =
+      cfg.cells (cornerLeft B) := by
+  rw [cornerCycleCfg_cells_eq cfg hrows hcols hbr]
+  exact cornerCycleCells_cornerUp cfg hrows hcols
+
+lemma cornerCycleCfg_cells_bottomRight {B : Board} (cfg : Config B)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hbr : blank cfg = bottomRight B) :
+    (cornerCycleCfg cfg hrows hcols hbr).cells (bottomRight B) = 0 := by
+  rw [cornerCycleCfg_cells_eq cfg hrows hcols hbr]
+  exact cornerCycleCells_bottomRight cfg hrows hcols hbr
 
 lemma reachable_cornerCycleCfg {B : Board} (cfg : Config B)
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
