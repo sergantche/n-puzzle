@@ -93,4 +93,24 @@ lemma PrefixedFullRoute.size_mod_two_eq_zero {B : Board}
     B.size % 2 = 0 :=
   Nat.even_iff.mp route.size_even
 
+lemma Board.size_mod_two_eq_one_of_odd_rows_odd_cols {B : Board}
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    B.size % 2 = 1 := by
+  rw [Board.size, Nat.mul_mod, hrowsOdd, hcolsOdd]
+
+lemma PrefixedFullRoute.isEmpty_of_size_mod_two_eq_one {B : Board}
+    {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
+    (hodd : B.size % 2 = 1) :
+    IsEmpty (PrefixedFullRoute B hrows hcols) :=
+  ⟨fun route => by
+    have heven := route.size_mod_two_eq_zero
+    omega⟩
+
+lemma PrefixedFullRoute.isEmpty_of_odd_rows_odd_cols {B : Board}
+    {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    IsEmpty (PrefixedFullRoute B hrows hcols) :=
+  PrefixedFullRoute.isEmpty_of_size_mod_two_eq_one
+    (Board.size_mod_two_eq_one_of_odd_rows_odd_cols hrowsOdd hcolsOdd)
+
 end NPuzzle.Rect
