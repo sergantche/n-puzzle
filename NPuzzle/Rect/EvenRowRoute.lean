@@ -285,4 +285,111 @@ lemma evenRowsRoute_covers {B : Board} :
   · exact evenRowsRoute_nodup
   · simpa [nonblankSubtypeList] using evenRowsRoute_length
 
+lemma evenRowsUpperRow_ne_nil {B : Board}
+    (hcols : 2 ≤ B.cols) (row : Fin B.rows) :
+    evenRowsUpperRow B row ≠ [] := by
+  by_cases hpar : row.val % 2 = 0 <;>
+    simp [evenRowsUpperRow, hpar] <;> omega
+
+lemma isChain_evenRowsUpperRow {B : Board} (row : Fin B.rows) :
+    List.IsChain adjacent (evenRowsUpperRow B row) := by
+  by_cases hpar : row.val % 2 = 0
+  · rw [evenRowsUpperRow]
+    simp only [hpar, ↓reduceIte]
+    rw [List.isChain_map]
+    exact (isChain_finRange_val_succ (B.cols - 1)).imp
+      (by
+        intro a b h
+        refine Or.inl ⟨rfl, Or.inl ?_⟩
+        simpa [colFromColsMinusOne] using h)
+  · rw [evenRowsUpperRow]
+    simp only [hpar, ↓reduceIte]
+    rw [List.isChain_map]
+    exact (isChain_finRange_reverse_val_pred (B.cols - 1)).imp
+      (by
+        intro a b h
+        refine Or.inl ⟨rfl, Or.inr ?_⟩
+        simpa [colFromColsMinusOne] using h)
+
+lemma adjacent_evenRowsUpperRow_next {B : Board}
+    {a b : Fin (B.rows - 1)} (hnext : b.val + 1 = a.val) :
+    ∀ x ∈ (evenRowsUpperRow B (rowFromRowsMinusOne (B := B) a)).getLast?,
+      ∀ y ∈ (evenRowsUpperRow B (rowFromRowsMinusOne (B := B) b)).head?,
+        adjacent x y := by
+  intro x hx y hy
+  by_cases hpar : a.val % 2 = 0
+  · have hbpar : ¬ b.val % 2 = 0 := by omega
+    simp [evenRowsUpperRow, rowFromRowsMinusOne, hpar, hbpar] at hx hy
+    rcases hx with ⟨cx, hxlast, rfl⟩
+    rcases hy with ⟨cy, hylast, rfl⟩
+    have hcx := finRange_getLast_val_add_one hxlast
+    have hcy := finRange_getLast_val_add_one hylast
+    refine Or.inr ⟨?_, Or.inr ?_⟩
+    · apply Fin.ext
+      simp [colFromColsMinusOne]
+      omega
+    · simpa [rowFromRowsMinusOne] using hnext
+  · have hbpar : b.val % 2 = 0 := by omega
+    simp [evenRowsUpperRow, rowFromRowsMinusOne, hpar, hbpar] at hx hy
+    rcases hx with ⟨cx, hxhead, rfl⟩
+    rcases hy with ⟨cy, hyhead, rfl⟩
+    have hcx := finRange_head_val_eq_zero hxhead
+    have hcy := finRange_head_val_eq_zero hyhead
+    refine Or.inr ⟨?_, Or.inr ?_⟩
+    · apply Fin.ext
+      simp [colFromColsMinusOne]
+      omega
+    · simpa [rowFromRowsMinusOne] using hnext
+
+lemma isChain_evenRowsUpperSnake {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    List.IsChain adjacent (evenRowsUpperSnake B) := by
+  have hne :
+      [] ∉ ((List.finRange (B.rows - 1)).reverse.map fun row =>
+        evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row)) := by
+    intro h
+    simp only [List.mem_map, List.mem_reverse, List.mem_finRange, true_and] at h
+    rcases h with ⟨row, hnil⟩
+    exact evenRowsUpperRow_ne_nil hcols (rowFromRowsMinusOne (B := B) row) hnil
+  rw [evenRowsUpperSnake, List.flatMap, List.isChain_flatten hne]
+  constructor
+  · intro l hl
+    simp only [List.mem_map, List.mem_reverse, List.mem_finRange, true_and] at hl
+    rcases hl with ⟨row, rfl⟩
+    exact isChain_evenRowsUpperRow (rowFromRowsMinusOne (B := B) row)
+  · rw [List.isChain_map]
+    exact (isChain_finRange_reverse_val_pred (B.rows - 1)).imp
+      (by
+        intro a b hnext
+        exact adjacent_evenRowsUpperRow_next hnext)
+
+lemma evenRowsUpperSnake_ne_nil {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    evenRowsUpperSnake B ≠ [] := by
+  intro hnil
+  have hlen := evenRowsUpperSnake_length B
+  rw [hnil] at hlen
+  simp at hlen
+  have hprod : 0 < (B.rows - 1) * (B.cols - 1) :=
+    Nat.mul_pos (by omega) (by omega)
+  omega
+
+lemma evenRowsRightColumn_ne_nil {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    evenRowsRightColumn B ≠ [] := by
+  intro hnil
+  have hlen := evenRowsRightColumn_length B
+  rw [hnil] at hlen
+  simp at hlen
+  omega
+
+lemma isChain_evenRowsRightColumn {B : Board} :
+    List.IsChain adjacent (evenRowsRightColumn B) := by
+  rw [evenRowsRightColumn, List.isChain_map]
+  exact (isChain_finRange_val_succ (B.rows - 1)).imp
+    (by
+      intro a b h
+      refine Or.inr ⟨rfl, Or.inl ?_⟩
+      simpa [rowFromRowsMinusOne] using h)
+
 end NPuzzle.Rect
