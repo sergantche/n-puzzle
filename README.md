@@ -79,7 +79,7 @@ Then $C$ is solvable **if and only if**:
 
 For thin boards ($N=1$ or $M=1$), solvability is instead equivalent to preserving the full row-major `tileList`; the parity condition alone is not sufficient there.
 
-This statement, together with the thin-board exception, is represented in Lean by `NPuzzle.Rect.solvability_rectangular`.
+This statement, together with the thin-board exception, is represented in Lean by `NPuzzle.Rect.solvabilityCriterion` and proved by `NPuzzle.Rect.solvability_rectangular`.
 
 ## Lean layout
 
@@ -89,7 +89,7 @@ This statement, together with the thin-board exception, is represented in Lean b
 - **`NPuzzle/FourFour/Sufficiency.lean`** — target theorem `solvability_four_four`.
 - **`NPuzzle/Rect/Thin.lean`** — thin-board `tileList` criteria `solvability_rows_lt_two` / `solvability_cols_lt_two`.
 - **`NPuzzle/Rect/EvenDimension.lean`** — rectangular fat-board theorem `solvability_of_two_le` for `2 ≤ rows` and `2 ≤ cols`.
-- **`NPuzzle/Rect/Solvability.lean`** — top-level rectangular dispatcher `solvability_rectangular`.
+- **`NPuzzle/Rect/Solvability.lean`** — top-level rectangular criterion `solvabilityCriterion` and theorem `solvability_rectangular`.
 - **9b.3 (closed):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileRelabel.lean`, `TileConnectivity.lean` — tile-list permutations, even-permutation realization, and connectivity with the blank at bottom-right.
 
 Build the library: `lake build`.
@@ -120,6 +120,6 @@ The statement `solvability_four_four` is fully proved in Lean, and the dependenc
 
 ### Rectangular status (`NPuzzle.Rect`)
 
-The top-level rectangular dispatcher is `solvability_rectangular` in `NPuzzle/Rect/Solvability.lean`.
+The top-level rectangular criterion is `solvabilityCriterion`; the theorem is `solvability_rectangular` in `NPuzzle/Rect/Solvability.lean`.
 For boards with `2 ≤ rows` and `2 ≤ cols`, `solvability_of_two_le` gives the parity criterion.
 For thin boards, `solvability_rows_lt_two` and `solvability_cols_lt_two` give the stronger `tileList` criterion.
