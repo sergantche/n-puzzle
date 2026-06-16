@@ -176,17 +176,15 @@ noncomputable def tileLabelAt (L : List ℕ) (i : Fin 15) (hs : TileListSpec bot
 
 lemma tileLabelAt_goal (i : Fin 15) : tileLabelAt (tileList goal) i tileListSpec_goal = i := by
   ext
-  simp only [tileLabelAt, tileList, List.getElem_map, cellsRowMajorExcept_length,
-    goalCells, bottomRight, blank_goal, tileListSpec_goal]
+  simp only [tileLabelAt, tileList, bottomRight, blank_goal]
   fin_cases i <;>
-    simp [rankExcept_bottomRight, goalCells, cellsRowMajorExcept, List.finRange, List.filter,
-      List.findIdx, List.findIdx.go] <;> decide
+    simp [cellsRowMajorExcept, List.finRange, List.filter] <;> decide
 
 lemma tileLabelAt_injective (L : List ℕ) (hs : TileListSpec bottomRight L) :
     Function.Injective (tileLabelAt L · hs) := by
   intro i j hij
   have hval := congrArg Fin.val hij
-  simp only [tileLabelAt, Fin.mk.injEq] at hval
+  simp only [tileLabelAt] at hval
   have hi : i.1 < L.length := by rw [hs.length_eq]; exact i.isLt
   have hj : j.1 < L.length := by rw [hs.length_eq]; exact j.isLt
   have hlo_i := (hs.mem_Icc _ (List.getElem_mem hi)).1
@@ -204,7 +202,7 @@ lemma tileLabelAt_surjective (L : List ℕ) (hs : TileListSpec bottomRight L) :
   obtain ⟨j, hj, heq⟩ := List.mem_iff_getElem.mp hk
   refine ⟨⟨j, by rw [hs.length_eq] at hj; omega⟩, ?_⟩
   ext
-  simp [tileLabelAt, heq, Fin.mk.injEq]
+  simp [tileLabelAt, heq]
 
 /-- Bijection `Fin 15 ≃ Fin 15` encoded by tile values in `L` (blank at `bottomRight`). -/
 noncomputable def tileListPerm (L : List ℕ) (hs : TileListSpec bottomRight L) : Equiv.Perm (Fin 15) :=

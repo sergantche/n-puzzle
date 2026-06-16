@@ -72,7 +72,7 @@ lemma set_swap_succ (a : ℕ) (xs : List ℕ) (k : ℕ) (b c : ℕ) (hk : k + 2 
   | succ k ih =>
     cases xs with
     | nil => simp at hk
-    | cons x xs => simp [List.set, ih]
+    | cons x xs => simp [List.set]
 
 lemma headInv_swap (a : ℕ) (xs : List ℕ) (k : ℕ) (hk : k + 1 < xs.length)
     (_hne : xs[k] ≠ xs[k + 1]) :
@@ -112,7 +112,7 @@ lemma inversionCount_swapAdjacent_succ (L : List ℕ) (i : ℕ) (hi : i + 1 < L.
       have hswap :
           ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set (k + 1 + 1) (x :: xs)[k + 1] =
             x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
-        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+        simp [Nat.add_assoc]
       rw [hswap, inversionCount_def_cons,
         headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
         inversionCount_def_cons]
@@ -139,7 +139,7 @@ lemma inversionCount_swapAdjacent (L : List ℕ) (i : ℕ) (hi : i + 1 < L.lengt
       have hswap :
           ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set (k + 1 + 1) (x :: xs)[k + 1] =
             x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
-        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+        simp [Nat.add_assoc]
       rw [hswap, inversionCount_def_cons,
         headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
         inversionCount_def_cons]
@@ -247,7 +247,7 @@ lemma bubbleRight_get (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hp' : p 
 
 lemma bubbleRight_get_at (L : List ℕ) (p : ℕ) (hp : p + 1 < L.length) (hp' : p < L.length) :
     (bubbleRight L p hp)[p]'(by simp [bubbleRight, List.length_set]; exact hp') = L[p + 1]'hp := by
-  simp only [bubbleRight, List.getElem_set, if_pos rfl, if_neg (by omega : ¬p + 1 = p)]
+  simp only [bubbleRight, List.getElem_set, if_neg (by omega : ¬p + 1 = p)]
   split_ifs <;> rfl
 
 lemma bubbleRight_get_left (L : List ℕ) (p : ℕ) (hp0 : 0 < p) (hp1 : p - 1 < L.length) (hp : p < L.length) :
@@ -470,7 +470,7 @@ lemma headInv_pos_iff {x : ℕ} {xs : List ℕ} :
   constructor
   · intro hpos
     by_contra hall
-    push_neg at hall
+    push Not at hall
     have hzero : headInv x xs = 0 := (headInv_eq_zero).2 fun y hy => hall y hy
     omega
   · rintro ⟨y, hy, hxy⟩
@@ -484,7 +484,7 @@ private lemma headInv_pos_gt_head_of_sorted {x : ℕ} {xs : List ℕ} (hx : 0 < 
   have hx0 : 0 < xs.length := List.length_pos_iff_ne_nil.mpr hne
   refine ⟨hx0, ?_⟩
   by_contra hxle
-  push_neg at hxle
+  push Not at hxle
   obtain ⟨y, hy, hxy⟩ := headInv_pos_iff.mp hx
   obtain ⟨j, hj, heq⟩ := List.mem_iff_getElem.mp hy
   have hmono := (List.sortedLE_iff_getElem_le_getElem_of_le).mp (Pairwise.sortedLE hsorted)
@@ -511,7 +511,7 @@ lemma exists_adjacent_gt_of_inversionCount_pos (L : List ℕ) (hpos : 0 < invers
       simpa [List.getElem_cons_succ] using hgt
     · have hxs0 : inversionCount xs = 0 := by omega
       have hx : 0 < headInv x xs := by
-        simp only [inversionCount_def_cons, hxs0, add_zero] at hpos
+        simp only [hxs0, add_zero] at hpos
         exact hpos
       have hsorted : List.Pairwise (· ≤ ·) xs := (inversionCount_eq_zero_iff_sorted xs).mp hxs0
       have hne : xs ≠ [] := by
@@ -532,7 +532,7 @@ lemma cellsRowMajorExcept_nodup (b : Cell) : (cellsRowMajorExcept b).Nodup := by
   fin_cases b <;> simp [cellsRowMajorExcept, List.finRange, List.filter, List.Nodup]
 
 lemma cfg_cells_injective_of_ne_blank (cfg : Config) {i j : Cell}
-    (hi : i ≠ blank cfg) (hj : j ≠ blank cfg) (hij : cfg.cells i = cfg.cells j) : i = j := by
+    (hi : i ≠ blank cfg) (hij : cfg.cells i = cfg.cells j) : i = j := by
   by_contra hne
   rcases cfg.valid with ⟨_, huniq0, htiles⟩
   by_cases h0i : cfg.cells i = 0
@@ -548,15 +548,13 @@ lemma rankExcept_lt {skip c : Cell} (hc : c ≠ skip) :
   rw [cellsRowMajorExcept_length]
   fin_cases skip <;> fin_cases c <;>
     simp [rankExcept, cellsRowMajorExcept, List.finRange, List.filter,
-      List.findIdx, List.findIdx.go] at hc ⊢ <;>
-    first | contradiction | decide
+      List.findIdx, List.findIdx.go] at hc ⊢
 
 lemma rankExcept_getElem {skip c : Cell} (hc : c ≠ skip) :
     (cellsRowMajorExcept skip)[rankExcept skip c]'(rankExcept_lt hc) = c := by
   fin_cases skip <;> fin_cases c <;>
     simp [rankExcept, cellsRowMajorExcept, List.finRange, List.filter,
-      List.findIdx, List.findIdx.go] at hc ⊢ <;>
-    first | contradiction | rfl
+      List.findIdx, List.findIdx.go] at hc ⊢
 
 lemma rankExcept_injective {skip : Cell} {c c' : Cell} (hc : c ≠ skip) (hc' : c' ≠ skip)
     (h : rankExcept skip c = rankExcept skip c') : c = c' := by
@@ -572,7 +570,7 @@ lemma tileList_nodup (cfg : Config) : (tileList cfg).Nodup := by
   refine List.Nodup.map_on ?_ (cellsRowMajorExcept_nodup _)
   intro a ha b hb hab
   exact cfg_cells_injective_of_ne_blank cfg
-    (cellsRowMajorExcept_ne _ _ ha) (cellsRowMajorExcept_ne _ _ hb) hab
+    (cellsRowMajorExcept_ne _ _ ha) hab
 
 lemma invStat_slide_vertical_mod (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
     (hc : sameCol (blank cfg) n) :
