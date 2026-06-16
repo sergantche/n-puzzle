@@ -45,6 +45,15 @@ lemma rowFromRowsMinusOne_val {B : Board} (r : Fin (B.rows - 1)) :
     (rowFromRowsMinusOne (B := B) r).val = r.val :=
   rfl
 
+lemma finList_toFinset_eq_univ_of_nodup_length {n : ℕ} {L : List (Fin n)}
+    (hnd : L.Nodup) (hlen : L.length = n) :
+    L.toFinset = Finset.univ := by
+  apply Finset.eq_of_subset_of_card_le
+  · intro x _hx
+    simp
+  · rw [List.toFinset_card_of_nodup hnd, hlen]
+    simp
+
 lemma bottomRight_eq_twoColumn {B : Board} (hcols : B.cols = 2) :
     bottomRight B = ((bottomRight B).1, colOneOfTwo hcols) := by
   apply Prod.ext
@@ -102,5 +111,86 @@ lemma twoColumnRoute_nonblank {B : Board}
       have hr := r.isLt
       simp [bottomRight, rowFromRowsMinusOne] at hv
       omega
+
+lemma twoColumnRoute_length {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
+    (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols).length =
+      B.tileCount := by
+  simp [twoColumnRouteYs, Board.tileCount, Board.size, hcols]
+  omega
+
+lemma twoColumnRoute_nodup_cells {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
+    (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols).Nodup := by
+  rw [cornerLeft_eq_twoColumn hcols, cornerUpLeft_eq_twoColumn hcols]
+  simp [twoColumnRouteYs, List.nodup_append]
+  constructor
+  · constructor
+    · intro h
+      have hv := congrArg (fun r : Fin B.rows => r.val) h
+      simp [cornerUp, bottomRight] at hv
+      omega
+    · constructor
+      · intro x h
+        have hv := congrArg (fun r : Fin B.rows => r.val) h
+        have hx := x.isLt
+        simp [rowFromRowsMinusTwo, bottomRight] at hv
+        omega
+      · intro x hrow _hcol
+        have hv := congrArg (fun r : Fin B.rows => r.val) hrow
+        have hx := x.isLt
+        simp [rowFromRowsMinusOne, bottomRight] at hv
+        omega
+  · constructor
+    · constructor
+      · intro x h
+        have hv := congrArg (fun r : Fin B.rows => r.val) h
+        have hx := x.isLt
+        simp [rowFromRowsMinusTwo, cornerUp, bottomRight] at hv
+        omega
+      · intro _x _hrow hcol
+        have hv := congrArg (fun c : Fin B.cols => c.val) hcol
+        simp [colZero, colOneOfTwo] at hv
+    · constructor
+      · exact (List.nodup_finRange (B.rows - 2)).map
+          (by
+            intro a b h
+            apply Fin.ext
+            have hv := congrArg (fun c : Cell B => c.1.val) h
+            simpa [rowFromRowsMinusTwo] using hv)
+      · constructor
+        · exact (List.nodup_finRange (B.rows - 1)).map
+            (by
+              intro a b h
+              apply Fin.ext
+              have hv := congrArg (fun c : Cell B => c.1.val) h
+              simpa [rowFromRowsMinusOne] using hv)
+        · intro _a _b _hrow hcol
+          have hv := congrArg (fun c : Fin B.cols => c.val) hcol
+          simp [colZero, colOneOfTwo] at hv
+
+lemma twoColumnRoute_nodup {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
+    ((nonblankSubtypeList
+        (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols)
+        (twoColumnRoute_nonblank hrows hcols)).map
+      (nonblankCellEquivFin B)).Nodup := by
+  have hsub :
+      (nonblankSubtypeList
+        (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols)
+        (twoColumnRoute_nonblank hrows hcols)).Nodup := by
+    apply List.Nodup.of_map (f := fun c : {c : Cell B // c ≠ bottomRight B} => c.1)
+    simpa [nonblankSubtypeList_map_val] using twoColumnRoute_nodup_cells hrows hcols
+  exact hsub.map (nonblankCellEquivFin B).injective
+
+lemma twoColumnRoute_covers {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
+    ((nonblankSubtypeList
+        (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols)
+        (twoColumnRoute_nonblank hrows hcols)).map
+      (nonblankCellEquivFin B)).toFinset = Finset.univ := by
+  apply finList_toFinset_eq_univ_of_nodup_length
+  · exact twoColumnRoute_nodup hrows hcols
+  · simpa [nonblankSubtypeList] using twoColumnRoute_length hrows hcols
 
 end NPuzzle.Rect
