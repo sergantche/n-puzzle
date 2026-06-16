@@ -115,11 +115,16 @@ lemma cornerUp_eq_twoColumn {B : Board} (hcols : B.cols = 2) :
   · apply Fin.ext
     simp [cornerUp, bottomRight, colOneOfTwo, hcols]
 
+def twoColumnLeftTail (B : Board) : List (Cell B) :=
+  (List.finRange (B.rows - 2)).reverse.map fun r =>
+    (rowFromRowsMinusTwo (B := B) r, colZero B)
+
+def twoColumnRightColumn (B : Board) (hcols : B.cols = 2) : List (Cell B) :=
+  (List.finRange (B.rows - 1)).map fun r =>
+    (rowFromRowsMinusOne (B := B) r, colOneOfTwo hcols)
+
 def twoColumnRouteYs (B : Board) (hcols : B.cols = 2) : List (Cell B) :=
-  ((List.finRange (B.rows - 2)).reverse.map fun r =>
-      (rowFromRowsMinusTwo (B := B) r, colZero B)) ++
-    ((List.finRange (B.rows - 1)).map fun r =>
-      (rowFromRowsMinusOne (B := B) r, colOneOfTwo hcols))
+  twoColumnLeftTail B ++ twoColumnRightColumn B hcols
 
 lemma twoColumnRoute_nonblank {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
@@ -127,7 +132,7 @@ lemma twoColumnRoute_nonblank {B : Board}
       c ≠ bottomRight B := by
   intro c hc
   have hcolsLe : 2 ≤ B.cols := by omega
-  simp [twoColumnRouteYs] at hc
+  simp [twoColumnRouteYs, twoColumnLeftTail, twoColumnRightColumn] at hc
   rcases hc with hleft | hupleft | htail
   · rw [hleft]
     exact cornerLeft_ne_bottomRight hcolsLe
@@ -149,14 +154,15 @@ lemma twoColumnRoute_length {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
     (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols).length =
       B.tileCount := by
-  simp [twoColumnRouteYs, Board.tileCount, Board.size, hcols]
+  simp [twoColumnRouteYs, twoColumnLeftTail, twoColumnRightColumn,
+    Board.tileCount, Board.size, hcols]
   omega
 
 lemma twoColumnRoute_nodup_cells {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : B.cols = 2) :
     (cornerLeft B :: cornerUpLeft B :: twoColumnRouteYs B hcols).Nodup := by
   rw [cornerLeft_eq_twoColumn hcols, cornerUpLeft_eq_twoColumn hcols]
-  simp [twoColumnRouteYs, List.nodup_append]
+  simp [twoColumnRouteYs, twoColumnLeftTail, twoColumnRightColumn, List.nodup_append]
   constructor
   · constructor
     · intro h
