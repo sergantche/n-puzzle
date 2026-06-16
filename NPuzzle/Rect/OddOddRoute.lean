@@ -1136,4 +1136,109 @@ lemma oddOddRoute_nodup {B : Board}
       oddOddRoute_nodup_cells hrows hcols hrowsOdd hcolsOdd
   exact hsub.map (nonblankCellEquivFin B).injective
 
+lemma oddOddRoute_avoids_cornerUpLeft {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    cornerUpLeft B ∉ oddOddRouteXs B := by
+  intro hmem
+  have hrows_three : 3 ≤ B.rows := by omega
+  have hcols_three : 3 ≤ B.cols := by omega
+  simp [oddOddRouteXs] at hmem
+  rcases hmem with hbottom | hleft | hmiddle | hcap
+  · simp [evenColsBottomTail] at hbottom
+    rcases hbottom with ⟨col, hEq⟩
+    have hv := congrArg (fun c : Cell B => c.1.val) hEq
+    simp [cornerUpLeft, bottomRight] at hv
+    omega
+  · have hcol := oddOddLeftColumn_mem_col hleft
+    have hv := congrArg (fun c : Fin B.cols => c.val) hcol
+    simp [cornerUpLeft, bottomRight, colZero] at hv
+    omega
+  · have hlt := oddOddMiddleSnake_col_lt_beforeRight hmiddle
+    simp [cornerUpLeft, bottomRight] at hlt
+    omega
+  · simp [oddOddCap] at hcap
+    rcases hcap with hrowsPart | hcorner
+    · rw [oddOddCapRows] at hrowsPart
+      simp only [List.mem_flatMap, List.mem_finRange, true_and] at hrowsPart
+      rcases hrowsPart with ⟨row, hrow⟩
+      have hrowEq := oddOddCapRow_mem_row hrow
+      have hv := congrArg (fun r : Fin B.rows => r.val) hrowEq
+      have hlt := row.isLt
+      simp [cornerUpLeft, bottomRight, rowFromRowsMinusTwo] at hv
+      omega
+    · exact cornerUpLeft_ne_cornerUp hcols hcorner
+
+lemma cornerUpLeftIdx_eq_nonblankCellEquivFin {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    nonblankCellEquivFin B
+        ⟨cornerUpLeft B, cornerUpLeft_ne_bottomRight hrows⟩ =
+      cornerUpLeftIdx B hrows := by
+  apply Fin.ext
+  rfl
+
+lemma oddOddRoute_index_avoids_cornerUpLeft {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    cornerUpLeftIdx B hrows ∉
+      ((nonblankSubtypeList
+        (oddOddRouteXs B)
+        (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)) := by
+  intro hmem
+  rcases List.mem_map.mp hmem with ⟨c, hc, hEq⟩
+  let missing : {c : Cell B // c ≠ bottomRight B} :=
+    ⟨cornerUpLeft B, cornerUpLeft_ne_bottomRight hrows⟩
+  have hmissing :
+      nonblankCellEquivFin B missing = cornerUpLeftIdx B hrows := by
+    exact cornerUpLeftIdx_eq_nonblankCellEquivFin hrows
+  have hcMissing : c = missing :=
+    (nonblankCellEquivFin B).injective (hEq.trans hmissing.symm)
+  have hcCell : c.1 ∈ oddOddRouteXs B := by
+    have hmap :
+        c.1 ∈
+          (nonblankSubtypeList
+            (oddOddRouteXs B)
+            (oddOddRoute_nonblank hrows)).map (fun c => c.1) :=
+      List.mem_map_of_mem
+        (f := fun c : {c : Cell B // c ≠ bottomRight B} => c.1) hc
+    simpa [nonblankSubtypeList_map_val] using hmap
+  have hcellEq : c.1 = cornerUpLeft B := by
+    exact congrArg Subtype.val hcMissing
+  exact oddOddRoute_avoids_cornerUpLeft hrows hcols hrowsOdd hcolsOdd
+    (by simpa [hcellEq] using hcCell)
+
+lemma oddOddRoute_covers {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    ((nonblankSubtypeList
+        (oddOddRouteXs B)
+        (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).toFinset =
+        Finset.univ.erase (cornerUpLeftIdx B hrows) := by
+  let L :=
+    (nonblankSubtypeList
+      (oddOddRouteXs B)
+      (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)
+  have hnd : L.Nodup := by
+    simpa [L] using oddOddRoute_nodup hrows hcols hrowsOdd hcolsOdd
+  have hlen : L.length = B.tileCount - 1 := by
+    simpa [L, nonblankSubtypeList] using
+      oddOddRoute_length hrows hcols hrowsOdd hcolsOdd
+  apply Finset.eq_of_subset_of_card_le
+  · intro x hx
+    rw [Finset.mem_erase]
+    constructor
+    · intro hxMissing
+      have hxmem : x ∈ L := by
+        simpa [L] using hx
+      subst hxMissing
+      exact oddOddRoute_index_avoids_cornerUpLeft
+        hrows hcols hrowsOdd hcolsOdd hxmem
+    · exact Finset.mem_univ x
+  · rw [List.toFinset_card_of_nodup hnd, hlen,
+      Finset.card_erase_of_mem (Finset.mem_univ (cornerUpLeftIdx B hrows)),
+      Finset.card_univ, Fintype.card_fin]
+
 end NPuzzle.Rect
