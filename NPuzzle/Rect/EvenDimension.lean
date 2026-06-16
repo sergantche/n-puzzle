@@ -137,4 +137,23 @@ lemma tiles_to_goal_of_dimension_split {B : Board}
   reachable_symm
     (reachable_goal_to_cfg_of_dimension_split hrows hcols cfg hpar)
 
+theorem solvability_targetParity_of_two_le {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ parityClass cfg = targetParity B := by
+  constructor
+  · intro hre
+    exact (reachable_imp_parity cfg hre).trans (parityClass_goal B)
+  · intro hpar
+    exact tiles_to_goal_of_dimension_split hrows hcols cfg hpar
+
+theorem solvability_of_two_le {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ parityClass cfg = parityClass (goal B) := by
+  constructor
+  · intro hre
+    exact reachable_imp_parity cfg hre
+  · intro hpar
+    exact tiles_to_goal_of_dimension_split hrows hcols cfg
+      (hpar.trans (parityClass_goal B))
+
 end NPuzzle.Rect

@@ -85,6 +85,7 @@ This statement is the main mathematical result we intend to prove formally in Le
 - **`NPuzzle.lean`** — root of the `NPuzzle` library.
 - **`NPuzzle/FourFour/`** — 4×4 formalization (see [PLAN.md](PLAN.md) for the proof checklist).
 - **`NPuzzle/FourFour/Sufficiency.lean`** — target theorem `solvability_four_four`.
+- **`NPuzzle/Rect/EvenDimension.lean`** — rectangular fat-board theorem `solvability_of_two_le` for `2 ≤ rows` and `2 ≤ cols`.
 - **9b.3 (closed):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileRelabel.lean`, `TileConnectivity.lean` — tile-list permutations, even-permutation realization, and connectivity with the blank at bottom-right.
 
 Build the library: `lake build`.
