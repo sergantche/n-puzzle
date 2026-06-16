@@ -392,4 +392,184 @@ lemma isChain_evenRowsRightColumn {B : Board} :
       refine Or.inr ⟨rfl, Or.inl ?_⟩
       simpa [rowFromRowsMinusOne] using h)
 
+lemma adjacent_evenRowsBottomTail_upperSnake_head {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsEven : B.rows % 2 = 0) :
+    ∀ x ∈ (evenColsBottomTail B).getLast?,
+      ∀ y ∈ (evenRowsUpperSnake B).head?,
+        adjacent x y := by
+  intro x hx y hy
+  simp [evenColsBottomTail] at hx
+  rcases hx with ⟨c, hhead, rfl⟩
+  have hmemBottom : c ∈ (List.finRange (B.cols - 1)).head? := by
+    rw [hhead]
+    simp
+  have hcval := finRange_head_val_eq_zero hmemBottom
+  let lastUpperRow : Fin (B.rows - 1) := ⟨B.rows - 2, by omega⟩
+  have hlastUpperRowMem :
+      lastUpperRow ∈ (List.finRange (B.rows - 1)).reverse.head? := by
+    rw [List.head?_reverse]
+    rw [finRange_getLast?_eq_last (by omega : 0 < B.rows - 1)]
+    simp [lastUpperRow]
+    omega
+  have hrowsCons :
+      (List.finRange (B.rows - 1)).reverse =
+        lastUpperRow :: (List.finRange (B.rows - 1)).reverse.tail :=
+    List.eq_cons_of_mem_head? hlastUpperRowMem
+  rw [evenRowsUpperSnake, hrowsCons] at hy
+  simp only [List.flatMap_cons] at hy
+  rw [List.head?_append_of_ne_nil
+    (evenRowsUpperRow B (rowFromRowsMinusOne (B := B) lastUpperRow))
+    (evenRowsUpperRow_ne_nil hcols (rowFromRowsMinusOne (B := B) lastUpperRow))] at hy
+  have hrowEven :
+      lastUpperRow.val % 2 = 0 := by
+    simp [lastUpperRow]
+    omega
+  simp [evenRowsUpperRow, rowFromRowsMinusOne, hrowEven] at hy
+  rcases hy with ⟨d, dhead, rfl⟩
+  have hdval := finRange_head_val_eq_zero dhead
+  refine Or.inr ⟨?_, Or.inr ?_⟩
+  · apply Fin.ext
+    simp [colFromColsMinusOne]
+    omega
+  · simp [bottomRight, lastUpperRow]
+    omega
+
+lemma evenRowsUpperSnake_getLast?_eq_topRow {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    (evenRowsUpperSnake B).getLast? =
+      (evenRowsUpperRow B
+        (rowFromRowsMinusOne (B := B) (⟨0, by omega⟩ : Fin (B.rows - 1)))).getLast? := by
+  let row0 : Fin (B.rows - 1) := ⟨0, by omega⟩
+  let rows :=
+    ((List.finRange (B.rows - 1)).reverse.map fun row =>
+      evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row))
+  have hrowsLast? :
+      rows.getLast? =
+        some (evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row0)) := by
+    dsimp [rows]
+    rw [List.getLast?_map, List.getLast?_reverse,
+      finRange_head?_eq_zero (by omega : 0 < B.rows - 1)]
+    simp [row0]
+  have hmemRowsLast :
+      evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row0) ∈ rows.getLast? := by
+    rw [hrowsLast?]
+    simp
+  have hrows_ne : rows ≠ [] := by
+    exact List.ne_nil_of_mem (List.mem_of_mem_getLast? hmemRowsLast)
+  have hrows_last :
+      rows.getLast hrows_ne =
+        evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row0) :=
+    List.getLast_of_mem_getLast? hmemRowsLast
+  have hrows_last_ne : rows.getLast hrows_ne ≠ [] := by
+    rw [hrows_last]
+    exact evenRowsUpperRow_ne_nil hcols (rowFromRowsMinusOne (B := B) row0)
+  have hflat_ne : rows.flatten ≠ [] := by
+    exact List.flatten_ne_nil_iff.mpr
+      ⟨rows.getLast hrows_ne, List.getLast_mem hrows_ne, hrows_last_ne⟩
+  have hinner_ne :
+      evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row0) ≠ [] :=
+    evenRowsUpperRow_ne_nil hcols (rowFromRowsMinusOne (B := B) row0)
+  rw [evenRowsUpperSnake, List.flatMap]
+  change rows.flatten.getLast? =
+    (evenRowsUpperRow B (rowFromRowsMinusOne (B := B) row0)).getLast?
+  rw [List.getLast?_eq_getLast_of_ne_nil hflat_ne,
+    List.getLast?_eq_getLast_of_ne_nil hinner_ne]
+  rw [List.getLast_flatten_eq_getLast_getLast (l := rows) hflat_ne hrows_last_ne]
+  congr
+
+lemma adjacent_evenRowsUpperSnake_rightColumn_head {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    ∀ x ∈ (evenRowsUpperSnake B).getLast?,
+      ∀ y ∈ (evenRowsRightColumn B).head?,
+        adjacent x y := by
+  intro x hx y hy
+  rw [evenRowsUpperSnake_getLast?_eq_topRow hrows hcols] at hx
+  simp [evenRowsUpperRow, evenRowsRightColumn] at hx hy
+  rcases hx with ⟨cx, hxlast, rfl⟩
+  rcases hy with ⟨ry, hyhead, rfl⟩
+  have hcx := finRange_getLast_val_add_one hxlast
+  have hry := finRange_head_val_eq_zero hyhead
+  refine Or.inl ⟨?_, Or.inl ?_⟩
+  · apply Fin.ext
+    simp [rowFromRowsMinusOne]
+    omega
+  · simp [bottomRight, colFromColsMinusOne]
+    omega
+
+lemma adjacent_evenRowsRightColumn_bottomRight {B : Board} :
+    ∀ x ∈ (evenRowsRightColumn B).getLast?,
+      ∀ y ∈ [bottomRight B].head?,
+        adjacent x y := by
+  intro x hx y hy
+  simp [evenRowsRightColumn] at hx hy
+  rcases hx with ⟨row, hlast, rfl⟩
+  subst y
+  have hrow := finRange_getLast_val_add_one hlast
+  refine Or.inr ⟨rfl, Or.inl ?_⟩
+  simp [bottomRight, rowFromRowsMinusOne]
+  omega
+
+lemma adjacent_evenRowsRoute_bottomRight {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    ∀ x ∈ (evenRowsRouteXs B).getLast?,
+      ∀ y ∈ [bottomRight B].head?,
+        adjacent x y := by
+  intro x hx y hy
+  rw [evenRowsRouteXs,
+    List.getLast?_append_of_ne_nil
+      (evenColsBottomTail B ++ evenRowsUpperSnake B)
+      (evenRowsRightColumn_ne_nil hrows)] at hx
+  exact adjacent_evenRowsRightColumn_bottomRight x hx y hy
+
+lemma evenRowsRoute_chain_open {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsEven : B.rows % 2 = 0) :
+    AdjacentChain (bottomRight B) (evenRowsRouteXs B) := by
+  rw [adjacentChain_iff_isChain]
+  rw [evenRowsRouteXs, List.append_assoc]
+  apply List.IsChain.cons
+  · apply List.IsChain.append
+    · exact isChain_evenColsBottomTail B
+    · apply List.IsChain.append
+      · exact isChain_evenRowsUpperSnake hcols
+      · exact isChain_evenRowsRightColumn
+      · exact adjacent_evenRowsUpperSnake_rightColumn_head hrows hcols
+    · intro x hx y hy
+      rw [List.head?_append_of_ne_nil
+        (evenRowsUpperSnake B)
+        (evenRowsUpperSnake_ne_nil hrows hcols)] at hy
+      exact adjacent_evenRowsBottomTail_upperSnake_head hrows hcols hrowsEven x hx y hy
+  · intro y hy
+    have hbottom_ne : evenColsBottomTail B ≠ [] := by
+      simp [evenColsBottomTail]
+      omega
+    rw [List.head?_append_of_ne_nil (evenColsBottomTail B) hbottom_ne] at hy
+    exact adjacent_bottomRight_evenColsBottomTail_head y hy
+
+lemma evenRowsRoute_chain {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsEven : B.rows % 2 = 0) :
+    AdjacentChain (bottomRight B) (evenRowsRouteXs B ++ [bottomRight B]) := by
+  rw [adjacentChain_iff_isChain]
+  change List.IsChain adjacent ((bottomRight B :: evenRowsRouteXs B) ++ [bottomRight B])
+  apply List.IsChain.append
+  · exact (adjacentChain_iff_isChain (bottomRight B) (evenRowsRouteXs B)).mp
+      (evenRowsRoute_chain_open hrows hcols hrowsEven)
+  · simp
+  · intro x hx y hy
+    simp at hy
+    subst y
+    have hroute_ne : evenRowsRouteXs B ≠ [] := by
+      simp [evenRowsRouteXs, evenColsBottomTail]
+      omega
+    have hxRoute : x ∈ (evenRowsRouteXs B).getLast? := by
+      cases hroute : evenRowsRouteXs B with
+      | nil =>
+          exact (hroute_ne hroute).elim
+      | cons z zs =>
+          rw [hroute] at hx
+          simpa using hx
+    exact adjacent_evenRowsRoute_bottomRight hrows x hxRoute (bottomRight B) (by simp)
+
 end NPuzzle.Rect
