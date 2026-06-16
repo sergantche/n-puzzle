@@ -50,6 +50,22 @@ lemma Board.evenDimension_iff_size_mod_two_eq_zero (B : Board) :
     · have hsizeOdd := B.size_mod_two_eq_one_of_odd_rows_odd_cols hOdd.1 hOdd.2
       omega
 
+lemma Board.oddRows_oddCols_iff_size_mod_two_eq_one (B : Board) :
+    (B.rows % 2 = 1 ∧ B.cols % 2 = 1) ↔ B.size % 2 = 1 := by
+  constructor
+  · intro hOdd
+    exact B.size_mod_two_eq_one_of_odd_rows_odd_cols hOdd.1 hOdd.2
+  · intro hsize
+    rcases B.evenDimension_or_oddRows_oddCols with hEven | hOdd
+    · have hsizeEven := Board.size_mod_two_eq_zero_of_evenDimension hEven
+      omega
+    · exact hOdd
+
+lemma Board.not_evenDimension_iff_size_mod_two_eq_one (B : Board) :
+    ¬ (B.rows % 2 = 0 ∨ B.cols % 2 = 0) ↔ B.size % 2 = 1 := by
+  rw [B.not_evenDimension_iff_oddRows_oddCols,
+    B.oddRows_oddCols_iff_size_mod_two_eq_one]
+
 lemma reachable_goal_to_cfg_bottomRight_of_evenDimension {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (hEven : B.rows % 2 = 0 ∨ B.cols % 2 = 0)
