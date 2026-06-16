@@ -15,6 +15,7 @@ import NPuzzle.Rect.PathSufficiency
 import NPuzzle.Rect.PathParity
 import NPuzzle.Rect.TwoColumnRoute
 import NPuzzle.Rect.Thin
+import NPuzzle.Rect.TwoRowRoute
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
 import NPuzzle.Rect.CornerRealizable
