@@ -1241,4 +1241,90 @@ lemma oddOddRoute_covers {B : Board}
       Finset.card_erase_of_mem (Finset.mem_univ (cornerUpLeftIdx B hrows)),
       Finset.card_univ, Fintype.card_fin]
 
+lemma oddOddRoute_index_head {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    (((nonblankSubtypeList
+      (oddOddRouteXs B)
+      (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).head?) =
+        some (cornerLeftIdx B hcols) := by
+  simp [nonblankSubtypeList, oddOddRoute_head hcols, cornerLeftIdx]
+  apply Fin.ext
+  rfl
+
+lemma oddOddRoute_index_getLast {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    (((nonblankSubtypeList
+      (oddOddRouteXs B)
+      (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).getLast?) =
+        some (cornerUpIdx B hrows) := by
+  simp [nonblankSubtypeList, oddOddRoute_getLast, cornerUpIdx]
+  apply Fin.ext
+  rfl
+
+lemma oddOddRoute_compat {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    List.formPerm
+        ((nonblankSubtypeList
+          (oddOddRouteXs B)
+          (oddOddRoute_nonblank hrows)).map
+          (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) =
+      cornerLeftIdx B hcols := by
+  let L :=
+    (nonblankSubtypeList
+      (oddOddRouteXs B)
+      (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)
+  change List.formPerm L (cornerUpIdx B hrows) = cornerLeftIdx B hcols
+  have hhead : L.head? = some (cornerLeftIdx B hcols) := by
+    simpa [L] using oddOddRoute_index_head hrows hcols
+  have hlast : L.getLast? = some (cornerUpIdx B hrows) := by
+    simpa [L] using oddOddRoute_index_getLast hrows
+  have hmemHead : cornerLeftIdx B hcols ∈ L.head? := by
+    rw [hhead]
+    simp
+  have hLcons : L = cornerLeftIdx B hcols :: L.tail :=
+    List.eq_cons_of_mem_head? hmemHead
+  have hmemLast :
+      cornerUpIdx B hrows ∈ (cornerLeftIdx B hcols :: L.tail).getLast? := by
+    rw [← hLcons, hlast]
+    simp
+  have hgetLast :
+      (cornerLeftIdx B hcols :: L.tail).getLast (List.cons_ne_nil _ _) =
+        cornerUpIdx B hrows :=
+    List.getLast_of_mem_getLast? hmemLast
+  rw [hLcons]
+  rw [← hgetLast]
+  simp
+
+lemma reachable_goal_to_cfg_bottomRight_of_oddOdd {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_closedAlmostFullList hrows hcols
+    (oddOddRoute_chain hrows hcols hrowsOdd hcolsOdd)
+    (oddOddRoute_nonblank hrows)
+    (formPerm_isCycle_of_nodup_toFinset_erase hrows hcols
+      (oddOddRoute_nodup hrows hcols hrowsOdd hcolsOdd)
+      (oddOddRoute_covers hrows hcols hrowsOdd hcolsOdd))
+    (support_formPerm_of_nodup_toFinset_erase hrows hcols
+      (oddOddRoute_nodup hrows hcols hrowsOdd hcolsOdd)
+      (oddOddRoute_covers hrows hcols hrowsOdd hcolsOdd))
+    (oddOddRoute_compat hrows hcols)
+    cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_oddOdd {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_oddOdd
+      hrows hcols hrowsOdd hcolsOdd cfg hbr hpar)
+
 end NPuzzle.Rect
