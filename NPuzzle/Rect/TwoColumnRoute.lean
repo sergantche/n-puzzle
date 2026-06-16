@@ -54,6 +54,39 @@ lemma finList_toFinset_eq_univ_of_nodup_length {n : ℕ} {L : List (Fin n)}
   · rw [List.toFinset_card_of_nodup hnd, hlen]
     simp
 
+lemma isChain_finRange_val_succ (n : ℕ) :
+    List.IsChain (fun a b : Fin n => a.val + 1 = b.val) (List.finRange n) := by
+  rw [List.isChain_iff_getElem]
+  intro i
+  simp
+
+lemma isChain_finRange_reverse_val_pred (n : ℕ) :
+    List.IsChain (fun a b : Fin n => b.val + 1 = a.val) (List.finRange n).reverse := by
+  rw [List.isChain_reverse]
+  exact isChain_finRange_val_succ n
+
+lemma isChain_twoColumn_leftTail (B : Board) :
+    List.IsChain adjacent
+      ((List.finRange (B.rows - 2)).reverse.map fun r =>
+        (rowFromRowsMinusTwo (B := B) r, colZero B)) := by
+  rw [List.isChain_map]
+  exact (isChain_finRange_reverse_val_pred (B.rows - 2)).imp
+    (by
+      intro a b h
+      refine Or.inr ⟨rfl, Or.inr ?_⟩
+      simpa [rowFromRowsMinusTwo] using h)
+
+lemma isChain_twoColumn_rightColumn {B : Board} (hcols : B.cols = 2) :
+    List.IsChain adjacent
+      ((List.finRange (B.rows - 1)).map fun r =>
+        (rowFromRowsMinusOne (B := B) r, colOneOfTwo hcols)) := by
+  rw [List.isChain_map]
+  exact (isChain_finRange_val_succ (B.rows - 1)).imp
+    (by
+      intro a b h
+      refine Or.inr ⟨rfl, Or.inl ?_⟩
+      simpa [rowFromRowsMinusOne] using h)
+
 lemma bottomRight_eq_twoColumn {B : Board} (hcols : B.cols = 2) :
     bottomRight B = ((bottomRight B).1, colOneOfTwo hcols) := by
   apply Prod.ext
