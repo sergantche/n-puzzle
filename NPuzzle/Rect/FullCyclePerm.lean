@@ -1,4 +1,5 @@
 import Mathlib.GroupTheory.Perm.Cycle.Concrete
+import Mathlib.GroupTheory.SpecificGroups.Alternating
 import NPuzzle.Rect.CornerPerm
 
 namespace NPuzzle.Rect
@@ -112,6 +113,35 @@ lemma fullCyclePerm_support_univ (B : Board)
     simp at hlen
     have htc := tileCount_ge_three hrows hcols
     omega
+
+lemma fullCyclePerm_sign_of_even_tileCount (B : Board)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (heven : Even B.tileCount) :
+    sign (fullCyclePerm B hrows hcols) = -1 := by
+  rw [(fullCyclePerm_isCycle B hrows hcols).sign,
+    fullCyclePerm_support_univ B hrows hcols, Finset.card_univ, Fintype.card_fin,
+    Even.neg_one_pow heven]
+
+lemma fullCyclePerm_not_mem_alternating_of_even_tileCount (B : Board)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (heven : Even B.tileCount) :
+    fullCyclePerm B hrows hcols ∉ alternatingGroup (Fin B.tileCount) := by
+  intro hmem
+  have hsign := fullCyclePerm_sign_of_even_tileCount B hrows hcols heven
+  have hsignAlt := Equiv.Perm.mem_alternatingGroup.mp hmem
+  have hneg : (-1 : ℤˣ) = 1 := hsign.symm.trans hsignAlt
+  exact (by decide : (-1 : ℤˣ) ≠ 1) hneg
+
+lemma fullCyclePerm_not_mem_alternating_of_odd_rows_odd_cols (B : Board)
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    fullCyclePerm B hrows hcols ∉ alternatingGroup (Fin B.tileCount) := by
+  apply fullCyclePerm_not_mem_alternating_of_even_tileCount
+  rw [Board.tileCount]
+  have hsizeOdd : B.size % 2 = 1 := by
+    rw [Board.size, Nat.mul_mod, hrowsOdd, hcolsOdd]
+  have hsizePos := B.size_pos
+  exact Nat.even_iff.mpr (by omega)
 
 lemma fullCyclePerm_apply_cornerUpIdx (B : Board)
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
