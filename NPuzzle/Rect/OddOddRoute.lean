@@ -54,8 +54,11 @@ def oddOddCapRow (B : Board) (r : Fin (B.rows - 2)) : List (Cell B) :=
   else
     [(row, (bottomRight B).2), (row, oddOddColBeforeRight B)]
 
+def oddOddCapRows (B : Board) : List (Cell B) :=
+  (List.finRange (B.rows - 2)).flatMap (oddOddCapRow B)
+
 def oddOddCap (B : Board) : List (Cell B) :=
-  (List.finRange (B.rows - 2)).flatMap (oddOddCapRow B) ++ [cornerUp B]
+  oddOddCapRows B ++ [cornerUp B]
 
 def oddOddRouteXs (B : Board) : List (Cell B) :=
   evenColsBottomTail B ++ oddOddLeftColumn B ++ oddOddMiddleSnake B ++ oddOddCap B
@@ -80,7 +83,156 @@ lemma oddOddCapRow_length (B : Board) (r : Fin (B.rows - 2)) :
 
 lemma oddOddCap_length (B : Board) :
     (oddOddCap B).length = 2 * (B.rows - 2) + 1 := by
-  simp [oddOddCap, oddOddCapRow_length, List.length_flatMap, Nat.mul_comm]
+  simp [oddOddCap, oddOddCapRows, oddOddCapRow_length, List.length_flatMap, Nat.mul_comm]
+
+lemma isChain_oddOddLeftColumn (B : Board) :
+    List.IsChain adjacent (oddOddLeftColumn B) := by
+  rw [oddOddLeftColumn, List.isChain_map]
+  exact (isChain_finRange_reverse_val_pred (B.rows - 1)).imp
+    (by
+      intro a b h
+      refine Or.inr ⟨rfl, Or.inr ?_⟩
+      simpa [rowFromRowsMinusOne] using h)
+
+lemma isChain_oddOddMiddleColumn {B : Board} (c : Fin (B.cols - 3)) :
+    List.IsChain adjacent (oddOddMiddleColumn B c) := by
+  by_cases hpar : (c.val + 1) % 2 = 1
+  · rw [oddOddMiddleColumn]
+    simp only [hpar, ↓reduceIte]
+    rw [List.isChain_map]
+    exact (isChain_finRange_val_succ (B.rows - 1)).imp
+      (by
+        intro a b h
+        refine Or.inr ⟨rfl, Or.inl ?_⟩
+        simpa [rowFromRowsMinusOne] using h)
+  · rw [oddOddMiddleColumn]
+    simp only [hpar, ↓reduceIte]
+    rw [List.isChain_map]
+    exact (isChain_finRange_reverse_val_pred (B.rows - 1)).imp
+      (by
+        intro a b h
+        refine Or.inr ⟨rfl, Or.inr ?_⟩
+        simpa [rowFromRowsMinusOne] using h)
+
+lemma oddOddMiddleColumn_ne_nil {B : Board}
+    (hrows : 2 ≤ B.rows) (c : Fin (B.cols - 3)) :
+    oddOddMiddleColumn B c ≠ [] := by
+  by_cases hpar : (c.val + 1) % 2 = 1 <;>
+    simp [oddOddMiddleColumn, hpar] <;> omega
+
+lemma adjacent_oddOddMiddleColumn_next {B : Board}
+    {a b : Fin (B.cols - 3)} (hnext : a.val + 1 = b.val) :
+    ∀ x ∈ (oddOddMiddleColumn B a).getLast?,
+      ∀ y ∈ (oddOddMiddleColumn B b).head?,
+        adjacent x y := by
+  intro x hx y hy
+  by_cases hpar : (a.val + 1) % 2 = 1
+  · have hbpar : ¬ (b.val + 1) % 2 = 1 := by omega
+    simp [oddOddMiddleColumn, hpar, hbpar] at hx hy
+    rcases hx with ⟨rx, hxlast, rfl⟩
+    rcases hy with ⟨ry, hylast, rfl⟩
+    have hrx := finRange_getLast_val_add_one hxlast
+    have hry := finRange_getLast_val_add_one hylast
+    refine Or.inl ⟨?_, Or.inl ?_⟩
+    · apply Fin.ext
+      simp [rowFromRowsMinusOne]
+      omega
+    · simp [oddOddMiddleCol]
+      omega
+  · have hbpar : (b.val + 1) % 2 = 1 := by omega
+    simp [oddOddMiddleColumn, hpar, hbpar] at hx hy
+    rcases hx with ⟨rx, hxhead, rfl⟩
+    rcases hy with ⟨ry, hyhead, rfl⟩
+    have hrx := finRange_head_val_eq_zero hxhead
+    have hry := finRange_head_val_eq_zero hyhead
+    refine Or.inl ⟨?_, Or.inl ?_⟩
+    · apply Fin.ext
+      simp [rowFromRowsMinusOne]
+      omega
+    · simp [oddOddMiddleCol]
+      omega
+
+lemma isChain_oddOddMiddleSnake {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    List.IsChain adjacent (oddOddMiddleSnake B) := by
+  have hne :
+      [] ∉ (List.finRange (B.cols - 3)).map (oddOddMiddleColumn B) := by
+    intro h
+    simp only [List.mem_map, List.mem_finRange, true_and] at h
+    rcases h with ⟨col, hnil⟩
+    exact oddOddMiddleColumn_ne_nil hrows col hnil
+  rw [oddOddMiddleSnake, List.flatMap, List.isChain_flatten hne]
+  constructor
+  · intro l hl
+    simp only [List.mem_map, List.mem_finRange, true_and] at hl
+    rcases hl with ⟨col, rfl⟩
+    exact isChain_oddOddMiddleColumn col
+  · rw [List.isChain_map]
+    exact (isChain_finRange_val_succ (B.cols - 3)).imp
+      (by
+        intro a b hnext
+        exact adjacent_oddOddMiddleColumn_next hnext)
+
+lemma isChain_oddOddCapRow {B : Board}
+    (hcols : 2 ≤ B.cols) (r : Fin (B.rows - 2)) :
+    List.IsChain adjacent (oddOddCapRow B r) := by
+  by_cases hpar : r.val % 2 = 0
+  · simp [oddOddCapRow, hpar]
+    refine Or.inl ⟨rfl, Or.inl ?_⟩
+    change B.cols - 2 + 1 = B.cols - 1
+    omega
+  · simp [oddOddCapRow, hpar]
+    refine Or.inl ⟨rfl, Or.inr ?_⟩
+    change B.cols - 2 + 1 = B.cols - 1
+    omega
+
+lemma oddOddCapRow_ne_nil {B : Board} (r : Fin (B.rows - 2)) :
+    oddOddCapRow B r ≠ [] := by
+  by_cases hpar : r.val % 2 = 0 <;>
+    simp [oddOddCapRow, hpar]
+
+lemma adjacent_oddOddCapRow_next {B : Board}
+    {a b : Fin (B.rows - 2)} (hnext : a.val + 1 = b.val) :
+    ∀ x ∈ (oddOddCapRow B a).getLast?,
+      ∀ y ∈ (oddOddCapRow B b).head?,
+        adjacent x y := by
+  intro x hx y hy
+  by_cases hpar : a.val % 2 = 0
+  · have hbpar : ¬ b.val % 2 = 0 := by omega
+    simp [oddOddCapRow, hpar, hbpar] at hx hy
+    subst x
+    subst y
+    refine Or.inr ⟨rfl, Or.inl ?_⟩
+    simp [rowFromRowsMinusTwo]
+    omega
+  · have hbpar : b.val % 2 = 0 := by omega
+    simp [oddOddCapRow, hpar, hbpar] at hx hy
+    subst x
+    subst y
+    refine Or.inr ⟨rfl, Or.inl ?_⟩
+    simp [rowFromRowsMinusTwo]
+    omega
+
+lemma isChain_oddOddCapRows {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    List.IsChain adjacent (oddOddCapRows B) := by
+  have hne :
+      [] ∉ (List.finRange (B.rows - 2)).map (oddOddCapRow B) := by
+    intro h
+    simp only [List.mem_map, List.mem_finRange, true_and] at h
+    rcases h with ⟨row, hnil⟩
+    exact oddOddCapRow_ne_nil row hnil
+  rw [oddOddCapRows, List.flatMap, List.isChain_flatten hne]
+  constructor
+  · intro l hl
+    simp only [List.mem_map, List.mem_finRange, true_and] at hl
+    rcases hl with ⟨row, rfl⟩
+    exact isChain_oddOddCapRow hcols row
+  · rw [List.isChain_map]
+    exact (isChain_finRange_val_succ (B.rows - 2)).imp
+      (by
+        intro a b hnext
+        exact adjacent_oddOddCapRow_next hnext)
 
 lemma oddOddRoute_length {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
