@@ -6,6 +6,20 @@ namespace NPuzzle.Rect
 Bottom-right sufficiency for rectangular boards with at least one even side.
 -/
 
+lemma Board.evenDimension_or_oddRows_oddCols (B : Board) :
+    (B.rows % 2 = 0 ∨ B.cols % 2 = 0) ∨
+      (B.rows % 2 = 1 ∧ B.cols % 2 = 1) := by
+  have hrowsMod : B.rows % 2 < 2 := Nat.mod_lt B.rows (by decide)
+  have hcolsMod : B.cols % 2 < 2 := Nat.mod_lt B.cols (by decide)
+  omega
+
+lemma Board.oddRows_oddCols_of_not_evenDimension {B : Board}
+    (hnot : ¬ (B.rows % 2 = 0 ∨ B.cols % 2 = 0)) :
+    B.rows % 2 = 1 ∧ B.cols % 2 = 1 := by
+  rcases B.evenDimension_or_oddRows_oddCols with hEven | hOdd
+  · exact (hnot hEven).elim
+  · exact hOdd
+
 lemma reachable_goal_to_cfg_bottomRight_of_evenDimension {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (hEven : B.rows % 2 = 0 ∨ B.cols % 2 = 0)
