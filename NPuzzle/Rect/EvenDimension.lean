@@ -118,4 +118,23 @@ lemma tiles_to_goal_bottomRight_of_dimension_split {B : Board}
   · exact tiles_to_goal_bottomRight_of_oddOdd
       hrows hcols hOddDims.1 hOddDims.2 cfg hbr hpar
 
+lemma reachable_goal_to_cfg_of_dimension_split {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (cfg : Config B) (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg := by
+  rcases reachable_blank_any cfg (bottomRight B) with ⟨cfg', hreach, hbr⟩
+  have hpar' : parityClass cfg' = targetParity B :=
+    (parityClass_reachable hreach).symm.trans hpar
+  exact Relation.ReflTransGen.trans
+    (reachable_goal_to_cfg_bottomRight_of_dimension_split
+      hrows hcols cfg' hbr hpar')
+    (reachable_symm hreach)
+
+lemma tiles_to_goal_of_dimension_split {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (cfg : Config B) (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_of_dimension_split hrows hcols cfg hpar)
+
 end NPuzzle.Rect
