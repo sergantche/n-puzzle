@@ -16,6 +16,14 @@ def AdjacentChain {B : Board} (a : Cell B) : List (Cell B) → Prop
   | [] => True
   | b :: xs => adjacent a b ∧ AdjacentChain b xs
 
+lemma adjacentChain_iff_isChain {B : Board} (a : Cell B) (xs : List (Cell B)) :
+    AdjacentChain a xs ↔ List.IsChain adjacent (a :: xs) := by
+  induction xs generalizing a with
+  | nil =>
+      simp [AdjacentChain]
+  | cons b xs ih =>
+      simp [AdjacentChain, ih]
+
 lemma AdjacentChain_singleton {B : Board} {a b : Cell B}
     (h : adjacent a b) :
     AdjacentChain a [b] :=
