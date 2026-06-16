@@ -53,6 +53,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/PathTilePerm.lean` | `tilePermOfCellPerm_closed_list` |
 | `NPuzzle/Rect/PathRealizable.lean` | `permOfCfg_eq_tilePermOfCellPerm_of_goal_cells`, `permOfCfg_followClosedPath_goal`, `closedPathPermRealizable` |
 | `NPuzzle/Rect/PathSufficiency.lean` | `closedFullList_left_compat_of_prefix`, `formPerm_isCycle_of_nodup_toFinset_univ`, `support_formPerm_of_nodup_toFinset_univ`, `PrefixedFullRoute`, `reachable_goal_to_cfg_bottomRight_of_closedFullPath`, `tiles_to_goal_bottomRight_of_closedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullPath`, `tiles_to_goal_bottomRight_of_leftClosedFullPath`, `reachable_goal_to_cfg_bottomRight_of_leftClosedFullList`, `tiles_to_goal_bottomRight_of_leftClosedFullList`, `reachable_goal_to_cfg_bottomRight_of_prefixedFullList`, `tiles_to_goal_bottomRight_of_prefixedFullList`, `reachable_goal_to_cfg_bottomRight_of_prefixedFullRoute`, `tiles_to_goal_bottomRight_of_prefixedFullRoute` |
+| `NPuzzle/Rect/PathParity.lean` | `cellParity`, `cellParity_adjacent`, `AdjacentChain.cellParity_endpoint`, `AdjacentChain.length_even_of_endpoint`, `PrefixedFullRoute.length_eq_tileCount`, `PrefixedFullRoute.size_even`, `PrefixedFullRoute.size_mod_two_eq_zero` |
 | `NPuzzle/Rect/Corner.lean` | `cornerLeft`, `cornerUp`, `cornerUpLeft`, `cornerLeftIdx`, `cornerUpLeftIdx`, `cornerUpIdx`, bottom-right 2x2 adjacency/distinctness lemmas, `cornerCyclePath`, `cornerCycleCells`, `cornerCycleCfg`, `blank_cornerCycleCfg`, `cornerCycleCfg_cells_*`, `reachable_cornerCycleCfg`, `reachable_cornerCycle_blank` |
 | `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/CornerRealizable.lean` | `cornerCycleCfg_goal_eq_relabel_cornerPerm`, `permOfCfg_cornerCycleCfg_goal`, `cornerPerm_realizable` |
@@ -165,7 +166,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle shape, closed-path-to-tile-cycle/sufficiency bridges, and conditional named sufficiency done; full-cycle realization next |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle shape, closed-path-to-tile-cycle/sufficiency bridges, conditional named sufficiency, and the even-size obstruction for prefixed full routes done; full-cycle realization next |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 

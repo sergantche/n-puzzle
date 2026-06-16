@@ -12,6 +12,7 @@ import NPuzzle.Rect.PathList
 import NPuzzle.Rect.PathTilePerm
 import NPuzzle.Rect.PathRealizable
 import NPuzzle.Rect.PathSufficiency
+import NPuzzle.Rect.PathParity
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
 import NPuzzle.Rect.CornerRealizable
