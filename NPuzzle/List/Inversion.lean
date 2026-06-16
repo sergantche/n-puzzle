@@ -119,7 +119,7 @@ lemma inversionCount_swapAdjacent_succ (L : List ℕ) (i : ℕ) (hi : i + 1 < L.
           ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set
               (k + 1 + 1) (x :: xs)[k + 1] =
             x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
-        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+        simp [Nat.add_assoc]
       rw [hswap, inversionCount_def_cons,
         headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
         inversionCount_def_cons]
@@ -148,7 +148,7 @@ lemma inversionCount_swapAdjacent (L : List ℕ) (i : ℕ) (hi : i + 1 < L.lengt
           ((x :: xs).set (k + 1) (x :: xs)[k + 1 + 1]).set
               (k + 1 + 1) (x :: xs)[k + 1] =
             x :: ((xs.set k xs[k + 1]).set (k + 1) xs[k]) := by
-        simpa [Nat.add_assoc] using set_swap_succ x xs k xs[k + 1] xs[k] hk
+        simp [Nat.add_assoc]
       rw [hswap, inversionCount_def_cons,
         headInv_swap x xs k hi' (by simpa [List.getElem_cons_succ] using hne),
         inversionCount_def_cons]

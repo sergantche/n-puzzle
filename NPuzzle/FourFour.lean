@@ -144,12 +144,12 @@ lemma swapAt_le {cells : Cell → ℕ} (h : ∀ i, cells i ≤ 15) (a b : Cell) 
   simp only [swapAt]
   split_ifs <;> exact h _
 
-lemma swapAt_a {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b) :
+lemma swapAt_a {cells : Cell → ℕ} {a b : Cell} :
     swapAt cells a b a = cells b := by
   dsimp [swapAt]
-  simp [hne.symm]
+  simp
 
-lemma swapAt_b {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b) (ha0 : cells a = 0) :
+lemma swapAt_b {cells : Cell → ℕ} {a b : Cell} (ha0 : cells a = 0) :
     swapAt cells a b b = 0 := by
   dsimp [swapAt]
   by_cases h : b = a <;> simp [h, ha0]
@@ -178,12 +178,12 @@ lemma swapAt_valid {cells : Cell → ℕ} (hv : IsValid cells) (a b : Cell)
   constructor
   · exact swapAt_le hle a b
   constructor
-  · refine ExistsUnique.intro b (swapAt_b hne ha0) ?_
+  · refine ExistsUnique.intro b (swapAt_b ha0) ?_
     intro c hc0
     dsimp [swapAt] at hc0
     by_cases hca : c = a <;> by_cases hcb : c = b
     · exact absurd (hca.symm ▸ hcb) hne
-    · simp [hca, hcb, hne] at hc0
+    · simp [hca] at hc0
       exact (hbne0 hc0).elim
     · exact hcb
     · simp [hca, hcb] at hc0
@@ -198,7 +198,7 @@ lemma swapAt_valid {cells : Cell → ℕ} (hv : IsValid cells) (a b : Cell)
     refine ExistsUnique.intro (if i = b then a else i) ?_ ?_
     · by_cases hib : i = b
       · dsimp [swapAt]
-        simp [hib, hne, ha0]
+        simp [hib]
         rw [hib] at hi
         exact hi
       · dsimp [swapAt]
@@ -209,13 +209,13 @@ lemma swapAt_valid {cells : Cell → ℕ} (hv : IsValid cells) (a b : Cell)
       · by_cases hjb : j = b
         · exact absurd (hja.symm ▸ hjb) hne
         · dsimp [swapAt] at hj ⊢
-          simp [hja, hjb, hne] at hj ⊢
+          simp [hja] at hj ⊢
           subst hja
           have hib : i = b := (huniq b hj).symm
           simp [hib]
       · by_cases hjb : j = b
         · have h0 : 0 = k := by
-            rw [hjb, swapAt_b hne ha0] at hj
+            rw [hjb, swapAt_b ha0] at hj
             exact hj
           rcases hk with ⟨_, hkpos⟩
           omega
@@ -237,7 +237,7 @@ lemma blank_slide (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n) :
   apply ExistsUnique.unique (swapAt_valid cfg.valid (blank cfg) n (blank_zero cfg) (adjacent.ne h)).2.1
     (blank_zero (slide cfg n h))
   dsimp [slide]
-  exact swapAt_b (adjacent.ne h) (blank_zero cfg)
+  exact swapAt_b (blank_zero cfg)
 
 /-- `cfg'` is one legal move away from `cfg`. -/
 def legalStep (cfg cfg' : Config) : Prop :=
@@ -299,7 +299,7 @@ noncomputable def parityClass (cfg : Config) : ℕ :=
 /-! ### Goal as a `Config` -/
 
 lemma goalCells_eq_zero (b : Cell) : goalCells b = 0 ↔ b = bottomRight := by
-  fin_cases b <;> simp [goalCells, bottomRight] <;> omega
+  fin_cases b <;> simp [goalCells, bottomRight]
 
 lemma goalCells_eq_k {k : ℕ} (hk : 1 ≤ k ∧ k ≤ 15) (i : Cell) :
     goalCells i = k ↔ i = ⟨(k - 1), by omega⟩ := by
@@ -310,7 +310,8 @@ lemma goalCells_eq_k {k : ℕ} (hk : 1 ≤ k ∧ k ≤ 15) (i : Cell) :
       split_ifs at h <;> omega
     have hval : i.val = k - 1 := by
       dsimp [goalCells] at h
-      split_ifs at h <;> omega
+      split_ifs at h
+      omega
     ext
     exact hval
   · rintro rfl
