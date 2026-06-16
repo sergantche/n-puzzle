@@ -1,4 +1,5 @@
-import NPuzzle.Rect.Invariant
+import NPuzzle.Rect.Reach
+import NPuzzle.Rect.TileGlue
 
 namespace NPuzzle.Rect
 
@@ -170,5 +171,61 @@ lemma not_reachable_goal_of_cols_lt_two {B : Board}
     (hlist : tileList cfg ≠ tileList (goal B)) :
     ¬ Reachable cfg (goal B) :=
   not_reachable_goal_of_cols_eq_one (cols_eq_one_of_lt_two hcols) hlist
+
+lemma reachable_goal_of_tileList_rows_eq_one {B : Board}
+    (hrows : B.rows = 1) {cfg : Config B}
+    (hlist : tileList cfg = tileList (goal B)) :
+    Reachable cfg (goal B) := by
+  rcases reachable_blank_any cfg (bottomRight B) with ⟨cfg', hreach, hbr⟩
+  have hlist' : tileList cfg' = tileList (goal B) :=
+    (tileList_reachable_of_rows_eq_one hrows hreach).trans hlist
+  exact Relation.ReflTransGen.trans hreach
+    (reachable_goal_of_tileList cfg' hbr hlist')
+
+lemma reachable_goal_of_tileList_cols_eq_one {B : Board}
+    (hcols : B.cols = 1) {cfg : Config B}
+    (hlist : tileList cfg = tileList (goal B)) :
+    Reachable cfg (goal B) := by
+  rcases reachable_blank_any cfg (bottomRight B) with ⟨cfg', hreach, hbr⟩
+  have hlist' : tileList cfg' = tileList (goal B) :=
+    (tileList_reachable_of_cols_eq_one hcols hreach).trans hlist
+  exact Relation.ReflTransGen.trans hreach
+    (reachable_goal_of_tileList cfg' hbr hlist')
+
+lemma reachable_goal_of_tileList_rows_lt_two {B : Board}
+    (hrows : B.rows < 2) {cfg : Config B}
+    (hlist : tileList cfg = tileList (goal B)) :
+    Reachable cfg (goal B) :=
+  reachable_goal_of_tileList_rows_eq_one (rows_eq_one_of_lt_two hrows) hlist
+
+lemma reachable_goal_of_tileList_cols_lt_two {B : Board}
+    (hcols : B.cols < 2) {cfg : Config B}
+    (hlist : tileList cfg = tileList (goal B)) :
+    Reachable cfg (goal B) :=
+  reachable_goal_of_tileList_cols_eq_one (cols_eq_one_of_lt_two hcols) hlist
+
+theorem solvability_rows_eq_one {B : Board}
+    (hrows : B.rows = 1) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ tileList cfg = tileList (goal B) := by
+  constructor
+  · exact tileList_eq_goal_of_reachable_goal_rows_eq_one hrows
+  · exact reachable_goal_of_tileList_rows_eq_one hrows
+
+theorem solvability_cols_eq_one {B : Board}
+    (hcols : B.cols = 1) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ tileList cfg = tileList (goal B) := by
+  constructor
+  · exact tileList_eq_goal_of_reachable_goal_cols_eq_one hcols
+  · exact reachable_goal_of_tileList_cols_eq_one hcols
+
+theorem solvability_rows_lt_two {B : Board}
+    (hrows : B.rows < 2) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ tileList cfg = tileList (goal B) :=
+  solvability_rows_eq_one (rows_eq_one_of_lt_two hrows) cfg
+
+theorem solvability_cols_lt_two {B : Board}
+    (hcols : B.cols < 2) (cfg : Config B) :
+    Reachable cfg (goal B) ↔ tileList cfg = tileList (goal B) :=
+  solvability_cols_eq_one (cols_eq_one_of_lt_two hcols) cfg
 
 end NPuzzle.Rect
