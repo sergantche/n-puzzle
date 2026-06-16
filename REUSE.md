@@ -64,6 +64,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/CornerPerm.lean` | `cornerPermList`, `cornerPerm`, `cornerPerm_apply_*`, `cornerPerm_apply_of_not_corner`, `cornerPerm_isThreeCycle` |
 | `NPuzzle/Rect/CornerRealizable.lean` | `cornerCycleCfg_goal_eq_relabel_cornerPerm`, `permOfCfg_cornerCycleCfg_goal`, `cornerPerm_realizable` |
 | `NPuzzle/Rect/FullCyclePerm.lean` | `fullCycleList`, `fullCyclePerm`, `fullCyclePerm_isCycle`, `fullCyclePerm_support_univ`, `fullCyclePerm_sign_of_even_tileCount`, `fullCyclePerm_not_mem_alternating_of_even_tileCount`, `fullCyclePerm_not_mem_alternating_of_odd_rows_odd_cols`, `fullCyclePerm_apply_cornerUpIdx` |
+| `NPuzzle/Rect/AlmostFullCyclePerm.lean` | `almostFullCycleList`, `almostFullCyclePerm`, `almostFullCyclePerm_isCycle`, `almostFullCyclePerm_support`, `almostFullCyclePerm_apply_cornerUpIdx`, `almostFullCyclePerm_sign_of_even_tileCount`, `almostFullCyclePerm_mem_alternating_of_even_tileCount`, `almostFullCyclePerm_mem_alternating_of_odd_rows_odd_cols` |
 | `NPuzzle/Rect/Parity.lean` | `blankRowFromBottom`, `invStat`, `parityClass`, `targetParity` |
 | `NPuzzle/Rect/Invariant.lean` | `tileList_slide_eq_erase_insert`, `invStat_slide_horizontal_mod`, `invStat_slide_vertical_mod`, `parityClass_legalStep`, `parityClass_reachable`, `reachable_imp_parity` |
 | `NPuzzle/Rect/TileGlue.lean` | `config_eq_of_tileList_and_blank`, `reachable_goal_of_tileList`, `tileList_goal`, `invStat_goal`, `parityClass_goal`, `cfg_eq_goal_of_tileList` |
@@ -72,8 +73,8 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 | `NPuzzle/Rect/TileSign.lean` | `adjSwap`, `tileListPerm_bubbleRight`, `sign_tileListPerm_eq_neg_one_pow`, `invStat_even_iff_perm_alternating` |
 | `NPuzzle/Rect/TileRelabel.lean` | `relabelConfig`, `reachable_relabel`, `tileListPerm_relabel`, `tileListPerm_congr`, `permOfCfg_relabel` |
 | `NPuzzle/Rect/Realizable.lean` | `PermRealizable`, `permRealizableSubgroup`, `permRealizable_mul`, `permRealizable_inv`, `permRealizable_of_mem_closure` |
-| `NPuzzle/Rect/AbstractSufficiency.lean` | `invStat_even_of_parity_bottomRight`, `permRealizable_mem_alternating`, `not_permRealizable_of_not_mem_alternating`, `permRealizable_of_mem_alternating_of_generators`, `reachable_goal_to_cfg_bottomRight_of_parity_generators`, `tiles_to_goal_bottomRight_of_parity_generators` |
-| `NPuzzle/Rect/GeneratorSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_compatibleFullCycle`, `tiles_to_goal_bottomRight_of_compatibleFullCycle`, `reachable_goal_to_cfg_bottomRight_of_cornerLeftFullCycle`, `tiles_to_goal_bottomRight_of_cornerLeftFullCycle`, `reachable_goal_to_cfg_bottomRight_of_fullCycle`, `tiles_to_goal_bottomRight_of_fullCycle` |
+| `NPuzzle/Rect/AbstractSufficiency.lean` | `invStat_even_of_parity_bottomRight`, `permRealizable_mem_alternating`, `not_permRealizable_of_not_mem_alternating`, `permRealizable_of_mem_alternating_of_generators`, `permRealizable_of_mem_alternating_of_almost_generators`, `reachable_goal_to_cfg_bottomRight_of_generators`, `reachable_goal_to_cfg_bottomRight_of_almost_generators`, `reachable_goal_to_cfg_bottomRight_of_parity_generators`, `reachable_goal_to_cfg_bottomRight_of_almost_parity_generators`, `tiles_to_goal_bottomRight_of_parity_generators`, `tiles_to_goal_bottomRight_of_almost_parity_generators` |
+| `NPuzzle/Rect/GeneratorSufficiency.lean` | `reachable_goal_to_cfg_bottomRight_of_compatibleFullCycle`, `tiles_to_goal_bottomRight_of_compatibleFullCycle`, `reachable_goal_to_cfg_bottomRight_of_compatibleAlmostFullCycle`, `tiles_to_goal_bottomRight_of_compatibleAlmostFullCycle`, `reachable_goal_to_cfg_bottomRight_of_cornerLeftFullCycle`, `tiles_to_goal_bottomRight_of_cornerLeftFullCycle`, `reachable_goal_to_cfg_bottomRight_of_fullCycle`, `tiles_to_goal_bottomRight_of_fullCycle`, `reachable_goal_to_cfg_bottomRight_of_almostFullCycle`, `tiles_to_goal_bottomRight_of_almostFullCycle` |
 
 **Typical consumer:** the next `N×M` proof layer, after necessity/parity invariance and before rectangular generator macros/sufficiency.
 
@@ -97,7 +98,7 @@ Strategic context: [GOAL.md](GOAL.md) · proof status: [PLAN.md](PLAN.md).
 
 | Module | Key exports |
 |--------|-------------|
-| `NPuzzle/Group/CycleThree.lean` | `isPreprimitive_of_mem_full_cycle_and_three_cycle`, `alternatingGroup_le_of_mem_full_cycle_and_three_cycle` |
+| `NPuzzle/Group/CycleThree.lean` | `isPreprimitive_of_mem_full_cycle_and_three_cycle`, `alternatingGroup_le_of_mem_full_cycle_and_three_cycle`, `isPreprimitive_of_mem_almost_full_cycle_and_three_cycle`, `alternatingGroup_le_of_mem_almost_full_cycle_and_three_cycle` |
 
 **Typical consumer:** a rectangular-grid proof after it has constructed two realizable tile permutations: a full cycle and a compatible 3-cycle.
 
@@ -167,12 +168,12 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | Step | Action | Blocks |
 |------|--------|--------|
 | **R1** | Keep this file aligned with green modules after each merge | — |
-| **R0** | Extract group tail: full cycle + compatible 3-cycle ⇒ `alternatingGroup` | done in `NPuzzle/Group/CycleThree.lean` |
+| **R0** | Extract group tail: full/near-full cycle + compatible 3-cycle ⇒ `alternatingGroup` | done in `NPuzzle/Group/CycleThree.lean` |
 | **R2** | Move `inversionCount` + namespace `Inversion` → `NPuzzle/List/Inversion.lean` (no `Cell`) | done for `inversionCount_erase_insert_mod` and list move helpers |
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle shape, closed-path-to-tile-cycle/sufficiency bridges, conditional named sufficiency, the even-size obstruction for prefixed full routes, the even-dimension bottom-right sufficiency dispatcher; odd×odd strategy next |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle and near-full-cycle shapes, closed-path-to-tile-cycle/sufficiency bridges, conditional named sufficiency, the even-size obstruction for prefixed full routes, the even-dimension bottom-right sufficiency dispatcher; odd×odd geometric realization next |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 

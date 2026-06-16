@@ -61,6 +61,18 @@ lemma block_eq_univ_of_cycle_maps_mem {G : Subgroup (Equiv.Perm α)} {B : Set α
   have hmem := block_pow_apply_mem_of_maps_mem hB hx hgx n
   rwa [hn] at hmem
 
+omit [DecidableEq α] in
+lemma cycle_support_subset_block_of_maps_mem {G : Subgroup (Equiv.Perm α)} {B : Set α}
+    (hB : MulAction.IsBlock G B) {g : G} {x : α}
+    (hcycle : IsCycle (g : Equiv.Perm α))
+    (hxSupp : (g : Equiv.Perm α) x ≠ x)
+    (hx : x ∈ B) (hgx : (g : Equiv.Perm α) x ∈ B) :
+    ∀ y : α, (g : Equiv.Perm α) y ≠ y → y ∈ B := by
+  intro y hySupp
+  obtain ⟨n, hn⟩ := hcycle.exists_pow_eq hxSupp hySupp
+  have hmem := block_pow_apply_mem_of_maps_mem hB hx hgx n
+  rwa [hn] at hmem
+
 lemma isPretransitive_of_mem_full_cycle {G : Subgroup (Equiv.Perm α)} {g : Equiv.Perm α}
     (hg : g ∈ G) (hcycle : IsCycle g) (hsupp : g.support = Finset.univ) (a : α) :
     MulAction.IsPretransitive G α := by
@@ -74,6 +86,25 @@ lemma isPretransitive_of_mem_full_cycle {G : Subgroup (Equiv.Perm α)} {g : Equi
     exact Finset.mem_univ y
   obtain ⟨n, hn⟩ := hcycle.exists_pow_eq hxSupp hySupp
   exact ⟨⟨g ^ n, Subgroup.pow_mem G hg n⟩, hn⟩
+
+lemma isPretransitive_of_mem_almost_full_cycle_and_three_cycle
+    {G : Subgroup (Equiv.Perm α)} {g c : Equiv.Perm α} {a b : α}
+    (hg : g ∈ G) (hc : c ∈ G)
+    (hcycle : IsCycle g) (hsupp : g.support = Finset.univ.erase b)
+    (hca : c a = b) (hab : a ≠ b) :
+    MulAction.IsPretransitive G α := by
+  rw [MulAction.isPretransitive_iff_base a]
+  intro y
+  by_cases hyb : y = b
+  · exact ⟨⟨c, hc⟩, by simp [hyb, hca]⟩
+  · have haSupp : g a ≠ a := by
+      rw [← mem_support, hsupp]
+      simp [hab]
+    have hySupp : g y ≠ y := by
+      rw [← mem_support, hsupp]
+      simp [hyb]
+    obtain ⟨n, hn⟩ := hcycle.exists_pow_eq haSupp hySupp
+    exact ⟨⟨g ^ n, Subgroup.pow_mem G hg n⟩, hn⟩
 
 lemma block_eq_univ_of_three_cycle_maps_mem {G : Subgroup (Equiv.Perm α)} {B : Set α}
     (hB : MulAction.IsBlock G B) {g c : Equiv.Perm α} {a b d x : α}
@@ -143,6 +174,84 @@ lemma alternatingGroup_le_of_mem_full_cycle_and_three_cycle
   have hprim : MulAction.IsPreprimitive G α :=
     isPreprimitive_of_mem_full_cycle_and_three_cycle hg hc hcycle hsupp
       hca hcb hcd hfixed hgd
+  exact Equiv.Perm.alternatingGroup_le_of_isPreprimitive_of_isThreeCycle_mem hprim hthree hc
+
+lemma isPreprimitive_of_mem_almost_full_cycle_and_three_cycle
+    {G : Subgroup (Equiv.Perm α)} {g c : Equiv.Perm α} {a b d : α}
+    (hg : g ∈ G) (hc : c ∈ G)
+    (hcycle : IsCycle g) (hsupp : g.support = Finset.univ.erase b)
+    (hca : c a = b) (hcb : c b = d) (hcd : c d = a)
+    (hfixed : ∀ x : α, x ≠ a → x ≠ b → x ≠ d → c x = x)
+    (hgd : g d = a) (hab : a ≠ b) (hdb : d ≠ b) :
+    MulAction.IsPreprimitive G α := by
+  haveI : MulAction.IsPretransitive G α :=
+    isPretransitive_of_mem_almost_full_cycle_and_three_cycle
+      hg hc hcycle hsupp hca hab
+  apply MulAction.IsPreprimitive.of_isTrivialBlock_base a
+  intro B ha hB
+  by_cases hsub : B.Subsingleton
+  · exact Or.inl hsub
+  · right
+    have hall_of_mem_b_d (hb : b ∈ B) (hd : d ∈ B) : B = Set.univ := by
+      apply Set.eq_univ_of_forall
+      intro y
+      by_cases hyb : y = b
+      · simpa [hyb] using hb
+      · have hdSupp : g d ≠ d := by
+          rw [← mem_support, hsupp]
+          simp [hdb]
+        have hgdB : ((⟨g, hg⟩ : G) : Equiv.Perm α) d ∈ B := by
+          simpa [hgd] using ha
+        have hySupp : g y ≠ y := by
+          rw [← mem_support, hsupp]
+          simp [hyb]
+        exact cycle_support_subset_block_of_maps_mem hB
+          (g := (⟨g, hg⟩ : G)) hcycle hdSupp hd hgdB y hySupp
+    obtain ⟨x, hx, hxne⟩ : ∃ x ∈ B, x ≠ a := by
+      by_contra hno
+      apply hsub
+      intro y hy z hz
+      have hya : y = a := by
+        by_contra hyne
+        exact hno ⟨y, hy, hyne⟩
+      have hza : z = a := by
+        by_contra hzne
+        exact hno ⟨z, hz, hzne⟩
+      rw [hya, hza]
+    by_cases hxb : x = b
+    · have hb : b ∈ B := by simpa [hxb] using hx
+      have hc_a_mem : ((⟨c, hc⟩ : G) : Equiv.Perm α) a ∈ B := by
+        simpa [hca] using hb
+      have hd' := block_apply_mem_of_maps_mem hB ha hc_a_mem hb
+      have hd : d ∈ B := by simpa [hcb] using hd'
+      exact hall_of_mem_b_d hb hd
+    · by_cases hxd : x = d
+      · have hd : d ∈ B := by simpa [hxd] using hx
+        have hc_d_mem : ((⟨c, hc⟩ : G) : Equiv.Perm α) d ∈ B := by
+          simpa [hcd] using ha
+        have hb' := block_apply_mem_of_maps_mem hB hd hc_d_mem ha
+        have hb : b ∈ B := by simpa [hca] using hb'
+        exact hall_of_mem_b_d hb hd
+      · have hc_x_mem : ((⟨c, hc⟩ : G) : Equiv.Perm α) x ∈ B := by
+          simpa [hfixed x hxne hxb hxd] using hx
+        have hb' := block_apply_mem_of_maps_mem hB hx hc_x_mem ha
+        have hb : b ∈ B := by simpa [hca] using hb'
+        have hd' := block_apply_mem_of_maps_mem hB hx hc_x_mem hb
+        have hd : d ∈ B := by simpa [hcb] using hd'
+        exact hall_of_mem_b_d hb hd
+
+lemma alternatingGroup_le_of_mem_almost_full_cycle_and_three_cycle
+    {G : Subgroup (Equiv.Perm α)} {g c : Equiv.Perm α} {a b d : α}
+    (hg : g ∈ G) (hc : c ∈ G)
+    (hcycle : IsCycle g) (hsupp : g.support = Finset.univ.erase b)
+    (hthree : IsThreeCycle c)
+    (hca : c a = b) (hcb : c b = d) (hcd : c d = a)
+    (hfixed : ∀ x : α, x ≠ a → x ≠ b → x ≠ d → c x = x)
+    (hgd : g d = a) (hab : a ≠ b) (hdb : d ≠ b) :
+    alternatingGroup α ≤ G := by
+  have hprim : MulAction.IsPreprimitive G α :=
+    isPreprimitive_of_mem_almost_full_cycle_and_three_cycle hg hc hcycle hsupp
+      hca hcb hcd hfixed hgd hab hdb
   exact Equiv.Perm.alternatingGroup_le_of_isPreprimitive_of_isThreeCycle_mem hprim hthree hc
 
 end NPuzzle.Group
