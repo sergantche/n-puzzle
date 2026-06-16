@@ -1,5 +1,6 @@
 import NPuzzle.Group.CycleThree
 import NPuzzle.Rect.Realizable
+import NPuzzle.Rect.TileGlue
 import NPuzzle.Rect.TileSign
 
 namespace NPuzzle.Rect
@@ -27,6 +28,23 @@ lemma invStat_even_of_parity_bottomRight {B : Board} (cfg : Config B)
     rw [parityClass_of_even_width cfg heven, targetParity_of_even_width heven] at hpar
     rw [hbr, blankRow_bottomRight] at hpar
     omega
+
+lemma permRealizable_mem_alternating {B : Board}
+    {σ : Equiv.Perm (Fin B.tileCount)}
+    (hσ : PermRealizable (B := B) σ) :
+    σ ∈ alternatingGroup (Fin B.tileCount) := by
+  obtain ⟨cfg, hbr, hreach, hperm⟩ := hσ
+  have hpar : parityClass cfg = targetParity B :=
+    (parityClass_reachable hreach).symm.trans (parityClass_goal B)
+  have hmem := (invStat_even_iff_perm_alternating cfg hbr).mp
+    (invStat_even_of_parity_bottomRight cfg hbr hpar)
+  rwa [hperm] at hmem
+
+lemma not_permRealizable_of_not_mem_alternating {B : Board}
+    {σ : Equiv.Perm (Fin B.tileCount)}
+    (hnot : σ ∉ alternatingGroup (Fin B.tileCount)) :
+    ¬ PermRealizable (B := B) σ :=
+  fun hσ => hnot (permRealizable_mem_alternating hσ)
 
 lemma permRealizable_of_mem_alternating_of_generators {B : Board}
     {g c : Equiv.Perm (Fin B.tileCount)} {a b d : Fin B.tileCount}

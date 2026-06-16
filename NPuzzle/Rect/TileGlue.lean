@@ -93,6 +93,27 @@ lemma tileList_goal (B : Board) :
     change (if c = bottomRight B then 0 else rankExcept (bottomRight B) c + 1) = i + 1
     simp [hc, hrank]
 
+lemma invStat_goal (B : Board) :
+    invStat (goal B) = 0 := by
+  unfold invStat
+  rw [tileList_goal]
+  rw [NPuzzle.List.inversionCount_eq_zero_iff_sorted]
+  rw [← List.sortedLE_iff_pairwise]
+  rw [List.sortedLE_iff_getElem_le_getElem_of_le]
+  intro i j hi hj hij
+  simp [List.getElem_map, List.getElem_range, hij]
+
+lemma parityClass_goal (B : Board) :
+    parityClass (goal B) = targetParity B := by
+  by_cases hodd : B.cols % 2 = 1
+  · rw [parityClass_of_odd_width (goal B) hodd, targetParity_of_odd_width hodd,
+      invStat_goal]
+  · have heven : B.cols % 2 = 0 := by
+      have hlt := Nat.mod_lt B.cols (by decide : 0 < 2)
+      omega
+    rw [parityClass_of_even_width (goal B) heven, targetParity_of_even_width heven,
+      blank_goal, blankRow_bottomRight, invStat_goal]
+
 /-- If the blank is at `bottomRight` and `tileList` is canonical, the board is `goal`. -/
 lemma cfg_eq_goal_of_tileList {B : Board} (cfg : Config B)
     (hbr : blank cfg = bottomRight B)
