@@ -1,3 +1,4 @@
+import NPuzzle.Rect.PathSufficiency
 import NPuzzle.Rect.TwoColumnRoute
 
 namespace NPuzzle.Rect
@@ -46,6 +47,26 @@ def twoRowTopRow (B : Board) : List (Cell B) :=
 
 def twoRowRouteXs (B : Board) (hrows : B.rows = 2) : List (Cell B) :=
   twoRowBottomTail B hrows ++ twoRowTopRow B
+
+lemma twoRowRoute_head {B : Board}
+    (hrows : B.rows = 2) (hcols : 2 ≤ B.cols) :
+    (twoRowRouteXs B hrows).head? = some (cornerLeft B) := by
+  have hbottom_ne : twoRowBottomTail B hrows ≠ [] := by
+    simp [twoRowBottomTail]
+    omega
+  rw [twoRowRouteXs, List.head?_append_of_ne_nil (twoRowBottomTail B hrows) hbottom_ne]
+  simp [twoRowBottomTail, finRange_getLast?_eq_last (by omega : 0 < B.cols - 1),
+    cornerLeft, bottomRight, rowOneOfTwo, colFromColsMinusOne, hrows]
+
+lemma twoRowRoute_getLast {B : Board}
+    (hrows : B.rows = 2) :
+    (twoRowRouteXs B hrows).getLast? = some (cornerUp B) := by
+  have htop_ne : twoRowTopRow B ≠ [] := by
+    simp [twoRowTopRow]
+    exact B.cols_pos.ne'
+  rw [twoRowRouteXs, List.getLast?_append_of_ne_nil (twoRowBottomTail B hrows) htop_ne]
+  simp [twoRowTopRow, finRange_getLast?_eq_last B.cols_pos,
+    cornerUp, bottomRight, rowZero, hrows]
 
 lemma isChain_twoRow_bottomTail {B : Board} (hrows : B.rows = 2) :
     List.IsChain adjacent (twoRowBottomTail B hrows) := by
@@ -215,5 +236,89 @@ lemma twoRowRoute_covers {B : Board}
   apply finList_toFinset_eq_univ_of_nodup_length
   · exact twoRowRoute_nodup hrows
   · simpa [nonblankSubtypeList] using twoRowRoute_length hrows
+
+lemma twoRowRoute_index_head {B : Board}
+    (hrows : B.rows = 2) (hcols : 2 ≤ B.cols) :
+    (((nonblankSubtypeList
+      (twoRowRouteXs B hrows)
+      (twoRowRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).head?) =
+        some (cornerLeftIdx B hcols) := by
+  simp [nonblankSubtypeList, twoRowRoute_head hrows hcols, cornerLeftIdx]
+  apply Fin.ext
+  rfl
+
+lemma twoRowRoute_index_getLast {B : Board}
+    (hrows : B.rows = 2) (hrowsLe : 2 ≤ B.rows) :
+    (((nonblankSubtypeList
+      (twoRowRouteXs B hrows)
+      (twoRowRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).getLast?) =
+        some (cornerUpIdx B hrowsLe) := by
+  simp [nonblankSubtypeList, twoRowRoute_getLast hrows, cornerUpIdx]
+  apply Fin.ext
+  rfl
+
+lemma twoRowRoute_compat {B : Board}
+    (hrows : B.rows = 2) (hrowsLe : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    List.formPerm
+        ((nonblankSubtypeList
+          (twoRowRouteXs B hrows)
+          (twoRowRoute_nonblank hrows)).map
+          (nonblankCellEquivFin B))
+        (cornerUpIdx B hrowsLe) =
+      cornerLeftIdx B hcols := by
+  let L :=
+    (nonblankSubtypeList
+      (twoRowRouteXs B hrows)
+      (twoRowRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)
+  change List.formPerm L (cornerUpIdx B hrowsLe) = cornerLeftIdx B hcols
+  have hhead : L.head? = some (cornerLeftIdx B hcols) := by
+    simpa [L] using twoRowRoute_index_head hrows hcols
+  have hlast : L.getLast? = some (cornerUpIdx B hrowsLe) := by
+    simpa [L] using twoRowRoute_index_getLast hrows hrowsLe
+  have hmemHead : cornerLeftIdx B hcols ∈ L.head? := by
+    rw [hhead]
+    simp
+  have hLcons : L = cornerLeftIdx B hcols :: L.tail :=
+    List.eq_cons_of_mem_head? hmemHead
+  have hmemLast :
+      cornerUpIdx B hrowsLe ∈ (cornerLeftIdx B hcols :: L.tail).getLast? := by
+    rw [← hLcons, hlast]
+    simp
+  have hgetLast :
+      (cornerLeftIdx B hcols :: L.tail).getLast (List.cons_ne_nil _ _) =
+        cornerUpIdx B hrowsLe :=
+    List.getLast_of_mem_getLast? hmemLast
+  rw [hLcons]
+  rw [← hgetLast]
+  simp
+
+lemma reachable_goal_to_cfg_bottomRight_of_twoRow {B : Board}
+    (hrows : B.rows = 2) (hcols : 2 ≤ B.cols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg := by
+  have hrowsLe : 2 ≤ B.rows := by omega
+  exact reachable_goal_to_cfg_bottomRight_of_closedFullPath hrowsLe hcols
+    (closedBlankGridPathOfList (bottomRight B) (twoRowRouteXs B hrows)
+      (twoRowRoute_chain hrows hcols))
+    (by simp)
+    (twoRowRoute_nonblank hrows)
+    (formPerm_isCycle_of_nodup_toFinset_univ hrowsLe hcols
+      (twoRowRoute_nodup hrows) (twoRowRoute_covers hrows))
+    (support_formPerm_of_nodup_toFinset_univ hrowsLe hcols
+      (twoRowRoute_nodup hrows) (twoRowRoute_covers hrows))
+    (twoRowRoute_compat hrows hrowsLe hcols)
+    cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_twoRow {B : Board}
+    (hrows : B.rows = 2) (hcols : 2 ≤ B.cols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_twoRow hrows hcols cfg hbr hpar)
 
 end NPuzzle.Rect

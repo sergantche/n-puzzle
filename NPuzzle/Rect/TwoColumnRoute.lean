@@ -77,6 +77,24 @@ lemma finRange_getLast_val_add_one {n : ℕ} {a : Fin n}
   simp [List.getLast_eq_getElem] at hval
   omega
 
+lemma finRange_head?_eq_zero {n : ℕ} (hpos : 0 < n) :
+    (List.finRange n).head? = some (⟨0, hpos⟩ : Fin n) := by
+  have hne : List.finRange n ≠ [] := by
+    simpa [List.finRange_eq_nil_iff] using hpos.ne'
+  rw [List.head?_eq_some_head hne]
+  congr
+  apply Fin.ext
+  simp [List.head_eq_getElem_zero]
+
+lemma finRange_getLast?_eq_last {n : ℕ} (hpos : 0 < n) :
+    (List.finRange n).getLast? = some (⟨n - 1, by omega⟩ : Fin n) := by
+  have hne : List.finRange n ≠ [] := by
+    simpa [List.finRange_eq_nil_iff] using hpos.ne'
+  rw [List.getLast?_eq_getLast_of_ne_nil hne]
+  congr
+  apply Fin.ext
+  simp [List.getLast_eq_getElem]
+
 lemma isChain_finRange_val_succ (n : ℕ) :
     List.IsChain (fun a b : Fin n => a.val + 1 = b.val) (List.finRange n) := by
   rw [List.isChain_iff_getElem]
