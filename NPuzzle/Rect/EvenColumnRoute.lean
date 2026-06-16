@@ -99,4 +99,140 @@ lemma evenColsRoute_nonblank {B : Board} :
   · exact evenColsBottomTail_nonblank c hc
   · exact evenColsUpperSnake_nonblank c hc
 
+lemma evenColsBottomTail_nodup_cells {B : Board} :
+    (evenColsBottomTail B).Nodup := by
+  rw [evenColsBottomTail]
+  exact List.Nodup.map
+      (l := (List.finRange (B.cols - 1)).reverse)
+      (f := fun c => ((bottomRight B).1, colFromColsMinusOne (B := B) c))
+      (by
+        intro a b h
+        apply Fin.ext
+        have hv := congrArg (fun c : Cell B => c.2.val) h
+        simpa [colFromColsMinusOne] using hv)
+      (List.nodup_reverse.mpr (List.nodup_finRange (B.cols - 1)))
+
+lemma evenColsUpperColumn_nodup (B : Board) (col : Fin B.cols) :
+    (evenColsUpperColumn B col).Nodup := by
+  by_cases hpar : col.val % 2 = 0
+  · simpa [evenColsUpperColumn, hpar] using
+      (List.Nodup.map
+        (l := (List.finRange (B.rows - 1)).reverse)
+        (f := fun r => (rowFromRowsMinusOne (B := B) r, col))
+        (by
+          intro a b h
+          apply Fin.ext
+          have hv := congrArg (fun c : Cell B => c.1.val) h
+          simpa [rowFromRowsMinusOne] using hv)
+        (List.nodup_reverse.mpr (List.nodup_finRange (B.rows - 1))))
+  · simpa [evenColsUpperColumn, hpar] using
+      (List.Nodup.map
+        (l := List.finRange (B.rows - 1))
+        (f := fun r => (rowFromRowsMinusOne (B := B) r, col))
+        (by
+          intro a b h
+          apply Fin.ext
+          have hv := congrArg (fun c : Cell B => c.1.val) h
+          simpa [rowFromRowsMinusOne] using hv)
+        (List.nodup_finRange (B.rows - 1)))
+
+lemma evenColsUpperColumn_mem_col {B : Board} {col : Fin B.cols} {c : Cell B}
+    (hc : c ∈ evenColsUpperColumn B col) :
+    c.2 = col := by
+  rw [evenColsUpperColumn] at hc
+  by_cases hpar : col.val % 2 = 0
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    rfl
+  · simp [hpar] at hc
+    rcases hc with ⟨row, rfl⟩
+    rfl
+
+lemma evenColsUpperColumn_not_bottom_row {B : Board} {col : Fin B.cols} :
+    ∀ c ∈ evenColsUpperColumn B col, c.1 ≠ (bottomRight B).1 := by
+  intro c hc
+  rw [evenColsUpperColumn] at hc
+  by_cases hpar : col.val % 2 = 0
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    intro h
+    have hv := congrArg (fun r : Fin B.rows => r.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+  · simp [hpar] at hc
+    rcases hc with ⟨row, rfl⟩
+    intro h
+    have hv := congrArg (fun r : Fin B.rows => r.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+
+lemma evenColsUpperColumn_disjoint {B : Board} {a b : Fin B.cols}
+    (hne : a ≠ b) :
+    List.Disjoint (evenColsUpperColumn B a) (evenColsUpperColumn B b) := by
+  rw [List.disjoint_left]
+  intro c hca hcb
+  have ha := evenColsUpperColumn_mem_col hca
+  have hb := evenColsUpperColumn_mem_col hcb
+  exact hne (ha.symm.trans hb)
+
+lemma evenColsUpperSnake_nodup (B : Board) :
+    (evenColsUpperSnake B).Nodup := by
+  rw [evenColsUpperSnake, List.nodup_flatMap]
+  constructor
+  · intro col _hcol
+    exact evenColsUpperColumn_nodup B col
+  · exact (List.nodup_finRange B.cols).imp
+      (by
+        intro a b hne
+        exact evenColsUpperColumn_disjoint hne)
+
+lemma evenColsBottomTail_disjoint_upperSnake {B : Board} :
+    List.Disjoint (evenColsBottomTail B) (evenColsUpperSnake B) := by
+  rw [List.disjoint_left]
+  intro c hbottom hupper
+  simp [evenColsBottomTail] at hbottom
+  rcases hbottom with ⟨col, rfl⟩
+  rw [evenColsUpperSnake] at hupper
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hupper
+  rcases hupper with ⟨upperCol, hupperCol⟩
+  exact (evenColsUpperColumn_not_bottom_row
+    (c := ((bottomRight B).1, colFromColsMinusOne (B := B) col))
+    hupperCol) rfl
+
+lemma evenColsRoute_nodup_cells {B : Board} :
+    (evenColsRouteXs B).Nodup := by
+  rw [evenColsRouteXs, List.nodup_append]
+  constructor
+  · exact evenColsBottomTail_nodup_cells
+  · constructor
+    · exact evenColsUpperSnake_nodup B
+    · intro a ha b hb hab
+      have hb' : a ∈ evenColsUpperSnake B := by
+        simpa [hab] using hb
+      exact evenColsBottomTail_disjoint_upperSnake ha hb'
+
+lemma evenColsRoute_nodup {B : Board} :
+    ((nonblankSubtypeList
+        (evenColsRouteXs B)
+        evenColsRoute_nonblank).map
+      (nonblankCellEquivFin B)).Nodup := by
+  have hsub :
+      (nonblankSubtypeList
+        (evenColsRouteXs B)
+        evenColsRoute_nonblank).Nodup := by
+    apply List.Nodup.of_map (f := fun c : {c : Cell B // c ≠ bottomRight B} => c.1)
+    simpa [nonblankSubtypeList_map_val] using evenColsRoute_nodup_cells
+  exact hsub.map (nonblankCellEquivFin B).injective
+
+lemma evenColsRoute_covers {B : Board} :
+    ((nonblankSubtypeList
+        (evenColsRouteXs B)
+        evenColsRoute_nonblank).map
+      (nonblankCellEquivFin B)).toFinset = Finset.univ := by
+  apply finList_toFinset_eq_univ_of_nodup_length
+  · exact evenColsRoute_nodup
+  · simpa [nonblankSubtypeList] using evenColsRoute_length
+
 end NPuzzle.Rect
