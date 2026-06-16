@@ -16,7 +16,7 @@ lemma swapAt_swapAt_rev_zero {cells : Cell → ℕ} {a b : Cell} (hne : a ≠ b)
     swapAt (swapAt cells a b) b a = cells := by
   funext c
   simp only [swapAt]
-  split_ifs with h1 h2 h3 h4 <;> simp [hne, ha0, *]
+  split_ifs <;> simp [*]
 
 lemma slide_cells (cfg' : Config) (m : Cell) (hm : adjacent (blank cfg') m) :
     (slide cfg' m hm).cells = swapAt cfg'.cells (blank cfg') m := rfl

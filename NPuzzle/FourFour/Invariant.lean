@@ -45,7 +45,7 @@ lemma invStat_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blank cf
   unfold invStat
   rw [tileList_slide_horizontal cfg n h hr]
 
-lemma blankRow_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blank cfg) n)
+lemma blankRow_slide_horizontal (cfg : Config) (n : Cell)
     (hr : sameRow (blank cfg) n) :
     blankRowFromBottom n = blankRowFromBottom (blank cfg) :=
   blankRowFromBottom_eq_sameRow hr.symm
@@ -55,7 +55,7 @@ lemma parityClass_slide_horizontal (cfg : Config) (n : Cell) (h : adjacent (blan
     parityClass (slide cfg n h) = parityClass cfg := by
   unfold parityClass
   rw [blank_slide cfg n h, invStat_slide_horizontal cfg n h hr,
-    blankRow_slide_horizontal cfg n h hr]
+    blankRow_slide_horizontal cfg n hr]
 
 lemma blankRow_adjacent_vertical {a b : Cell} (h : adjacent a b) (hc : sameCol a b) :
     blankRowFromBottom b % 2 = (blankRowFromBottom a + 1) % 2 := by

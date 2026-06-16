@@ -36,27 +36,27 @@ lemma mkCell_row_col (t : Cell) : mkCell (row t) (col t) = t := by
 
 lemma adjacent_mkCell_right0 (r : Fin 4) :
     adjacent (mkCell r 0) (mkCell r 1) := by
-  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 lemma adjacent_mkCell_right1 (r : Fin 4) :
     adjacent (mkCell r 1) (mkCell r 2) := by
-  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 lemma adjacent_mkCell_right2 (r : Fin 4) :
     adjacent (mkCell r 2) (mkCell r 3) := by
-  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases r <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 lemma adjacent_mkCell_down0 (c : Fin 4) :
     adjacent (mkCell 0 c) (mkCell 1 c) := by
-  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 lemma adjacent_mkCell_down1 (c : Fin 4) :
     adjacent (mkCell 1 c) (mkCell 2 c) := by
-  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 lemma adjacent_mkCell_down2 (c : Fin 4) :
     adjacent (mkCell 2 c) (mkCell 3 c) := by
-  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell] <;> omega
+  fin_cases c <;> simp [adjacent, sameRow, sameCol, mkCell]
 
 def rowPath1 (r : Fin 4) : BlankGridPath (mkCell r 0) (mkCell r 1) :=
   .cons (adjacent_mkCell_right0 r) (.nil _)
