@@ -66,6 +66,14 @@ lemma Board.not_evenDimension_iff_size_mod_two_eq_one (B : Board) :
   rw [B.not_evenDimension_iff_oddRows_oddCols,
     B.oddRows_oddCols_iff_size_mod_two_eq_one]
 
+lemma no_closedFullList_of_not_evenDimension {B : Board}
+    (hnot : ¬ (B.rows % 2 = 0 ∨ B.cols % 2 = 0)) :
+    ¬ ∃ xs : List (Cell B),
+      AdjacentChain (bottomRight B) (xs ++ [bottomRight B]) ∧
+        xs.length = B.tileCount :=
+  no_closedFullList_of_size_mod_two_eq_one
+    ((B.not_evenDimension_iff_size_mod_two_eq_one).mp hnot)
+
 lemma reachable_goal_to_cfg_bottomRight_of_evenDimension {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (hEven : B.rows % 2 = 0 ∨ B.cols % 2 = 0)
