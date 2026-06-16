@@ -728,4 +728,412 @@ lemma oddOddRoute_nonblank {B : Board}
   · exact oddOddMiddleSnake_nonblank c hc
   · exact oddOddCap_nonblank hrows c hc
 
+lemma oddOddLeftColumn_nodup (B : Board) :
+    (oddOddLeftColumn B).Nodup := by
+  rw [oddOddLeftColumn]
+  exact (List.nodup_reverse.mpr (List.nodup_finRange (B.rows - 1))).map
+    (by
+      intro a b h
+      apply Fin.ext
+      have hv := congrArg (fun c : Cell B => c.1.val) h
+      simpa [rowFromRowsMinusOne] using hv)
+
+lemma oddOddLeftColumn_mem_col {B : Board} {c : Cell B}
+    (hc : c ∈ oddOddLeftColumn B) :
+    c.2 = colZero B := by
+  simp [oddOddLeftColumn] at hc
+  rcases hc with ⟨row, _hrow, rfl⟩
+  rfl
+
+lemma oddOddLeftColumn_not_bottom_row {B : Board} :
+    ∀ c ∈ oddOddLeftColumn B, c.1 ≠ (bottomRight B).1 := by
+  intro c hc h
+  simp [oddOddLeftColumn] at hc
+  rcases hc with ⟨row, _hrow, rfl⟩
+  have hv := congrArg (fun r : Fin B.rows => r.val) h
+  have hrowLt := row.isLt
+  simp [bottomRight, rowFromRowsMinusOne] at hv
+  omega
+
+lemma oddOddMiddleColumn_nodup (B : Board) (col : Fin (B.cols - 3)) :
+    (oddOddMiddleColumn B col).Nodup := by
+  by_cases hpar : (col.val + 1) % 2 = 1
+  · simpa [oddOddMiddleColumn, hpar] using
+      (List.Nodup.map
+        (l := List.finRange (B.rows - 1))
+        (f := fun r =>
+          (rowFromRowsMinusOne (B := B) r, oddOddMiddleCol (B := B) col))
+        (by
+          intro a b h
+          apply Fin.ext
+          have hv := congrArg (fun c : Cell B => c.1.val) h
+          simpa [rowFromRowsMinusOne] using hv)
+        (List.nodup_finRange (B.rows - 1)))
+  · simpa [oddOddMiddleColumn, hpar] using
+      (List.Nodup.map
+        (l := (List.finRange (B.rows - 1)).reverse)
+        (f := fun r =>
+          (rowFromRowsMinusOne (B := B) r, oddOddMiddleCol (B := B) col))
+        (by
+          intro a b h
+          apply Fin.ext
+          have hv := congrArg (fun c : Cell B => c.1.val) h
+          simpa [rowFromRowsMinusOne] using hv)
+        (List.nodup_reverse.mpr (List.nodup_finRange (B.rows - 1))))
+
+lemma oddOddMiddleColumn_mem_col {B : Board} {col : Fin (B.cols - 3)} {c : Cell B}
+    (hc : c ∈ oddOddMiddleColumn B col) :
+    c.2 = oddOddMiddleCol (B := B) col := by
+  rw [oddOddMiddleColumn] at hc
+  by_cases hpar : (col.val + 1) % 2 = 1
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    rfl
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    rfl
+
+lemma oddOddMiddleColumn_not_bottom_row {B : Board} {col : Fin (B.cols - 3)} :
+    ∀ c ∈ oddOddMiddleColumn B col, c.1 ≠ (bottomRight B).1 := by
+  intro c hc h
+  rw [oddOddMiddleColumn] at hc
+  by_cases hpar : (col.val + 1) % 2 = 1
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    have hv := congrArg (fun r : Fin B.rows => r.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    have hv := congrArg (fun r : Fin B.rows => r.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+
+lemma oddOddMiddleColumn_col_lt_beforeRight {B : Board}
+    {col : Fin (B.cols - 3)} {c : Cell B}
+    (hc : c ∈ oddOddMiddleColumn B col) :
+    c.2.val < B.cols - 2 := by
+  have hcol := oddOddMiddleColumn_mem_col hc
+  have hlt := col.isLt
+  rw [hcol]
+  simp [oddOddMiddleCol]
+  omega
+
+lemma oddOddMiddleColumn_not_colZero {B : Board}
+    {col : Fin (B.cols - 3)} {c : Cell B}
+    (hc : c ∈ oddOddMiddleColumn B col) :
+    c.2 ≠ colZero B := by
+  intro h
+  have hcol := oddOddMiddleColumn_mem_col hc
+  have hv := congrArg (fun c : Fin B.cols => c.val) (hcol.symm.trans h)
+  simp [oddOddMiddleCol, colZero] at hv
+
+lemma oddOddMiddleColumn_disjoint {B : Board} {a b : Fin (B.cols - 3)}
+    (hne : a ≠ b) :
+    List.Disjoint (oddOddMiddleColumn B a) (oddOddMiddleColumn B b) := by
+  rw [List.disjoint_left]
+  intro c hca hcb
+  have ha := oddOddMiddleColumn_mem_col hca
+  have hb := oddOddMiddleColumn_mem_col hcb
+  apply hne
+  apply Fin.ext
+  have hv := congrArg (fun c : Fin B.cols => c.val) (ha.symm.trans hb)
+  simpa [oddOddMiddleCol] using hv
+
+lemma oddOddMiddleSnake_nodup (B : Board) :
+    (oddOddMiddleSnake B).Nodup := by
+  rw [oddOddMiddleSnake, List.nodup_flatMap]
+  constructor
+  · intro col _hcol
+    exact oddOddMiddleColumn_nodup B col
+  · exact (List.nodup_finRange (B.cols - 3)).imp
+      (by
+        intro a b hne
+        exact oddOddMiddleColumn_disjoint hne)
+
+lemma oddOddMiddleSnake_not_bottom_row {B : Board} :
+    ∀ c ∈ oddOddMiddleSnake B, c.1 ≠ (bottomRight B).1 := by
+  intro c hc
+  rw [oddOddMiddleSnake] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨col, hcol⟩
+  exact oddOddMiddleColumn_not_bottom_row c hcol
+
+lemma oddOddMiddleSnake_col_lt_beforeRight {B : Board} {c : Cell B}
+    (hc : c ∈ oddOddMiddleSnake B) :
+    c.2.val < B.cols - 2 := by
+  rw [oddOddMiddleSnake] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨col, hcol⟩
+  exact oddOddMiddleColumn_col_lt_beforeRight hcol
+
+lemma oddOddMiddleSnake_not_colZero {B : Board} {c : Cell B}
+    (hc : c ∈ oddOddMiddleSnake B) :
+    c.2 ≠ colZero B := by
+  rw [oddOddMiddleSnake] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨col, hcol⟩
+  exact oddOddMiddleColumn_not_colZero hcol
+
+lemma oddOddCapRow_nodup {B : Board}
+    (hcols : 2 ≤ B.cols) (row : Fin (B.rows - 2)) :
+    (oddOddCapRow B row).Nodup := by
+  have hne :
+      (rowFromRowsMinusTwo (B := B) row, oddOddColBeforeRight B) ≠
+        (rowFromRowsMinusTwo (B := B) row, (bottomRight B).2) := by
+    intro h
+    have hv := congrArg (fun c : Cell B => c.2.val) h
+    simp [oddOddColBeforeRight, bottomRight] at hv
+    omega
+  by_cases hpar : row.val % 2 = 0
+  · simpa [oddOddCapRow, hpar] using hne
+  · simpa [oddOddCapRow, hpar] using hne.symm
+
+lemma oddOddCapRow_mem_row {B : Board} {row : Fin (B.rows - 2)} {c : Cell B}
+    (hc : c ∈ oddOddCapRow B row) :
+    c.1 = rowFromRowsMinusTwo (B := B) row := by
+  by_cases hpar : row.val % 2 = 0
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h <;> rw [h]
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h <;> rw [h]
+
+lemma oddOddCapRow_col_ge_beforeRight {B : Board} {row : Fin (B.rows - 2)}
+    {c : Cell B} (hc : c ∈ oddOddCapRow B row) :
+    B.cols - 2 ≤ c.2.val := by
+  by_cases hpar : row.val % 2 = 0
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h
+    · rw [h]
+      simp [oddOddColBeforeRight]
+    · rw [h]
+      simp [bottomRight]
+      omega
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h
+    · rw [h]
+      simp [bottomRight]
+      omega
+    · rw [h]
+      simp [oddOddColBeforeRight]
+
+lemma oddOddCapRow_not_bottom_row {B : Board} {row : Fin (B.rows - 2)} :
+    ∀ c ∈ oddOddCapRow B row, c.1 ≠ (bottomRight B).1 := by
+  intro c hc h
+  have hrow := oddOddCapRow_mem_row hc
+  have hv := congrArg (fun r : Fin B.rows => r.val) (hrow.symm.trans h)
+  have hlt := row.isLt
+  simp [bottomRight, rowFromRowsMinusTwo] at hv
+  omega
+
+lemma oddOddCapRow_disjoint {B : Board} {a b : Fin (B.rows - 2)}
+    (hne : a ≠ b) :
+    List.Disjoint (oddOddCapRow B a) (oddOddCapRow B b) := by
+  rw [List.disjoint_left]
+  intro c hca hcb
+  have ha := oddOddCapRow_mem_row hca
+  have hb := oddOddCapRow_mem_row hcb
+  apply hne
+  apply Fin.ext
+  have hv := congrArg (fun r : Fin B.rows => r.val) (ha.symm.trans hb)
+  simpa [rowFromRowsMinusTwo] using hv
+
+lemma oddOddCapRows_nodup {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    (oddOddCapRows B).Nodup := by
+  rw [oddOddCapRows, List.nodup_flatMap]
+  constructor
+  · intro row _hrow
+    exact oddOddCapRow_nodup hcols row
+  · exact (List.nodup_finRange (B.rows - 2)).imp
+      (by
+        intro a b hne
+        exact oddOddCapRow_disjoint hne)
+
+lemma oddOddCapRows_not_bottom_row {B : Board} :
+    ∀ c ∈ oddOddCapRows B, c.1 ≠ (bottomRight B).1 := by
+  intro c hc
+  rw [oddOddCapRows] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨row, hrow⟩
+  exact oddOddCapRow_not_bottom_row c hrow
+
+lemma oddOddCapRows_col_ge_beforeRight {B : Board} {c : Cell B}
+    (hc : c ∈ oddOddCapRows B) :
+    B.cols - 2 ≤ c.2.val := by
+  rw [oddOddCapRows] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨row, hrow⟩
+  exact oddOddCapRow_col_ge_beforeRight hrow
+
+lemma oddOddCapRows_disjoint_cornerUp {B : Board}
+    (hrows : 3 ≤ B.rows) :
+    List.Disjoint (oddOddCapRows B) [cornerUp B] := by
+  rw [List.disjoint_left]
+  intro c hc hcorner
+  simp at hcorner
+  rw [hcorner] at hc
+  rw [oddOddCapRows] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨row, hrow⟩
+  have hrowEq := oddOddCapRow_mem_row hrow
+  have hv := congrArg (fun r : Fin B.rows => r.val) hrowEq
+  have hlt := row.isLt
+  simp [cornerUp, bottomRight, rowFromRowsMinusTwo] at hv
+  omega
+
+lemma oddOddCap_nodup {B : Board}
+    (hrows : 3 ≤ B.rows) (hcols : 2 ≤ B.cols) :
+    (oddOddCap B).Nodup := by
+  rw [oddOddCap, List.nodup_append]
+  constructor
+  · exact oddOddCapRows_nodup hcols
+  · constructor
+    · simp
+    · intro a ha b hb hab
+      have haCorner : a ∈ [cornerUp B] := by
+        simpa [hab] using hb
+      exact oddOddCapRows_disjoint_cornerUp hrows ha haCorner
+
+lemma oddOddCap_not_bottom_row {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    ∀ c ∈ oddOddCap B, c.1 ≠ (bottomRight B).1 := by
+  intro c hc
+  simp [oddOddCap] at hc
+  rcases hc with hrowsPart | hcorner
+  · exact oddOddCapRows_not_bottom_row c hrowsPart
+  · rw [hcorner]
+    intro h
+    have hv := congrArg (fun r : Fin B.rows => r.val) h
+    simp [cornerUp, bottomRight] at hv
+    omega
+
+lemma oddOddCap_col_ge_beforeRight {B : Board}
+    (hcols : 2 ≤ B.cols) {c : Cell B}
+    (hc : c ∈ oddOddCap B) :
+    B.cols - 2 ≤ c.2.val := by
+  simp [oddOddCap] at hc
+  rcases hc with hrowsPart | hcorner
+  · exact oddOddCapRows_col_ge_beforeRight hrowsPart
+  · rw [hcorner]
+    simp [cornerUp, bottomRight]
+    omega
+
+lemma evenColsBottomTail_disjoint_oddOddLeftColumn {B : Board} :
+    List.Disjoint (evenColsBottomTail B) (oddOddLeftColumn B) := by
+  rw [List.disjoint_left]
+  intro c hbottom hleft
+  simp [evenColsBottomTail] at hbottom
+  rcases hbottom with ⟨col, rfl⟩
+  exact oddOddLeftColumn_not_bottom_row
+    ((bottomRight B).1, colFromColsMinusOne (B := B) col) hleft rfl
+
+lemma evenColsBottomTail_disjoint_oddOddMiddleSnake {B : Board} :
+    List.Disjoint (evenColsBottomTail B) (oddOddMiddleSnake B) := by
+  rw [List.disjoint_left]
+  intro c hbottom hmiddle
+  simp [evenColsBottomTail] at hbottom
+  rcases hbottom with ⟨col, rfl⟩
+  exact oddOddMiddleSnake_not_bottom_row
+    ((bottomRight B).1, colFromColsMinusOne (B := B) col) hmiddle rfl
+
+lemma evenColsBottomTail_disjoint_oddOddCap {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    List.Disjoint (evenColsBottomTail B) (oddOddCap B) := by
+  rw [List.disjoint_left]
+  intro c hbottom hcap
+  simp [evenColsBottomTail] at hbottom
+  rcases hbottom with ⟨col, rfl⟩
+  exact oddOddCap_not_bottom_row hrows
+    ((bottomRight B).1, colFromColsMinusOne (B := B) col) hcap rfl
+
+lemma oddOddLeftColumn_disjoint_middleSnake {B : Board} :
+    List.Disjoint (oddOddLeftColumn B) (oddOddMiddleSnake B) := by
+  rw [List.disjoint_left]
+  intro c hleft hmiddle
+  exact oddOddMiddleSnake_not_colZero hmiddle (oddOddLeftColumn_mem_col hleft)
+
+lemma oddOddLeftColumn_disjoint_cap {B : Board}
+    (hcols : 3 ≤ B.cols) :
+    List.Disjoint (oddOddLeftColumn B) (oddOddCap B) := by
+  rw [List.disjoint_left]
+  intro c hleft hcap
+  have hleftCol := oddOddLeftColumn_mem_col hleft
+  have hge := oddOddCap_col_ge_beforeRight (by omega : 2 ≤ B.cols) hcap
+  have hv := congrArg (fun c : Fin B.cols => c.val) hleftCol
+  simp [colZero] at hv
+  omega
+
+lemma oddOddMiddleSnake_disjoint_cap {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    List.Disjoint (oddOddMiddleSnake B) (oddOddCap B) := by
+  rw [List.disjoint_left]
+  intro c hmiddle hcap
+  have hlt := oddOddMiddleSnake_col_lt_beforeRight hmiddle
+  have hge := oddOddCap_col_ge_beforeRight hcols hcap
+  omega
+
+lemma oddOddRoute_nodup_cells {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    (oddOddRouteXs B).Nodup := by
+  have hrows_three : 3 ≤ B.rows := by omega
+  have hcols_three : 3 ≤ B.cols := by omega
+  rw [oddOddRouteXs, List.nodup_append]
+  constructor
+  · rw [List.nodup_append]
+    constructor
+    · rw [List.nodup_append]
+      constructor
+      · exact evenColsBottomTail_nodup_cells
+      · constructor
+        · exact oddOddLeftColumn_nodup B
+        · intro a ha b hb hab
+          have hb' : a ∈ oddOddLeftColumn B := by
+            simpa [hab] using hb
+          exact evenColsBottomTail_disjoint_oddOddLeftColumn ha hb'
+    · constructor
+      · exact oddOddMiddleSnake_nodup B
+      · intro a ha b hb hab
+        have hb' : a ∈ oddOddMiddleSnake B := by
+          simpa [hab] using hb
+        have ha' : a ∈ evenColsBottomTail B ∨ a ∈ oddOddLeftColumn B := by
+          simpa using ha
+        rcases ha' with hbottom | hleft
+        · exact evenColsBottomTail_disjoint_oddOddMiddleSnake hbottom hb'
+        · exact oddOddLeftColumn_disjoint_middleSnake hleft hb'
+  · constructor
+    · exact oddOddCap_nodup hrows_three hcols
+    · intro a ha b hb hab
+      have hb' : a ∈ oddOddCap B := by
+        simpa [hab] using hb
+      have ha' :
+          a ∈ evenColsBottomTail B ∨
+            a ∈ oddOddLeftColumn B ∨
+              a ∈ oddOddMiddleSnake B := by
+        simpa using ha
+      rcases ha' with hbottom | hleftOrMiddle
+      · exact evenColsBottomTail_disjoint_oddOddCap hrows hbottom hb'
+      · rcases hleftOrMiddle with hleft | hmiddle
+        · exact oddOddLeftColumn_disjoint_cap hcols_three hleft hb'
+        · exact oddOddMiddleSnake_disjoint_cap hcols hmiddle hb'
+
+lemma oddOddRoute_nodup {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    ((nonblankSubtypeList
+        (oddOddRouteXs B)
+        (oddOddRoute_nonblank hrows)).map
+      (nonblankCellEquivFin B)).Nodup := by
+  have hsub :
+      (nonblankSubtypeList
+        (oddOddRouteXs B)
+        (oddOddRoute_nonblank hrows)).Nodup := by
+    apply List.Nodup.of_map (f := fun c : {c : Cell B // c ≠ bottomRight B} => c.1)
+    simpa [nonblankSubtypeList_map_val] using
+      oddOddRoute_nodup_cells hrows hcols hrowsOdd hcolsOdd
+  exact hsub.map (nonblankCellEquivFin B).injective
+
 end NPuzzle.Rect
