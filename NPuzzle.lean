@@ -18,6 +18,7 @@ import NPuzzle.Rect.Thin
 import NPuzzle.Rect.TwoRowRoute
 import NPuzzle.Rect.EvenColumnRoute
 import NPuzzle.Rect.EvenRowRoute
+import NPuzzle.Rect.EvenDimension
 import NPuzzle.Rect.Corner
 import NPuzzle.Rect.CornerPerm
 import NPuzzle.Rect.CornerRealizable
