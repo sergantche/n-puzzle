@@ -314,6 +314,30 @@ lemma evenColsRoute_chain {B : Board}
           simpa using hx
     exact adjacent_evenColsRoute_bottomRight hrows hcolsEven x hxRoute (bottomRight B) (by simp)
 
+lemma evenColsRoute_head {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    (evenColsRouteXs B).head? = some (cornerLeft B) := by
+  have hbottom_ne : evenColsBottomTail B ≠ [] := by
+    simp [evenColsBottomTail]
+    omega
+  rw [evenColsRouteXs, List.head?_append_of_ne_nil (evenColsBottomTail B) hbottom_ne]
+  simp [evenColsBottomTail, finRange_getLast?_eq_last (by omega : 0 < B.cols - 1),
+    cornerLeft, bottomRight, colFromColsMinusOne]
+
+lemma evenColsRoute_getLast {B : Board}
+    (hrows : 2 ≤ B.rows) (hcolsEven : B.cols % 2 = 0) :
+    (evenColsRouteXs B).getLast? = some (cornerUp B) := by
+  rw [evenColsRouteXs,
+    List.getLast?_append_of_ne_nil (evenColsBottomTail B) (evenColsUpperSnake_ne_nil hrows)]
+  rw [evenColsUpperSnake_getLast?_eq_lastColumn hrows]
+  have hoddLast : ¬ (B.cols - 1) % 2 = 0 := by
+    change ¬ (B.cols - 1) % 2 = 0
+    have hcolsPos := B.cols_pos
+    omega
+  have hrowsSub : 0 < B.rows - 1 := by omega
+  simp [evenColsUpperColumn, bottomRight, hoddLast, finRange_getLast?_eq_last hrowsSub,
+    cornerUp, bottomRight, rowFromRowsMinusOne]
+
 lemma evenColsBottomTail_nonblank {B : Board} :
     ∀ c ∈ evenColsBottomTail B, c ≠ bottomRight B := by
   intro c hc
@@ -491,5 +515,91 @@ lemma evenColsRoute_covers {B : Board} :
   apply finList_toFinset_eq_univ_of_nodup_length
   · exact evenColsRoute_nodup
   · simpa [nonblankSubtypeList] using evenColsRoute_length
+
+lemma evenColsRoute_index_head {B : Board}
+    (hcols : 2 ≤ B.cols) :
+    (((nonblankSubtypeList
+      (evenColsRouteXs B)
+      evenColsRoute_nonblank).map
+      (nonblankCellEquivFin B)).head?) =
+        some (cornerLeftIdx B hcols) := by
+  simp [nonblankSubtypeList, evenColsRoute_head hcols, cornerLeftIdx]
+  apply Fin.ext
+  rfl
+
+lemma evenColsRoute_index_getLast {B : Board}
+    (hrows : 2 ≤ B.rows) (hcolsEven : B.cols % 2 = 0) :
+    (((nonblankSubtypeList
+      (evenColsRouteXs B)
+      evenColsRoute_nonblank).map
+      (nonblankCellEquivFin B)).getLast?) =
+        some (cornerUpIdx B hrows) := by
+  simp [nonblankSubtypeList, evenColsRoute_getLast hrows hcolsEven, cornerUpIdx]
+  apply Fin.ext
+  rfl
+
+lemma evenColsRoute_compat {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hcolsEven : B.cols % 2 = 0) :
+    List.formPerm
+        ((nonblankSubtypeList
+          (evenColsRouteXs B)
+          evenColsRoute_nonblank).map
+          (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) =
+      cornerLeftIdx B hcols := by
+  let L :=
+    (nonblankSubtypeList
+      (evenColsRouteXs B)
+      evenColsRoute_nonblank).map
+      (nonblankCellEquivFin B)
+  change List.formPerm L (cornerUpIdx B hrows) = cornerLeftIdx B hcols
+  have hhead : L.head? = some (cornerLeftIdx B hcols) := by
+    simpa [L] using evenColsRoute_index_head hcols
+  have hlast : L.getLast? = some (cornerUpIdx B hrows) := by
+    simpa [L] using evenColsRoute_index_getLast hrows hcolsEven
+  have hmemHead : cornerLeftIdx B hcols ∈ L.head? := by
+    rw [hhead]
+    simp
+  have hLcons : L = cornerLeftIdx B hcols :: L.tail :=
+    List.eq_cons_of_mem_head? hmemHead
+  have hmemLast :
+      cornerUpIdx B hrows ∈ (cornerLeftIdx B hcols :: L.tail).getLast? := by
+    rw [← hLcons, hlast]
+    simp
+  have hgetLast :
+      (cornerLeftIdx B hcols :: L.tail).getLast (List.cons_ne_nil _ _) =
+        cornerUpIdx B hrows :=
+    List.getLast_of_mem_getLast? hmemLast
+  rw [hLcons]
+  rw [← hgetLast]
+  simp
+
+lemma reachable_goal_to_cfg_bottomRight_of_evenCols {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hcolsEven : B.cols % 2 = 0)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_closedFullPath hrows hcols
+    (closedBlankGridPathOfList (bottomRight B) (evenColsRouteXs B)
+      (evenColsRoute_chain hrows hcols hcolsEven))
+    (by simp)
+    evenColsRoute_nonblank
+    (formPerm_isCycle_of_nodup_toFinset_univ hrows hcols
+      evenColsRoute_nodup evenColsRoute_covers)
+    (support_formPerm_of_nodup_toFinset_univ hrows hcols
+      evenColsRoute_nodup evenColsRoute_covers)
+    (evenColsRoute_compat hrows hcols hcolsEven)
+    cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_evenCols {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    (hcolsEven : B.cols % 2 = 0)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_evenCols hrows hcols hcolsEven cfg hbr hpar)
 
 end NPuzzle.Rect
