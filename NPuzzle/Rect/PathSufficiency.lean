@@ -72,6 +72,37 @@ lemma support_formPerm_of_nodup_toFinset_univ {B : Board}
     have htc := Board.tileCount_ge_three hrows hcols
     omega
 
+lemma formPerm_isCycle_of_nodup_toFinset_erase {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {missing : Fin B.tileCount} {L : List (Fin B.tileCount)}
+    (hnd : L.Nodup) (herase : L.toFinset = Finset.univ.erase missing) :
+    IsCycle (List.formPerm L) := by
+  apply List.isCycle_formPerm
+  · exact hnd
+  · have hlen : L.length = B.tileCount - 1 := by
+      rw [← List.toFinset_card_of_nodup hnd, herase,
+        Finset.card_erase_of_mem (Finset.mem_univ missing), Finset.card_univ,
+        Fintype.card_fin]
+    rw [hlen]
+    have htc := Board.tileCount_ge_three hrows hcols
+    omega
+
+lemma support_formPerm_of_nodup_toFinset_erase {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {missing : Fin B.tileCount} {L : List (Fin B.tileCount)}
+    (hnd : L.Nodup) (herase : L.toFinset = Finset.univ.erase missing) :
+    (List.formPerm L).support = Finset.univ.erase missing := by
+  rw [List.support_formPerm_of_nodup]
+  · exact herase
+  · exact hnd
+  · intro x hsingle
+    have hcard : L.toFinset.card = 1 := by
+      simp [hsingle]
+    rw [herase, Finset.card_erase_of_mem (Finset.mem_univ missing), Finset.card_univ,
+      Fintype.card_fin] at hcard
+    have htc := Board.tileCount_ge_three hrows hcols
+    omega
+
 /-- A closed full route whose first two cells align with the corner 3-cycle. -/
 structure PrefixedFullRoute (B : Board) (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols) where
   ys : List (Cell B)
@@ -126,6 +157,48 @@ lemma tiles_to_goal_bottomRight_of_closedFullPath {B : Board}
     Reachable cfg (goal B) :=
   reachable_symm
     (reachable_goal_to_cfg_bottomRight_of_closedFullPath hrows hcols
+      path hverts hxs hcycle hsupp hcompat cfg hbr hpar)
+
+lemma reachable_goal_to_cfg_bottomRight_of_closedAlmostFullPath {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {xs : List (Cell B)}
+    (path : BlankGridPath (bottomRight B) (bottomRight B))
+    (hverts : BlankGridPath.vertices path = xs ++ [bottomRight B])
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B)
+    (hcycle :
+      IsCycle (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))))
+    (hsupp :
+      (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))).support =
+        Finset.univ.erase (cornerUpLeftIdx B hrows))
+    (hcompat :
+      List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) = cornerLeftIdx B hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_compatibleAlmostFullCycle hrows hcols
+    (closedPathPermRealizable path hverts hxs)
+    hcycle hsupp hcompat cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_closedAlmostFullPath {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {xs : List (Cell B)}
+    (path : BlankGridPath (bottomRight B) (bottomRight B))
+    (hverts : BlankGridPath.vertices path = xs ++ [bottomRight B])
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B)
+    (hcycle :
+      IsCycle (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))))
+    (hsupp :
+      (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))).support =
+        Finset.univ.erase (cornerUpLeftIdx B hrows))
+    (hcompat :
+      List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) = cornerLeftIdx B hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_closedAlmostFullPath hrows hcols
       path hverts hxs hcycle hsupp hcompat cfg hbr hpar)
 
 lemma reachable_goal_to_cfg_bottomRight_of_leftClosedFullPath {B : Board}
@@ -209,6 +282,47 @@ lemma tiles_to_goal_bottomRight_of_leftClosedFullList {B : Board}
     Reachable cfg (goal B) :=
   reachable_symm
     (reachable_goal_to_cfg_bottomRight_of_leftClosedFullList hrows hcols
+      hchain hxs hcycle hsupp hcompat cfg hbr hpar)
+
+lemma reachable_goal_to_cfg_bottomRight_of_closedAlmostFullList {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {xs : List (Cell B)}
+    (hchain : AdjacentChain (bottomRight B) (xs ++ [bottomRight B]))
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B)
+    (hcycle :
+      IsCycle (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))))
+    (hsupp :
+      (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))).support =
+        Finset.univ.erase (cornerUpLeftIdx B hrows))
+    (hcompat :
+      List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) = cornerLeftIdx B hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable (goal B) cfg :=
+  reachable_goal_to_cfg_bottomRight_of_closedAlmostFullPath hrows hcols
+    (closedBlankGridPathOfList (bottomRight B) xs hchain)
+    (by simp)
+    hxs hcycle hsupp hcompat cfg hbr hpar
+
+lemma tiles_to_goal_bottomRight_of_closedAlmostFullList {B : Board}
+    (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
+    {xs : List (Cell B)}
+    (hchain : AdjacentChain (bottomRight B) (xs ++ [bottomRight B]))
+    (hxs : ∀ c ∈ xs, c ≠ bottomRight B)
+    (hcycle :
+      IsCycle (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))))
+    (hsupp :
+      (List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))).support =
+        Finset.univ.erase (cornerUpLeftIdx B hrows))
+    (hcompat :
+      List.formPerm ((nonblankSubtypeList xs hxs).map (nonblankCellEquivFin B))
+        (cornerUpIdx B hrows) = cornerLeftIdx B hcols)
+    (cfg : Config B) (hbr : blank cfg = bottomRight B)
+    (hpar : parityClass cfg = targetParity B) :
+    Reachable cfg (goal B) :=
+  reachable_symm
+    (reachable_goal_to_cfg_bottomRight_of_closedAlmostFullList hrows hcols
       hchain hxs hcycle hsupp hcompat cfg hbr hpar)
 
 lemma reachable_goal_to_cfg_bottomRight_of_prefixedFullList {B : Board}
