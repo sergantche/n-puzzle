@@ -79,7 +79,7 @@ Then $C$ is solvable **if and only if**:
 
 For thin boards ($N=1$ or $M=1$), solvability is instead equivalent to preserving the full row-major `tileList`; the parity condition alone is not sufficient there.
 
-This statement, together with the thin-board exception, is the main mathematical result we intend to prove formally in Lean.
+This statement, together with the thin-board exception, is represented in Lean by `NPuzzle.Rect.solvability_rectangular`.
 
 ## Lean layout
 
@@ -117,3 +117,9 @@ For even width **M = 4**, the README criterion is
 | **Sufficiency:** correct parity ⇒ reachable `goal` | **Done** |
 
 The statement `solvability_four_four` is fully proved in Lean, and the dependency chain builds (`TileSign` → `TileReach` → `TileConnectivity` → `Sufficiency`) without `sorry` on the 4×4 critical path. The last group-theoretic step is `permRealizable_of_mem_alternating` in `TileReach.lean`: every even permutation of the 15 tiles is realized from `goal` with the blank at bottom-right. Details: [PLAN.md](PLAN.md).
+
+### Rectangular status (`NPuzzle.Rect`)
+
+The top-level rectangular dispatcher is `solvability_rectangular` in `NPuzzle/Rect/Solvability.lean`.
+For boards with `2 ≤ rows` and `2 ≤ cols`, `solvability_of_two_le` gives the parity criterion.
+For thin boards, `solvability_rows_lt_two` and `solvability_cols_lt_two` give the stronger `tileList` criterion.
