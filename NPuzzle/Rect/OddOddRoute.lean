@@ -641,4 +641,91 @@ lemma oddOddRoute_chain {B : Board}
           simpa using hx
     exact adjacent_oddOddRoute_bottomRight hrows x hxRoute (bottomRight B) (by simp)
 
+lemma oddOddLeftColumn_nonblank {B : Board} :
+    ∀ c ∈ oddOddLeftColumn B, c ≠ bottomRight B := by
+  intro c hc
+  simp [oddOddLeftColumn] at hc
+  rcases hc with ⟨row, _hrow, rfl⟩
+  intro h
+  have hv := congrArg (fun c : Cell B => c.1.val) h
+  have hrowLt := row.isLt
+  simp [bottomRight, rowFromRowsMinusOne] at hv
+  omega
+
+lemma oddOddMiddleColumn_nonblank {B : Board} (col : Fin (B.cols - 3)) :
+    ∀ c ∈ oddOddMiddleColumn B col, c ≠ bottomRight B := by
+  intro c hc
+  rw [oddOddMiddleColumn] at hc
+  by_cases hpar : (col.val + 1) % 2 = 1
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    intro h
+    have hv := congrArg (fun c : Cell B => c.1.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+  · simp [hpar] at hc
+    rcases hc with ⟨row, _hrow, rfl⟩
+    intro h
+    have hv := congrArg (fun c : Cell B => c.1.val) h
+    have hrowLt := row.isLt
+    simp [bottomRight, rowFromRowsMinusOne] at hv
+    omega
+
+lemma oddOddMiddleSnake_nonblank {B : Board} :
+    ∀ c ∈ oddOddMiddleSnake B, c ≠ bottomRight B := by
+  intro c hc
+  rw [oddOddMiddleSnake] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨col, hcol⟩
+  exact oddOddMiddleColumn_nonblank col c hcol
+
+lemma oddOddCapRow_nonblank {B : Board} (row : Fin (B.rows - 2)) :
+    ∀ c ∈ oddOddCapRow B row, c ≠ bottomRight B := by
+  intro c hc
+  by_cases hpar : row.val % 2 = 0
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h <;> rw [h] <;>
+      intro heq <;>
+      have hv := congrArg (fun c : Cell B => c.1.val) heq <;>
+      have hrowLt := row.isLt <;>
+      simp [bottomRight, rowFromRowsMinusTwo] at hv <;>
+      omega
+  · simp [oddOddCapRow, hpar] at hc
+    rcases hc with h | h <;> rw [h] <;>
+      intro heq <;>
+      have hv := congrArg (fun c : Cell B => c.1.val) heq <;>
+      have hrowLt := row.isLt <;>
+      simp [bottomRight, rowFromRowsMinusTwo] at hv <;>
+      omega
+
+lemma oddOddCapRows_nonblank {B : Board} :
+    ∀ c ∈ oddOddCapRows B, c ≠ bottomRight B := by
+  intro c hc
+  rw [oddOddCapRows] at hc
+  simp only [List.mem_flatMap, List.mem_finRange, true_and] at hc
+  rcases hc with ⟨row, hrow⟩
+  exact oddOddCapRow_nonblank row c hrow
+
+lemma oddOddCap_nonblank {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    ∀ c ∈ oddOddCap B, c ≠ bottomRight B := by
+  intro c hc
+  simp [oddOddCap] at hc
+  rcases hc with hrowsPart | hcorner
+  · exact oddOddCapRows_nonblank c hrowsPart
+  · rw [hcorner]
+    exact cornerUp_ne_bottomRight hrows
+
+lemma oddOddRoute_nonblank {B : Board}
+    (hrows : 2 ≤ B.rows) :
+    ∀ c ∈ oddOddRouteXs B, c ≠ bottomRight B := by
+  intro c hc
+  simp [oddOddRouteXs] at hc
+  rcases hc with hc | hc | hc | hc
+  · exact evenColsBottomTail_nonblank c hc
+  · exact oddOddLeftColumn_nonblank c hc
+  · exact oddOddMiddleSnake_nonblank c hc
+  · exact oddOddCap_nonblank hrows c hc
+
 end NPuzzle.Rect
