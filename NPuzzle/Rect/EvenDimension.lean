@@ -1,4 +1,5 @@
 import NPuzzle.Rect.EvenRowRoute
+import NPuzzle.Rect.OddOddRoute
 
 namespace NPuzzle.Rect
 
@@ -98,27 +99,23 @@ lemma tiles_to_goal_bottomRight_of_evenDimension {B : Board}
 lemma reachable_goal_to_cfg_bottomRight_of_dimension_split {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (cfg : Config B) (hbr : blank cfg = bottomRight B)
-    (hpar : parityClass cfg = targetParity B)
-    (hOdd :
-      B.rows % 2 = 1 → B.cols % 2 = 1 →
-        Reachable (goal B) cfg) :
+    (hpar : parityClass cfg = targetParity B) :
     Reachable (goal B) cfg := by
   rcases B.evenDimension_or_oddRows_oddCols with hEven | hOddDims
   · exact reachable_goal_to_cfg_bottomRight_of_evenDimension
       hrows hcols hEven cfg hbr hpar
-  · exact hOdd hOddDims.1 hOddDims.2
+  · exact reachable_goal_to_cfg_bottomRight_of_oddOdd
+      hrows hcols hOddDims.1 hOddDims.2 cfg hbr hpar
 
 lemma tiles_to_goal_bottomRight_of_dimension_split {B : Board}
     (hrows : 2 ≤ B.rows) (hcols : 2 ≤ B.cols)
     (cfg : Config B) (hbr : blank cfg = bottomRight B)
-    (hpar : parityClass cfg = targetParity B)
-    (hOdd :
-      B.rows % 2 = 1 → B.cols % 2 = 1 →
-        Reachable cfg (goal B)) :
+    (hpar : parityClass cfg = targetParity B) :
     Reachable cfg (goal B) := by
   rcases B.evenDimension_or_oddRows_oddCols with hEven | hOddDims
   · exact tiles_to_goal_bottomRight_of_evenDimension
       hrows hcols hEven cfg hbr hpar
-  · exact hOdd hOddDims.1 hOddDims.2
+  · exact tiles_to_goal_bottomRight_of_oddOdd
+      hrows hcols hOddDims.1 hOddDims.2 cfg hbr hpar
 
 end NPuzzle.Rect

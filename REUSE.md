@@ -174,7 +174,7 @@ Tracked in [PLAN.md](PLAN.md#reuse--extraction-roadmap). Summary:
 | **R3** | `FourFour/Inversion.lean` keeps only puzzle glue (`invStat_slide_vertical_mod`, …) | R2 |
 | **R4** | Paper §5–6: table Lean name ↔ classical lemma (Calabro sign/taxicab, Conrad $A_{15}$) | paper draft |
 | **R5** | **Mathlib PR** (project intention): generalized `inversionCount_erase_insert_mod` / list move helpers | after more cleanup and Mathlib review |
-| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle and near-full-cycle shapes, closed-path-to-tile-cycle/sufficiency bridges, conditional named sufficiency, the even-size obstruction for prefixed full routes, the even-dimension bottom-right sufficiency dispatcher; odd×odd geometric realization next |
+| **R6** | Add `NPuzzle.Rect.Basic` / `Config` / `Parity` / `Invariant` as the first board-generic layer | necessity/parity invariance, realizable corner 3-cycle, compatible full-cycle and near-full-cycle shapes, closed-path-to-tile-cycle/sufficiency bridges, conditional named sufficiency, the even-size obstruction for prefixed full routes, odd×odd near-full route, and the closed fat-board bottom-right sufficiency dispatcher |
 
 **Intention:** upstream layer A to [mathlib4](https://github.com/leanprover-community/mathlib4) so any Mathlib project gets these lemmas via `import Mathlib.Data.List....`. Details and scope: [GOAL.md](GOAL.md#mathlib-contribution-intention). Puzzle modules (`tileList`, `permOfCfg`) stay in this repo.
 
