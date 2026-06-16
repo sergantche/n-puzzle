@@ -60,6 +60,34 @@ lemma AdjacentChain.length_even_of_endpoint {B : Board} {a : Cell B}
     exact add_left_cancel hpar'
   exact ZMod.natCast_eq_zero_iff_even.mp hzero
 
+lemma closedFullList_size_even {B : Board} {xs : List (Cell B)}
+    (hchain : AdjacentChain (bottomRight B) (xs ++ [bottomRight B]))
+    (hlen : xs.length = B.tileCount) :
+    Even B.size := by
+  have hpathEven :
+      Even (xs ++ [bottomRight B]).length :=
+    AdjacentChain.length_even_of_endpoint
+      (a := bottomRight B) hchain
+      (by simp [listEndpoint_append_singleton])
+  rw [List.length_append, List.length_singleton, hlen] at hpathEven
+  have hsize : B.tileCount + 1 = B.size := Board.tileCount_add_one B
+  rwa [hsize] at hpathEven
+
+lemma closedFullList_size_mod_two_eq_zero {B : Board} {xs : List (Cell B)}
+    (hchain : AdjacentChain (bottomRight B) (xs ++ [bottomRight B]))
+    (hlen : xs.length = B.tileCount) :
+    B.size % 2 = 0 :=
+  Nat.even_iff.mp (closedFullList_size_even hchain hlen)
+
+lemma no_closedFullList_of_size_mod_two_eq_one {B : Board}
+    (hodd : B.size % 2 = 1) :
+    ¬ ∃ xs : List (Cell B),
+      AdjacentChain (bottomRight B) (xs ++ [bottomRight B]) ∧
+        xs.length = B.tileCount := by
+  rintro ⟨xs, hchain, hlen⟩
+  have heven := closedFullList_size_mod_two_eq_zero hchain hlen
+  omega
+
 lemma PrefixedFullRoute.length_eq_tileCount {B : Board}
     {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
     (route : PrefixedFullRoute B hrows hcols) :
@@ -75,17 +103,7 @@ lemma PrefixedFullRoute.size_even {B : Board}
     {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
     (route : PrefixedFullRoute B hrows hcols) :
     Even B.size := by
-  let xs := cornerLeft B :: cornerUpLeft B :: route.ys
-  have hpathEven :
-      Even (xs ++ [bottomRight B]).length :=
-    AdjacentChain.length_even_of_endpoint
-      (a := bottomRight B) route.chain
-      (by simp [xs, listEndpoint_append_singleton])
-  have hrouteLen : xs.length = B.tileCount := by
-    simpa [xs] using route.length_eq_tileCount
-  rw [List.length_append, List.length_singleton, hrouteLen] at hpathEven
-  have hsize : B.tileCount + 1 = B.size := Board.tileCount_add_one B
-  rwa [hsize] at hpathEven
+  exact closedFullList_size_even route.chain route.length_eq_tileCount
 
 lemma PrefixedFullRoute.size_mod_two_eq_zero {B : Board}
     {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
@@ -97,6 +115,14 @@ lemma Board.size_mod_two_eq_one_of_odd_rows_odd_cols {B : Board}
     (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
     B.size % 2 = 1 := by
   rw [Board.size, Nat.mul_mod, hrowsOdd, hcolsOdd]
+
+lemma no_closedFullList_of_odd_rows_odd_cols {B : Board}
+    (hrowsOdd : B.rows % 2 = 1) (hcolsOdd : B.cols % 2 = 1) :
+    ¬ ∃ xs : List (Cell B),
+      AdjacentChain (bottomRight B) (xs ++ [bottomRight B]) ∧
+        xs.length = B.tileCount :=
+  no_closedFullList_of_size_mod_two_eq_one
+    (Board.size_mod_two_eq_one_of_odd_rows_odd_cols hrowsOdd hcolsOdd)
 
 lemma PrefixedFullRoute.isEmpty_of_size_mod_two_eq_one {B : Board}
     {hrows : 2 ≤ B.rows} {hcols : 2 ≤ B.cols}
