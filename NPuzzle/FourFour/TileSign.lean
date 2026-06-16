@@ -48,8 +48,8 @@ lemma tileListPerm_bubbleRight (L : List ℕ) (hs : TileListSpec bottomRight L) 
     fin_cases i
     all_goals
       simp [tileListPerm_apply, tileLabelAt, adjSwap, Equiv.swap_apply_left, Equiv.swap_apply_right,
-        bubbleRight, List.getElem_set, bubbleRight_get, bubbleRight_get_at, Fin.ext_iff, hs.length_eq]
-      <;> try rfl <;> try omega
+        bubbleRight]
+      <;> try rfl
 
 lemma tileList_eq_goalTileList_of_sorted (L : List ℕ) (hs : TileListSpec bottomRight L)
     (hsorted : List.Pairwise (· ≤ ·) L) : L = (List.range 15).map (· + 1) :=
@@ -62,11 +62,8 @@ lemma tileListPerm_sorted_eq_one (L : List ℕ) (hs : TileListSpec bottomRight L
   rw [tileListPerm_apply, tileLabelAt]
   have hi : i.1 < L.length := by rw [hs.length_eq]; exact i.isLt
   have heq := tileList_eq_goalTileList_of_sorted L hs hsorted
-  have hi15 : i.1 < 15 := by rw [hs.length_eq] at hi; exact hi
-  have hi' : i.1 < (List.range 15).length := by simp [hi15]
-  have hmap : ((List.range 15).map (· + 1))[i]'hi' = i.1 + 1 := by
-    simp [List.getElem_map, List.getElem_range, hi15]
-  have hval : L[i]'hi = i.1 + 1 := by simpa [heq] using hmap
+  have hval : L[i]'hi = i.1 + 1 := by
+    simp [heq]
   simp [hval]
 
 lemma sign_tileListPerm_eq_neg_one_pow (L : List ℕ) (hs : TileListSpec bottomRight L) :

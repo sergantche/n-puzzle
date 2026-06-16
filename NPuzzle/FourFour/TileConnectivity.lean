@@ -26,8 +26,8 @@ lemma tiles_to_goal_invStat_zero (cfg : Config) (hbr : blank cfg = bottomRight)
   rw [cfg_eq_goal_of_invStat_zero cfg hbr h0]
   exact Relation.ReflTransGen.refl
 
-/-- If `goal` can reach `cfg` with blank at bottom-right, then `cfg` can reach `goal`. -/
-lemma tiles_to_goal_of_reachable_goal (cfg : Config) (hbr : blank cfg = bottomRight)
+/-- If `goal` can reach `cfg`, then `cfg` can reach `goal`. -/
+lemma tiles_to_goal_of_reachable_goal (cfg : Config)
     (h : Reachable goal cfg) : Reachable cfg goal :=
   reachable_symm h
 
@@ -36,7 +36,7 @@ lemma tiles_to_goal_at_bottomRight (cfg : Config) (hbr : blank cfg = bottomRight
   have heven : invStat cfg % 2 = 0 := invStat_even_of_parity_bottomRight cfg hbr hpar
   by_cases h0 : invStat cfg = 0
   · exact tiles_to_goal_invStat_zero cfg hbr h0
-  · exact tiles_to_goal_of_reachable_goal cfg hbr
+  · exact tiles_to_goal_of_reachable_goal cfg
       (reachable_goal_to_cfg_bottomRight cfg hbr heven)
 
 end NPuzzle.FourFour

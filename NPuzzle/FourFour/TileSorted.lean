@@ -19,7 +19,7 @@ lemma mem_Icc_one_fifteen_of_nodup_len (L : List ℕ) (hlen : L.length = 15)
     rw [List.mem_toFinset] at hx
     exact Finset.mem_Icc.mpr ⟨(hmem x hx).1, (hmem x hx).2⟩
   have hIcc : (Finset.Icc 1 15).card = 15 := by
-    simpa using Finset.card_Icc (by omega : (1 : ℕ) ≤ 15)
+    native_decide
   have heq : L.toFinset = Finset.Icc 1 15 :=
     Finset.eq_of_subset_of_card_le hsub (by rw [hIcc, hcard])
   exact heq.symm.subset (Finset.mem_Icc.mpr ⟨ha, hb⟩)
