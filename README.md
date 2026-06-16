@@ -70,14 +70,16 @@ A configuration $C$ is **solvable** if there exists a finite sequence of legal m
 
 ### Target theorem (solvability criterion)
 
-Assume $NM\ge 2$. Let $C$ be any configuration, let $L$ be its row-major tile list (skipping the blank), and let $r_B := N - i_b + 1$ for its blank as in the preceding subsection — relative to the goal configuration $G$ described above.
+Assume $N,M\ge 2$. Let $C$ be any configuration, let $L$ be its row-major tile list (skipping the blank), and let $r_B := N - i_b + 1$ for its blank as in the preceding subsection — relative to the goal configuration $G$ described above.
 
 Then $C$ is solvable **if and only if**:
 
 - If $M$ is **odd**: $I(L)\equiv 0 \pmod 2$.
 - If $M$ is **even**: $I(L)+r_B\equiv 1 \pmod 2$.
 
-This statement is the main mathematical result we intend to prove formally in Lean.
+For thin boards ($N=1$ or $M=1$), solvability is instead equivalent to preserving the full row-major `tileList`; the parity condition alone is not sufficient there.
+
+This statement, together with the thin-board exception, is the main mathematical result we intend to prove formally in Lean.
 
 ## Lean layout
 
@@ -87,6 +89,7 @@ This statement is the main mathematical result we intend to prove formally in Le
 - **`NPuzzle/FourFour/Sufficiency.lean`** — target theorem `solvability_four_four`.
 - **`NPuzzle/Rect/Thin.lean`** — thin-board `tileList` criteria `solvability_rows_lt_two` / `solvability_cols_lt_two`.
 - **`NPuzzle/Rect/EvenDimension.lean`** — rectangular fat-board theorem `solvability_of_two_le` for `2 ≤ rows` and `2 ≤ cols`.
+- **`NPuzzle/Rect/Solvability.lean`** — top-level rectangular dispatcher `solvability_rectangular`.
 - **9b.3 (closed):** `TilePerm.lean`, `TileRank.lean`, `TileSign.lean`, `TileReach.lean`, `TileRelabel.lean`, `TileConnectivity.lean` — tile-list permutations, even-permutation realization, and connectivity with the blank at bottom-right.
 
 Build the library: `lake build`.
