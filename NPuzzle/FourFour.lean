@@ -109,7 +109,7 @@ def goalCells (i : Cell) : ℕ :=
 `cellsRowMajorExcept b`: all cells in increasing linear order **except** the blank cell `b`.
 Then map labels → this is the README sequence `L` for that blank position.
 
-For a **horizontal** slide the multiset/order of values in `L` stays the same (lemma TODO);
+For a **horizontal** slide the multiset/order of values in `L` stays the same;
 vertical slides permute `L` and can change `inversionCount`.
 -/
 
